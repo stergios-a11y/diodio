@@ -148,7 +148,7 @@ Respond ONLY with valid JSON — no markdown fences, no preamble — using this 
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         model:      'claude-sonnet-4-6',
-        max_tokens: 1500,
+        max_tokens: 5000,
         messages:   [{ role: 'user', content: prompt }],
       }),
     });
