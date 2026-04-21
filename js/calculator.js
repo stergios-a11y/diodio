@@ -36,7 +36,7 @@ presetBtns.forEach(btn => {
   btn.addEventListener('click', () => updateSlider(btn.dataset.val));
 });
 
-updateSlider(10); // default
+updateSlider(10);
 
 // ── UI state helpers ──────────────────────────────────────
 const analyzeBtn = document.getElementById('analyze-btn');
@@ -92,7 +92,6 @@ async function analyze() {
   setLoading(true);
   showResultsLoading();
 
-  // Open panel if collapsed
   if (!panelOpen) {
     panelOpen = true;
     panelWrapper.classList.remove('collapsed');
@@ -148,7 +147,7 @@ Respond ONLY with valid JSON — no markdown fences, no preamble — using this 
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
+        model:      'claude-sonnet-4-6',
         max_tokens: 1500,
         messages:   [{ role: 'user', content: prompt }],
       }),
@@ -182,13 +181,11 @@ function renderResults(data, origin, destination, timeValue) {
 
   let html = '';
 
-  // Route title
   html += `<div class="result-route-title">
     ${origin} <span class="arrow">→</span> ${destination}
     <span style="font-weight:400;font-size:0.65rem;color:rgba(255,255,255,0.4);margin-left:4px">~${data.total_distance_km || '?'} km</span>
   </div>`;
 
-  // Summary bar
   html += `<div class="summary-bar">
     <div class="sum-cell">
       <span class="sum-val" style="color:var(--gold-lt)">€${(s.total_toll_cost || 0).toFixed(2)}</span>
@@ -204,7 +201,6 @@ function renderResults(data, origin, destination, timeValue) {
     </div>
   </div>`;
 
-  // Toll cards
   html += `<div class="toll-results-list">`;
   for (const toll of (data.tolls || [])) {
     const bypassText = toll.has_bypass
@@ -221,7 +217,6 @@ function renderResults(data, origin, destination, timeValue) {
   }
   html += `</div>`;
 
-  // Overall advice
   if (s.overall_advice) {
     html += `<div class="overall-advice">💡 ${s.overall_advice}</div>`;
   }
