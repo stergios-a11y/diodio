@@ -5,6 +5,7 @@
  *   • Time-value slider
  *   • Route analysis via Claude API
  *   • Result rendering
+ *   • Map highlighting of matched toll booths
  */
 
 // ── Panel collapse ────────────────────────────────────────
@@ -31,11 +32,9 @@ function updateSlider(val) {
 }
 
 slider.addEventListener('input', () => updateSlider(slider.value));
-
 presetBtns.forEach(btn => {
   btn.addEventListener('click', () => updateSlider(btn.dataset.val));
 });
-
 updateSlider(10);
 
 // ── UI state helpers ──────────────────────────────────────
@@ -76,6 +75,113 @@ function showResultsLoading() {
     </div>`;
 }
 
+// ── Match AI toll name against TOLL_DATA ──────────────────
+// Returns the best matching TOLL_DATA entry or null
+function matchTollToData(aiName) {
+  if (!aiName) return null;
+  const needle = aiName.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  let bestMatch = null;
+  let bestScore = 0;
+
+  TOLL_DATA.forEach(t => {
+    const haystack = t.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Exact match
+    if (haystack === needle) { bestMatch = t; bestScore = 100; return; }
+
+    // One contains the other
+    if (haystack.includes(needle) || needle.includes(haystack)) {
+      const score = 80 - Math.abs(haystack.length - needle.length);
+      if (score > bestScore) { bestScore = score; bestMatch = t; }
+      return;
+    }
+
+    // Count matching characters at start (prefix match)
+    let common = 0;
+    for (let i = 0; i < Math.min(needle.length, haystack.length); i++) {
+      if (needle[i] === haystack[i]) common++; else break;
+    }
+    const score = (common / Math.max(needle.length, haystack.length)) * 60;
+    if (score > bestScore && score > 20) { bestScore = score; bestMatch = t; }
+  });
+
+  return bestMatch;
+}
+
+// ── Highlight route tolls on map ──────────────────────────
+let routeHighlightMarkers = [];
+let routePolyline = null;
+
+function clearRouteHighlights() {
+  routeHighlightMarkers.forEach(m => map.removeLayer(m));
+  routeHighlightMarkers = [];
+  if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
+}
+
+function highlightRouteTolls(tolls) {
+  clearRouteHighlights();
+
+  const coords = [];
+  const verdictColors = { PAY: '#3d5a22', AVOID: '#b33a22', MARGINAL: '#c49a2e' };
+
+  tolls.forEach(toll => {
+    const matched = matchTollToData(toll.name);
+    if (!matched) return;
+
+    coords.push([matched.lat, matched.lng]);
+
+    const color  = verdictColors[toll.verdict] || '#aaa';
+    const size   = 22;
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:${size}px;height:${size}px;
+        background:${color};
+        border:3px solid white;
+        border-radius:50%;
+        box-shadow:0 0 0 3px ${color}, 0 0 16px ${color}99;
+        display:flex;align-items:center;justify-content:center;
+        font-size:9px;font-weight:700;color:white;
+        font-family:sans-serif;
+      ">${toll.verdict === 'PAY' ? '✓' : toll.verdict === 'AVOID' ? '✕' : '~'}</div>`,
+      iconSize:   [size, size],
+      iconAnchor: [size / 2, size / 2],
+    });
+
+    const marker = L.marker([matched.lat, matched.lng], { icon, zIndexOffset: 1000 });
+
+    // Popup with verdict info
+    marker.bindPopup(`
+      <div style="font-family:monospace;font-size:12px;min-width:160px">
+        <strong>${matched.name}</strong><br>
+        <span style="color:${color};font-weight:700">${toll.verdict}</span>
+        · €${toll.cost_eur}<br>
+        <span style="color:#666;font-size:11px">${toll.reasoning || ''}</span>
+      </div>
+    `, { maxWidth: 220 });
+
+    marker.addTo(map);
+    routeHighlightMarkers.push(marker);
+  });
+
+  // Draw a line connecting the route tolls in order
+  if (coords.length >= 2) {
+    routePolyline = L.polyline(coords, {
+      color: '#c49a2e',
+      weight: 3,
+      opacity: 0.6,
+      dashArray: '8 6',
+    }).addTo(map);
+  }
+
+  // Fit map to show all highlighted markers
+  if (coords.length > 0) {
+    map.fitBounds(L.latLngBounds(coords).pad(0.2));
+  }
+}
+
 // ── Analyze ───────────────────────────────────────────────
 async function analyze() {
   const origin      = document.getElementById('origin').value.trim();
@@ -91,6 +197,7 @@ async function analyze() {
   clearError();
   setLoading(true);
   showResultsLoading();
+  clearRouteHighlights();
 
   if (!panelOpen) {
     panelOpen = true;
@@ -106,11 +213,17 @@ async function analyze() {
   const vehicleLabel = vehicleLabels[vehicle];
   const hourlyRate   = (60 / timeValue).toFixed(2);
 
+  // Build a list of our known toll names to help the AI match them
+  const knownNames = TOLL_DATA.map(t => t.name).join(', ');
+
   const prompt = `You are a Greek toll road expert with detailed knowledge of all toll plazas on Greek motorways as of 2024.
 
 Route: **${origin}** → **${destination}** (Greece)
 Vehicle: **${vehicleLabel}**
 Time preference: The user will accept **${timeValue} minutes** of extra driving to save **€1** in tolls (implied hourly value: **€${hourlyRate}/hr**).
+
+IMPORTANT: When naming toll plazas, use names from this official list where possible:
+${knownNames}
 
 Task:
 1. Identify all toll plazas on the primary motorway route between these two cities.
@@ -124,7 +237,7 @@ Respond ONLY with valid JSON — no markdown fences, no preamble — using this 
   "total_distance_km": number,
   "tolls": [
     {
-      "name": "string",
+      "name": "string — use official name from the list above where possible",
       "highway": "string — e.g. A1, A2, A8",
       "location": "string — brief location note",
       "cost_eur": number,
@@ -148,13 +261,12 @@ Respond ONLY with valid JSON — no markdown fences, no preamble — using this 
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
         model:      'claude-sonnet-4-6',
-        max_tokens: 5000,
+        max_tokens: 4000,
         messages:   [{ role: 'user', content: prompt }],
       }),
     });
 
     const data = await resp.json();
-
     if (!resp.ok) throw new Error(data.error?.message || `HTTP ${resp.status}`);
 
     const rawText = data.content.map(b => b.text || '').join('');
@@ -163,6 +275,11 @@ Respond ONLY with valid JSON — no markdown fences, no preamble — using this 
       parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
     } catch {
       throw new Error('Could not parse AI response. Raw: ' + rawText.slice(0, 200));
+    }
+
+    // Highlight matched tolls on the map
+    if (parsed.tolls?.length) {
+      highlightRouteTolls(parsed.tolls);
     }
 
     renderResults(parsed, origin, destination, timeValue);
@@ -203,11 +320,17 @@ function renderResults(data, origin, destination, timeValue) {
 
   html += `<div class="toll-results-list">`;
   for (const toll of (data.tolls || [])) {
+    const matched    = matchTollToData(toll.name);
+    const matchedTag = matched
+      ? `<span style="color:rgba(255,255,255,0.3);font-size:0.58rem"> · 📍 matched</span>`
+      : `<span style="color:rgba(255,100,100,0.5);font-size:0.58rem"> · unmatched</span>`;
+
     const bypassText = toll.has_bypass
       ? `bypass +${toll.bypass_extra_minutes ?? '?'} min`
       : 'no bypass';
+
     html += `<div class="result-card verdict-${toll.verdict}">
-      <div class="rc-name">${toll.name}</div>
+      <div class="rc-name">${toll.name}${matchedTag}</div>
       <div class="rc-verdict">${toll.verdict === 'PAY' ? 'Pay' : toll.verdict === 'AVOID' ? 'Avoid' : 'Marginal'}</div>
       <div class="rc-meta">
         <strong>€${toll.cost_eur}</strong> · ${toll.highway} · ${bypassText}
