@@ -65,16 +65,18 @@ async function geocode(name) {
 }
 
 // ── OSRM routing ──────────────────────────────────────────
-// waypoints: array of {lat, lng}
-// avoidMotorways: pass extra=&annotations=false&continue_straight=false
 async function fetchOSRM(waypoints, avoidMotorways = false) {
-  const coords = waypoints.map(w => `${w.lng},${w.lat}`).join(';');
+  const coords  = waypoints.map(w => `${w.lng},${w.lat}`).join(';');
   const exclude = avoidMotorways ? '&exclude=motorway,toll' : '';
   const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson${exclude}`;
-  const r = await fetch(url);
-  const d = await r.json();
-  if (d.code !== 'Ok') return null;
-  return d.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.code !== 'Ok') return null;
+    return d.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+  } catch {
+    return null;
+  }
 }
 
 // ── Geometry helpers ──────────────────────────────────────
@@ -109,35 +111,71 @@ function tollsOnRoute(coords, threshold = 0.025) {
   return found.map(x => x.toll);
 }
 
-// ── Draw a green bypass between two lat/lng points ────────
-async function drawBypassSegment(fromLatLng, toLatLng, label) {
-  // Try excluding motorway+toll first; fall back to just excluding motorway
-  let coords = await fetchOSRM([fromLatLng, toLatLng], true);
+// Walk along route from startIdx by ~distMeters (+forward / -backward)
+function findPointAtDistance(coords, startIdx, distMeters) {
+  const step   = distMeters > 0 ? 1 : -1;
+  const target = Math.abs(distMeters);
+  let accumulated = 0;
+  let idx = startIdx;
 
-  // Sanity check: bypass should be longer than direct motorway distance
-  // If OSRM still returns same short path it probably couldn't avoid — show anyway
-  if (!coords) {
-    coords = await fetchOSRM([fromLatLng, toLatLng], false);
+  while (idx > 0 && idx < coords.length - 1) {
+    const next = idx + step;
+    if (next < 0 || next >= coords.length) break;
+    const dlat = (coords[next][0] - coords[idx][0]) * 111320;
+    const dlng = (coords[next][1] - coords[idx][1]) * 111320
+                  * Math.cos(coords[idx][0] * Math.PI / 180);
+    accumulated += Math.hypot(dlat, dlng);
+    idx = next;
+    if (accumulated >= target) break;
   }
+  return Math.max(0, Math.min(coords.length - 1, idx));
+}
+
+// Compute a perpendicular nudge at a route point to push the
+// bypass midpoint off the motorway onto the parallel road
+function computeNudge(coords, idx, magnitude) {
+  const prev = coords[Math.max(0, idx - 5)];
+  const next = coords[Math.min(coords.length - 1, idx + 5)];
+  const dlat = next[0] - prev[0];
+  const dlng = next[1] - prev[1];
+  const len  = Math.hypot(dlat, dlng) || 1;
+  // Rotate 90° to get perpendicular direction
+  return {
+    dlat: (-dlng / len) * magnitude,
+    dlng: ( dlat / len) * magnitude,
+  };
+}
+
+// ── Draw a single green bypass segment ───────────────────
+async function drawBypassSegment(fromLatLng, toLatLng, midLatLng, label) {
+  // Route via midpoint to force OSRM off the motorway
+  const waypoints = midLatLng
+    ? [fromLatLng, midLatLng, toLatLng]
+    : [fromLatLng, toLatLng];
+
+  // Try excluding motorway+toll first
+  let coords = await fetchOSRM(waypoints, true);
+  // Fall back to just the two endpoints if midpoint causes issues
+  if (!coords) coords = await fetchOSRM([fromLatLng, toLatLng], true);
   if (!coords) return;
 
   const layer = L.polyline(coords, {
-    color:     '#2d7a3a',
-    weight:    4,
-    opacity:   0.85,
-    lineCap:   'round',
-    lineJoin:  'round',
+    color:    '#2d7a3a',
+    weight:   4,
+    opacity:  0.9,
+    lineCap:  'round',
+    lineJoin: 'round',
   }).addTo(map);
 
-  layer.bindTooltip(`🟢 Free bypass${label ? ': ' + label : ''}`, {
-    sticky: true,
-    className: 'bypass-tooltip',
-  });
+  layer.bindTooltip(
+    `🟢 Free bypass${label ? ': skip ' + label : ''}`,
+    { sticky: true, className: 'bypass-tooltip' }
+  );
 
   bypassLayers.push(layer);
 }
 
-// ── Main analyze function ─────────────────────────────────
+// ── Main analyze ──────────────────────────────────────────
 async function analyze() {
   const origin    = document.getElementById('origin').value.trim();
   const dest      = document.getElementById('dest').value.trim();
@@ -152,10 +190,14 @@ async function analyze() {
   setLoading(true);
 
   try {
-    // 1. Geocode both endpoints
-    const [fromCoord, toCoord] = await Promise.all([geocode(origin), geocode(dest)]);
 
-    // 2. Get main motorway route
+    // 1. Geocode both endpoints
+    const [fromCoord, toCoord] = await Promise.all([
+      geocode(origin),
+      geocode(dest),
+    ]);
+
+    // 2. Fetch main motorway route
     const routeCoords = await fetchOSRM([fromCoord, toCoord], false);
     if (!routeCoords) throw new Error('Could not calculate route');
 
@@ -176,16 +218,25 @@ async function analyze() {
       return;
     }
 
-    // 5. Build AI prompt with confirmed toll list
-    const catKey = { motorcycle:'cat1', car:'cat2', lighttruck:'cat3', heavytruck:'cat4' }[vehicle];
+    // 5. Ask AI for bypass verdicts
+    const catKey = {
+      motorcycle: 'cat1',
+      car:        'cat2',
+      lighttruck: 'cat3',
+      heavytruck: 'cat4',
+    }[vehicle];
+
     const vehicleLabels = {
       motorcycle: 'Motorcycle (cat1)',
       car:        'Car (cat2)',
       lighttruck: 'Light truck (cat3)',
       heavytruck: 'Heavy truck (cat4)',
     };
+
     const hourlyRate = (60 / timeValue).toFixed(2);
-    const tollList   = matchedTolls.map(t => `- ${t.name} (${t.highway}): €${t[catKey].toFixed(2)}`).join('\n');
+    const tollList   = matchedTolls
+      .map(t => `- ${t.name} (${t.highway}): €${t[catKey].toFixed(2)}`)
+      .join('\n');
 
     const prompt = `You are a Greek toll road expert.
 
@@ -229,21 +280,30 @@ Respond ONLY with valid JSON, no markdown fences:
 
     const raw = data.content.map(b => b.text || '').join('');
     let ai;
-    try { ai = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
-    catch { throw new Error('Could not parse AI response'); }
+    try {
+      ai = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    } catch {
+      throw new Error('Could not parse AI response');
+    }
 
-    // 6. Merge verdicts by index
+    // 6. Merge verdicts by index (AI returns same order we sent)
     const aiTolls = ai.tolls || [];
     const results = matchedTolls.map((toll, i) => {
-      const aiData = aiTolls[i] || { verdict: 'PAY', has_bypass: false, bypass_extra_minutes: null, reasoning: '' };
+      const aiData = aiTolls[i] || {
+        verdict:              'PAY',
+        has_bypass:           false,
+        bypass_extra_minutes: null,
+        reasoning:            '',
+      };
       return { toll, ...aiData };
     });
 
-    // 7. Draw verdict markers on map
+    // 7. Draw verdict markers
     const verdictColors = { PAY: '#1a4a8a', AVOID: '#2d7a3a', MARGINAL: '#b8860b' };
+
     results.forEach(r => {
       const color = verdictColors[r.verdict] || '#555';
-      const icon = L.divIcon({
+      const icon  = L.divIcon({
         className: '',
         html: `<div style="
           width:20px;height:20px;
@@ -262,7 +322,9 @@ Respond ONLY with valid JSON, no markdown fences:
       m.bindPopup(`
         <div class="map-popup">
           <div class="map-popup-name">${r.toll.name}</div>
-          <div class="map-popup-verdict ${r.verdict}">${r.verdict} · €${r.toll[catKey].toFixed(2)}</div>
+          <div class="map-popup-verdict ${r.verdict}">
+            ${r.verdict} · €${r.toll[catKey].toFixed(2)}
+          </div>
           <div class="map-popup-reason">${r.reasoning}</div>
         </div>`, { maxWidth: 200 });
       m.addTo(map);
@@ -270,49 +332,73 @@ Respond ONLY with valid JSON, no markdown fences:
     });
 
     // 8. Draw green bypass lines ───────────────────────────
-    // Strategy: find consecutive runs of AVOID tolls.
-    // The bypass goes from the point on the route JUST BEFORE the first
-    // avoided toll to the point JUST AFTER the last avoided toll in the group.
-    // We use the actual route coordinates for those anchor points so the
-    // green line starts and ends exactly on the blue road.
+    // For each group of consecutive AVOID tolls:
+    //   - Find the route point ~8km BEFORE the first avoided toll
+    //     (this is where the driver exits the motorway)
+    //   - Find the route point ~8km AFTER the last avoided toll
+    //     (this is where the driver re-enters the motorway)
+    //   - Push a midpoint perpendicular to the road to force OSRM
+    //     onto the parallel national road instead of the motorway
+    //   - Route between exit → midpoint → re-entry with motorway excluded
 
-    // Build index of each toll's nearest position on route
     const tollRouteIdx = results.map(r =>
       nearestRouteIdx(routeCoords, r.toll.lat, r.toll.lng)
     );
 
-    // Walk through results and collect AVOID groups
-    let i = 0;
-    while (i < results.length) {
-      if (results[i].verdict === 'AVOID' && results[i].has_bypass) {
-        // Start of an AVOID group
-        const groupStart = i;
-        while (i < results.length && results[i].verdict === 'AVOID' && results[i].has_bypass) {
-          i++;
-        }
-        const groupEnd = i - 1; // inclusive
+    let idx = 0;
+    while (idx < results.length) {
+      if (results[idx].verdict === 'AVOID' && results[idx].has_bypass) {
 
-        // Anchor: 15 coords before first avoided toll on route (or route start)
-        const startIdx = Math.max(0, tollRouteIdx[groupStart] - 15);
-        // Anchor: 15 coords after last avoided toll on route (or route end)
-        const endIdx   = Math.min(routeCoords.length - 1, tollRouteIdx[groupEnd] + 15);
+        // Collect the full group of consecutive AVOID tolls
+        const groupStart = idx;
+        while (
+          idx < results.length &&
+          results[idx].verdict === 'AVOID' &&
+          results[idx].has_bypass
+        ) { idx++; }
+        const groupEnd = idx - 1;
 
-        const bypassFrom = { lat: routeCoords[startIdx][0], lng: routeCoords[startIdx][1] };
-        const bypassTo   = { lat: routeCoords[endIdx][0],   lng: routeCoords[endIdx][1] };
+        // Exit point: 8km before first avoided toll
+        const exitIdx = findPointAtDistance(
+          routeCoords, tollRouteIdx[groupStart], -8000
+        );
+        // Entry point: 8km after last avoided toll
+        const entryIdx = findPointAtDistance(
+          routeCoords, tollRouteIdx[groupEnd], +8000
+        );
 
-        // Label: names of avoided tolls in this group
-        const avoidedNames = results.slice(groupStart, groupEnd + 1).map(r => r.toll.name).join(', ');
+        const exitPt  = { lat: routeCoords[exitIdx][0],  lng: routeCoords[exitIdx][1]  };
+        const entryPt = { lat: routeCoords[entryIdx][0], lng: routeCoords[entryIdx][1] };
 
-        // Draw async but don't block the rest of rendering
-        drawBypassSegment(bypassFrom, bypassTo, avoidedNames);
+        // Midpoint: centre of group, nudged ~3km perpendicular off the motorway
+        const midTollIdx = tollRouteIdx[
+          Math.floor((groupStart + groupEnd) / 2)
+        ];
+        const midRouteCoord = routeCoords[midTollIdx];
+        const nudge = computeNudge(routeCoords, midTollIdx, 0.03);
+        const midPt = {
+          lat: midRouteCoord[0] + nudge.dlat,
+          lng: midRouteCoord[1] + nudge.dlng,
+        };
+
+        const avoidedNames = results
+          .slice(groupStart, groupEnd + 1)
+          .map(r => r.toll.name)
+          .join(', ');
+
+        // Fire and forget — don't block results panel
+        drawBypassSegment(exitPt, entryPt, midPt, avoidedNames);
+
       } else {
-        i++;
+        idx++;
       }
     }
 
     // 9. Results panel ─────────────────────────────────────
     const totalCost = results.reduce((s, r) => s + r.toll[catKey], 0);
-    const savings   = results.filter(r => r.verdict === 'AVOID').reduce((s, r) => s + r.toll[catKey], 0);
+    const savings   = results
+      .filter(r => r.verdict === 'AVOID')
+      .reduce((s, r) => s + r.toll[catKey], 0);
     const extraMin  = results
       .filter(r => r.verdict === 'AVOID' && r.bypass_extra_minutes)
       .reduce((s, r) => s + r.bypass_extra_minutes, 0);
@@ -328,14 +414,15 @@ Respond ONLY with valid JSON, no markdown fences:
       const bypass = r.has_bypass
         ? `+${r.bypass_extra_minutes ?? '?'} min detour`
         : 'no free bypass';
-      html += `<div class="toll-chip verdict-${r.verdict}"
-        onclick="this.querySelector('.chip-reason').style.display =
-          this.querySelector('.chip-reason').style.display === 'block' ? 'none' : 'block'">
-        <span class="chip-name">${r.toll.name}</span>
-        <span class="chip-price">€${r.toll[catKey].toFixed(2)}</span>
-        <span class="chip-verdict">${r.verdict}</span>
-        <span class="chip-reason">${r.reasoning} (${bypass})</span>
-      </div>`;
+      html += `
+        <div class="toll-chip verdict-${r.verdict}"
+          onclick="const el=this.querySelector('.chip-reason');
+                   el.style.display=el.style.display==='block'?'none':'block'">
+          <span class="chip-name">${r.toll.name}</span>
+          <span class="chip-price">€${r.toll[catKey].toFixed(2)}</span>
+          <span class="chip-verdict">${r.verdict}</span>
+          <span class="chip-reason">${r.reasoning} (${bypass})</span>
+        </div>`;
     });
 
     if (ai.overall_advice) {
