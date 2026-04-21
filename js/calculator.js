@@ -190,12 +190,11 @@ Respond ONLY with valid JSON, no markdown:
     try { ai = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
     catch { throw new Error('Could not parse AI response'); }
 
-    // 6. Merge AI verdicts with matched tolls
-    const verdictMap = {};
-    (ai.tolls || []).forEach(t => { verdictMap[t.name] = t; });
+    // 6. Merge AI verdicts with matched tolls (match by index, not name)
+    const aiTolls = ai.tolls || [];
 
-    const results = matchedTolls.map(toll => {
-      const aiData = verdictMap[toll.name] || { verdict: 'PAY', has_bypass: false, bypass_extra_minutes: null, reasoning: '' };
+    const results = matchedTolls.map((toll, i) => {
+      const aiData = aiTolls[i] || { verdict: 'PAY', has_bypass: false, bypass_extra_minutes: null, reasoning: '' };
       return { toll, ...aiData };
     });
 
