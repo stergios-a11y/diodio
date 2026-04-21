@@ -4,34 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DIODIO — Greece Toll Road Advisor</title>
-  <meta name="description" content="Interactive map of every Greek highway toll booth with prices. Calculate whether each toll is worth paying based on your personal time value." />
+  <meta name="description" content="Interactive map of every Greek highway toll booth. Calculate whether each toll is worth paying based on your personal time value." />
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
-
-  <!-- Leaflet CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-  <!-- App CSS -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════
-       TOP BAR
-       ══════════════════════════════════════ -->
+  <!-- TOPBAR -->
   <header id="topbar">
     <div class="logo">DIO<em>DIO</em></div>
     <div class="topbar-sep"></div>
-    <div class="topbar-tagline">
-      Greek highway toll map &amp; route advisor<br>
-      Hover any marker · Analyse any route
-    </div>
+    <div class="topbar-tagline">Greek highway toll map &amp; route advisor</div>
     <div class="topbar-right">
-      <button class="legend-toggle" id="legend-toggle">Hide legend</button>
-      <a class="github-link" href="https://github.com/stergios-a11y/diodio" target="_blank" rel="noopener">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <button class="btn-ghost" id="legend-toggle">Legend</button>
+      <a class="btn-ghost" href="https://github.com/stergios-a11y/diodio" target="_blank" rel="noopener">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
         </svg>
         GitHub
@@ -39,113 +29,63 @@
     </div>
   </header>
 
-  <!-- ══════════════════════════════════════
-       MAP
-       ══════════════════════════════════════ -->
-  <div id="map-container">
-    <div id="map"></div>
-  </div>
+  <!-- MAP -->
+  <div id="map-container"><div id="map"></div></div>
 
-  <!-- ══════════════════════════════════════
-       LEGEND
-       ══════════════════════════════════════ -->
-  <aside id="legend">
+  <!-- LEGEND -->
+  <aside id="legend" class="hidden">
     <div class="legend-title">Highways · click to filter</div>
     <div id="legend-list"></div>
-    <div class="legend-title" style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08)">Marker types</div>
-    <div id="type-key"></div>
   </aside>
 
-  <!-- ══════════════════════════════════════
-       BOTTOM PANEL — CALCULATOR
-       ══════════════════════════════════════ -->
-  <div id="panel-wrapper">
+  <!-- RESULTS PANEL -->
+  <div id="results-panel">
+    <div class="rp-head">
+      <div class="rp-title" id="rp-title">Route Analysis</div>
+      <div class="rp-stats" id="rp-stats"></div>
+      <button class="rp-close" id="rp-close">✕</button>
+    </div>
+    <div class="rp-body" id="rp-body"></div>
+  </div>
 
-    <!-- drag handle / title bar -->
-    <div id="panel-handle">
-      <span class="handle-label">Route Analyser</span>
-      <span class="handle-sub">Enter a route — get per-toll verdicts based on your time value</span>
-      <span class="handle-chevron">▲</span>
+  <!-- BOTTOM BAR -->
+  <div id="bottom-bar">
+    <span class="bar-label">From</span>
+    <input class="bar-input" id="origin" placeholder="Athens" autocomplete="off" style="flex:1;max-width:160px" />
+    <span class="bar-label">To</span>
+    <input class="bar-input" id="dest" placeholder="Thessaloniki" autocomplete="off" style="flex:1;max-width:160px" />
+
+    <div class="bar-sep"></div>
+
+    <select class="bar-select" id="vehicle">
+      <option value="motorcycle">🏍 Moto</option>
+      <option value="car" selected>🚗 Car</option>
+      <option value="lighttruck">🚐 Van</option>
+      <option value="heavytruck">🚛 Truck</option>
+    </select>
+
+    <div class="bar-sep"></div>
+
+    <div class="tv-compact">
+      <span class="lbl">€1 =</span>
+      <span class="val" id="tv-val">10</span>
+      <span class="lbl">min</span>
+      <input type="range" id="tv-slider" min="2" max="60" value="10" step="1" />
     </div>
 
-    <!-- three-column body -->
-    <div id="panel-body">
+    <div class="bar-sep"></div>
 
-      <!-- ── COL 1: Route inputs ── -->
-      <div class="pcol">
-        <div class="pcol-title">01 · Route</div>
+    <button class="analyse-btn" id="analyse-btn" onclick="analyze()">
+      <div class="btn-spinner"></div>
+      <span id="btn-text">Analyse</span>
+    </button>
 
-        <div class="field">
-          <label for="origin">Origin</label>
-          <input type="text" id="origin" placeholder="e.g. Athens" autocomplete="off" />
-        </div>
+    <div class="error-pill" id="error-pill"></div>
+  </div>
 
-        <div class="field">
-          <label for="dest">Destination</label>
-          <input type="text" id="dest" placeholder="e.g. Thessaloniki" autocomplete="off" />
-        </div>
-
-        <div class="field">
-          <label for="vehicle">Vehicle</label>
-          <select id="vehicle">
-            <option value="motorcycle">🏍  Motorcycle</option>
-            <option value="car" selected>🚗  Car / light vehicle</option>
-            <option value="lighttruck">🚐  Light truck / minibus</option>
-            <option value="heavytruck">🚛  Heavy truck</option>
-          </select>
-        </div>
-
-        <div class="error-bar" id="error-bar"></div>
-      </div>
-
-      <!-- ── COL 2: Time value ── -->
-      <div class="pcol">
-        <div class="pcol-title">02 · Your Time Value</div>
-
-        <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);line-height:1.7;margin-bottom:12px;">
-          How many minutes of extra driving would you accept to save <strong style="color:rgba(255,255,255,0.7)">€1</strong> in tolls?
-        </div>
-
-        <div class="tv-widget">
-          <div class="tv-row">
-            <span class="tv-eq">€1 =</span>
-            <span class="tv-val" id="tv-val">10</span>
-            <span class="tv-eq">min</span>
-            <input type="range" id="tv-slider" min="2" max="60" value="10" step="1" />
-          </div>
-          <div class="tv-sub">
-            Your time is worth ~€<span id="tv-hourly">6.00</span>/hr
-          </div>
-        </div>
-
-        <div class="presets">
-          <button class="preset" data-val="5">5 min</button>
-          <button class="preset active" data-val="10">10 min</button>
-          <button class="preset" data-val="20">20 min</button>
-          <button class="preset" data-val="40">40 min</button>
-        </div>
-
-        <button class="analyze-btn" id="analyze-btn" onclick="analyze()">
-          <div class="btn-spinner"></div>
-          <span id="btn-text">Analyse Route</span>
-        </button>
-      </div>
-
-      <!-- ── COL 3: Results ── -->
-      <div class="pcol" id="results-col">
-        <!-- filled by calculator.js -->
-      </div>
-
-    </div><!-- /panel-body -->
-  </div><!-- /panel-wrapper -->
-
-  <!-- ══════════════════════════════════════
-       SCRIPTS
-       ══════════════════════════════════════ -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="data/tolls.js"></script>
   <script src="js/map.js"></script>
   <script src="js/calculator.js"></script>
-
 </body>
 </html>
