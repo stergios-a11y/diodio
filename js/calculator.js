@@ -1,7 +1,7 @@
 /**
  * DIODIO — calculator.js
  * Compact bottom bar, OSRM real route, toll snapping,
- * green bypass lines for avoidable toll sections
+ * green bypass lines using forced off-motorway waypoints
  */
 
 // ── Slider ────────────────────────────────────────────────
@@ -65,10 +65,9 @@ async function geocode(name) {
 }
 
 // ── OSRM routing ──────────────────────────────────────────
-async function fetchOSRM(waypoints, avoidMotorways = false) {
-  const coords  = waypoints.map(w => `${w.lng},${w.lat}`).join(';');
-  const exclude = avoidMotorways ? '&exclude=motorway,toll' : '';
-  const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson${exclude}`;
+async function fetchOSRM(waypoints) {
+  const coords = waypoints.map(w => `${w.lng},${w.lat}`).join(';');
+  const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
   try {
     const r = await fetch(url);
     const d = await r.json();
@@ -117,7 +116,6 @@ function findPointAtDistance(coords, startIdx, distMeters) {
   const target = Math.abs(distMeters);
   let accumulated = 0;
   let idx = startIdx;
-
   while (idx > 0 && idx < coords.length - 1) {
     const next = idx + step;
     if (next < 0 || next >= coords.length) break;
@@ -131,32 +129,39 @@ function findPointAtDistance(coords, startIdx, distMeters) {
   return Math.max(0, Math.min(coords.length - 1, idx));
 }
 
-// Compute a perpendicular nudge at a route point to push the
-// bypass midpoint off the motorway onto the parallel road
-function computeNudge(coords, idx, magnitude) {
-  const prev = coords[Math.max(0, idx - 5)];
-  const next = coords[Math.min(coords.length - 1, idx + 5)];
+// Snap a nudged point to the nearest actual road via OSRM nearest service
+async function findOffMotorwayPoint(routeCoords, routeIdx, magnitude = 0.05) {
+  const prev = routeCoords[Math.max(0, routeIdx - 10)];
+  const next = routeCoords[Math.min(routeCoords.length - 1, routeIdx + 10)];
   const dlat = next[0] - prev[0];
   const dlng = next[1] - prev[1];
   const len  = Math.hypot(dlat, dlng) || 1;
-  // Rotate 90° to get perpendicular direction
-  return {
-    dlat: (-dlng / len) * magnitude,
-    dlng: ( dlat / len) * magnitude,
-  };
+
+  // Try both sides of the road
+  for (const sign of [1, -1]) {
+    const nudgedLat = routeCoords[routeIdx][0] + sign * (-dlng / len) * magnitude;
+    const nudgedLng = routeCoords[routeIdx][1] + sign * ( dlat / len) * magnitude;
+    try {
+      const snapUrl = `https://router.project-osrm.org/nearest/v1/driving/${nudgedLng},${nudgedLat}?number=3`;
+      const r = await fetch(snapUrl);
+      const d = await r.json();
+      if (d.code === 'Ok' && d.waypoints?.length > 0) {
+        const wp = d.waypoints[0];
+        return { lat: wp.location[1], lng: wp.location[0] };
+      }
+    } catch { /* continue to next side */ }
+  }
+
+  // Fallback: return unsnapped nudged point
+  const nudgedLat = routeCoords[routeIdx][0] + (-dlng / len) * magnitude;
+  const nudgedLng = routeCoords[routeIdx][1] + ( dlat / len) * magnitude;
+  return { lat: nudgedLat, lng: nudgedLng };
 }
 
-// ── Draw a single green bypass segment ───────────────────
-async function drawBypassSegment(fromLatLng, toLatLng, midLatLng, label) {
-  // Route via midpoint to force OSRM off the motorway
-  const waypoints = midLatLng
-    ? [fromLatLng, midLatLng, toLatLng]
-    : [fromLatLng, toLatLng];
-
-  // Try excluding motorway+toll first
-  let coords = await fetchOSRM(waypoints, true);
-  // Fall back to just the two endpoints if midpoint causes issues
-  if (!coords) coords = await fetchOSRM([fromLatLng, toLatLng], true);
+// Draw a green bypass line through forced off-motorway waypoints
+async function drawBypassSegment(fromLatLng, forcedWaypoints, toLatLng, label) {
+  const waypoints = [fromLatLng, ...forcedWaypoints, toLatLng];
+  const coords = await fetchOSRM(waypoints);
   if (!coords) return;
 
   const layer = L.polyline(coords, {
@@ -198,7 +203,7 @@ async function analyze() {
     ]);
 
     // 2. Fetch main motorway route
-    const routeCoords = await fetchOSRM([fromCoord, toCoord], false);
+    const routeCoords = await fetchOSRM([fromCoord, toCoord]);
     if (!routeCoords) throw new Error('Could not calculate route');
 
     // 3. Draw main route in blue
@@ -248,7 +253,7 @@ These toll booths are confirmed on the route (names and prices are correct, do N
 ${tollList}
 
 For each toll:
-1. Is there a realistic free bypass road? If yes, approximately how many extra minutes does it add?
+1. Is there a realistic free bypass road (old national road / Ethniki Odos)? If yes, approximately how many extra minutes does it add?
 2. Verdict: AVOID if bypass_minutes ≤ (cost × ${timeValue}), PAY otherwise, MARGINAL if within 20% of threshold.
 
 Respond ONLY with valid JSON, no markdown fences:
@@ -286,7 +291,7 @@ Respond ONLY with valid JSON, no markdown fences:
       throw new Error('Could not parse AI response');
     }
 
-    // 6. Merge verdicts by index (AI returns same order we sent)
+    // 6. Merge verdicts by index
     const aiTolls = ai.tolls || [];
     const results = matchedTolls.map((toll, i) => {
       const aiData = aiTolls[i] || {
@@ -333,13 +338,11 @@ Respond ONLY with valid JSON, no markdown fences:
 
     // 8. Draw green bypass lines ───────────────────────────
     // For each group of consecutive AVOID tolls:
-    //   - Find the route point ~8km BEFORE the first avoided toll
-    //     (this is where the driver exits the motorway)
-    //   - Find the route point ~8km AFTER the last avoided toll
-    //     (this is where the driver re-enters the motorway)
-    //   - Push a midpoint perpendicular to the road to force OSRM
-    //     onto the parallel national road instead of the motorway
-    //   - Route between exit → midpoint → re-entry with motorway excluded
+    //   - Exit the motorway 8km before the first avoided toll
+    //   - Re-enter 8km after the last avoided toll
+    //   - Force two waypoints perpendicular off the motorway
+    //     (snapped to nearest road) so OSRM must use the
+    //     parallel national road (Ethniki Odos)
 
     const tollRouteIdx = results.map(r =>
       nearestRouteIdx(routeCoords, r.toll.lat, r.toll.lng)
@@ -349,7 +352,6 @@ Respond ONLY with valid JSON, no markdown fences:
     while (idx < results.length) {
       if (results[idx].verdict === 'AVOID' && results[idx].has_bypass) {
 
-        // Collect the full group of consecutive AVOID tolls
         const groupStart = idx;
         while (
           idx < results.length &&
@@ -358,36 +360,34 @@ Respond ONLY with valid JSON, no markdown fences:
         ) { idx++; }
         const groupEnd = idx - 1;
 
-        // Exit point: 8km before first avoided toll
-        const exitIdx = findPointAtDistance(
-          routeCoords, tollRouteIdx[groupStart], -8000
-        );
-        // Entry point: 8km after last avoided toll
-        const entryIdx = findPointAtDistance(
-          routeCoords, tollRouteIdx[groupEnd], +8000
-        );
+        // Exit point: 8km before first avoided toll on main route
+        const exitIdx  = findPointAtDistance(routeCoords, tollRouteIdx[groupStart], -8000);
+        // Re-entry point: 8km after last avoided toll on main route
+        const entryIdx = findPointAtDistance(routeCoords, tollRouteIdx[groupEnd],   +8000);
 
         const exitPt  = { lat: routeCoords[exitIdx][0],  lng: routeCoords[exitIdx][1]  };
         const entryPt = { lat: routeCoords[entryIdx][0], lng: routeCoords[entryIdx][1] };
 
-        // Midpoint: centre of group, nudged ~3km perpendicular off the motorway
-        const midTollIdx = tollRouteIdx[
-          Math.floor((groupStart + groupEnd) / 2)
-        ];
-        const midRouteCoord = routeCoords[midTollIdx];
-        const nudge = computeNudge(routeCoords, midTollIdx, 0.03);
-        const midPt = {
-          lat: midRouteCoord[0] + nudge.dlat,
-          lng: midRouteCoord[1] + nudge.dlng,
-        };
+        // Two forced waypoints just before and after the toll group,
+        // nudged ~5km perpendicular off the motorway and snapped to road
+        const wp1Idx = Math.max(0, tollRouteIdx[groupStart] - 3);
+        const wp2Idx = Math.min(routeCoords.length - 1, tollRouteIdx[groupEnd] + 3);
 
         const avoidedNames = results
           .slice(groupStart, groupEnd + 1)
           .map(r => r.toll.name)
           .join(', ');
 
-        // Fire and forget — don't block results panel
-        drawBypassSegment(exitPt, entryPt, midPt, avoidedNames);
+        // Async: find off-motorway waypoints then draw
+        Promise.all([
+          findOffMotorwayPoint(routeCoords, wp1Idx, 0.05),
+          findOffMotorwayPoint(routeCoords, wp2Idx, 0.05),
+        ]).then(([wp1, wp2]) => {
+          drawBypassSegment(exitPt, [wp1, wp2], entryPt, avoidedNames);
+        }).catch(() => {
+          // If snapping fails, try without forced waypoints
+          drawBypassSegment(exitPt, [], entryPt, avoidedNames);
+        });
 
       } else {
         idx++;
