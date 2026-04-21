@@ -1,8 +1,6 @@
 /**
  * DIODIO — map.js
- * Initialises the Leaflet map, renders toll booth markers
- * with shape-coded types, and handles hover tooltips
- * showing per-direction info.
+ * Light theme map, diamond markers, hover tooltips
  */
 
 // ── Map init ──────────────────────────────────────────────
@@ -15,123 +13,39 @@ const map = L.map('map', {
 });
 
 L.tileLayer(
-  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 19,
   }
 ).addTo(map);
 
-// ── Floating tooltip element ──────────────────────────────
+// ── Tooltip ───────────────────────────────────────────────
 const tooltipEl = document.createElement('div');
 tooltipEl.className = 'toll-tooltip';
-tooltipEl.style.cssText = 'position:fixed;z-index:9999;display:none;pointer-events:none;';
 document.body.appendChild(tooltipEl);
 
-// ── Marker HTML by type ───────────────────────────────────
-function markerHTML(color, type) {
-  switch (type) {
-    case 'entry':
-      // upward triangle
-      return `<div class="toll-marker tm-entry" style="
-        width:0;height:0;
-        border-left:8px solid transparent;
-        border-right:8px solid transparent;
-        border-bottom:14px solid ${color};
-        background:none;border-radius:0;transform:none;
-        filter:drop-shadow(0 0 3px ${color}88);
-      "></div>`;
-    case 'exit':
-      // downward triangle
-      return `<div class="toll-marker tm-exit" style="
-        width:0;height:0;
-        border-left:8px solid transparent;
-        border-right:8px solid transparent;
-        border-top:14px solid ${color};
-        background:none;border-radius:0;transform:none;
-        filter:drop-shadow(0 0 3px ${color}88);
-      "></div>`;
-    case 'bridge':
-      // circle
-      return `<div class="toll-marker tm-bridge" style="
-        width:13px;height:13px;
-        background:${color};
-        border-radius:50%;transform:none;
-        border:2px solid rgba(0,0,0,0.5);
-        box-shadow:0 0 6px ${color}99;
-      "></div>`;
-    default:
-      // frontal = rotating diamond (default)
-      return `<div class="toll-marker tm-frontal" style="
-        width:12px;height:12px;
-        background:${color};
-        transform:rotate(45deg);
-        border:2px solid rgba(0,0,0,0.5);
-      "></div>`;
-  }
-}
-
-// ── Direction badge ───────────────────────────────────────
-function directionBadge(type, label) {
-  const icons = { frontal: '⇄', entry: '⬆', exit: '⬇', bridge: '⇌' };
-  const colors = {
-    frontal: 'rgba(255,255,255,0.12)',
-    entry:   'rgba(34,197,94,0.2)',
-    exit:    'rgba(239,68,68,0.2)',
-    bridge:  'rgba(168,85,247,0.2)',
-  };
-  const borders = {
-    frontal: 'rgba(255,255,255,0.2)',
-    entry:   'rgba(34,197,94,0.5)',
-    exit:    'rgba(239,68,68,0.5)',
-    bridge:  'rgba(168,85,247,0.5)',
-  };
-  return `<div class="tooltip-direction" style="
-    background:${colors[type]||colors.frontal};
-    border:1px solid ${borders[type]||borders.frontal};
-    padding:5px 10px;
-    font-size:0.62rem;
-    letter-spacing:0.05em;
-    color:rgba(255,255,255,0.75);
-    display:flex;align-items:center;gap:6px;
-  ">
-    <span style="font-size:0.85rem">${icons[type]||'⇄'}</span>
-    <span>${label}</span>
-  </div>`;
-}
-
-// ── Tooltip HTML builder ──────────────────────────────────
-function buildTooltipHTML(toll) {
-  const color  = HIGHWAY_COLORS[toll.highway] || '#aaa';
-  const notes  = toll.notes
-    ? `<div class="tooltip-notes">${toll.notes}</div>`
-    : '';
-
-  const typeLabel = {
-    frontal: 'Frontal station',
-    entry:   'Entry ramp',
-    exit:    'Exit ramp',
-    bridge:  'Bridge / Tunnel',
-  }[toll.type] || toll.type;
-
+function buildTooltip(toll) {
+  const color = HIGHWAY_COLORS[toll.highway] || '#888';
+  const dirIcons = { frontal: '⇄', entry: '⬆', exit: '⬇', bridge: '⇌' };
+  const notes = toll.notes ? `<div class="tt-notes">${toll.notes}</div>` : '';
   return `
-    <div class="tooltip-header">
+    <div class="tt-header">
       <div>
-        <div class="tooltip-name">${toll.name}</div>
-        <div class="tooltip-hwy">${toll.highway_name}</div>
-        <div style="font-size:0.58rem;color:rgba(255,255,255,0.35);margin-top:2px;letter-spacing:0.06em">${toll.operator} · ${typeLabel}</div>
+        <div class="tt-name">${toll.name}</div>
+        <div class="tt-sub">${toll.operator}</div>
       </div>
-      <div class="tooltip-badge" style="color:${color};border-color:${color}">
-        ${toll.highway}
-      </div>
+      <div class="tt-badge" style="color:${color};border-color:${color}">${toll.highway}</div>
     </div>
-    ${directionBadge(toll.type, toll.direction_label)}
-    <div class="tooltip-prices">
+    <div class="tt-direction">
+      <span>${dirIcons[toll.type] || '⇄'}</span>
+      <span>${toll.direction_label}</span>
+    </div>
+    <div class="tt-prices">
       <div class="price-cell">
         <div class="vehicle-icon">🏍</div>
-        <div class="vehicle-label">Motorcycle</div>
+        <div class="vehicle-label">Moto</div>
         <div class="price-val"><span class="eur">€</span>${toll.cat1.toFixed(2)}</div>
       </div>
       <div class="price-cell">
@@ -141,23 +55,18 @@ function buildTooltipHTML(toll) {
       </div>
       <div class="price-cell">
         <div class="vehicle-icon">🚐</div>
-        <div class="vehicle-label">Light truck</div>
+        <div class="vehicle-label">Van</div>
         <div class="price-val"><span class="eur">€</span>${toll.cat3.toFixed(2)}</div>
       </div>
     </div>
-    ${notes}
-  `;
+    ${notes}`;
 }
 
-// ── Tooltip positioning ───────────────────────────────────
 function positionTooltip(e) {
-  const margin = 16;
-  const tw = tooltipEl.offsetWidth  || 280;
-  const th = tooltipEl.offsetHeight || 180;
-  let x = e.clientX + margin;
-  let y = e.clientY + margin;
-  if (x + tw > window.innerWidth  - margin) x = e.clientX - tw - margin;
-  if (y + th > window.innerHeight - margin) y = e.clientY - th - margin;
+  const m = 14, tw = tooltipEl.offsetWidth || 260, th = tooltipEl.offsetHeight || 160;
+  let x = e.clientX + m, y = e.clientY + m;
+  if (x + tw > window.innerWidth  - m) x = e.clientX - tw - m;
+  if (y + th > window.innerHeight - m) y = e.clientY - th - m;
   tooltipEl.style.left = x + 'px';
   tooltipEl.style.top  = y + 'px';
 }
@@ -166,44 +75,32 @@ document.addEventListener('mousemove', e => {
   if (tooltipEl.style.display === 'block') positionTooltip(e);
 });
 
-// ── Build markers ─────────────────────────────────────────
+// ── Markers ───────────────────────────────────────────────
 const markersByHighway = {};
 const allMarkers = [];
 
 TOLL_DATA.forEach(toll => {
-  const color = HIGHWAY_COLORS[toll.highway] || '#aaa';
-  const html  = markerHTML(color, toll.type);
-
-  // icon size varies by type
-  const sizes = {
-    frontal: [16, 16],
-    entry:   [16, 14],
-    exit:    [16, 14],
-    bridge:  [14, 14],
-  };
-  const sz = sizes[toll.type] || [14, 14];
+  const color = HIGHWAY_COLORS[toll.highway] || '#888';
 
   const icon = L.divIcon({
     className: '',
-    html,
-    iconSize:   sz,
-    iconAnchor: [sz[0] / 2, sz[1] / 2],
+    html: `<div class="toll-marker" style="background:${color}"></div>`,
+    iconSize:   [11, 11],
+    iconAnchor: [ 5.5, 5.5],
   });
 
   const marker = L.marker([toll.lat, toll.lng], { icon, zIndexOffset: 0 });
 
   marker.on('mouseover', function(e) {
-    tooltipEl.innerHTML = buildTooltipHTML(toll);
+    tooltipEl.innerHTML = buildTooltip(toll);
     tooltipEl.style.display = 'block';
     positionTooltip(e.originalEvent);
+    this.getElement()?.querySelector('.toll-marker')?.classList.add('active');
   });
-
-  marker.on('mousemove', function(e) {
-    positionTooltip(e.originalEvent);
-  });
-
-  marker.on('mouseout', function() {
+  marker.on('mousemove', function(e) { positionTooltip(e.originalEvent); });
+  marker.on('mouseout',  function()  {
     tooltipEl.style.display = 'none';
+    this.getElement()?.querySelector('.toll-marker')?.classList.remove('active');
   });
 
   marker.addTo(map);
@@ -213,38 +110,34 @@ TOLL_DATA.forEach(toll => {
   markersByHighway[toll.highway].push(marker);
 });
 
-// ── Legend toggle ─────────────────────────────────────────
-const legendEl        = document.getElementById('legend');
-const legendToggleBtn = document.getElementById('legend-toggle');
-let   legendVisible   = true;
+// ── Legend ────────────────────────────────────────────────
+const legendEl  = document.getElementById('legend');
+const legendBtn = document.getElementById('legend-toggle');
+let   legendVis = false;
 
-legendToggleBtn.addEventListener('click', () => {
-  legendVisible = !legendVisible;
-  legendEl.classList.toggle('hidden', !legendVisible);
-  legendToggleBtn.textContent = legendVisible ? 'Hide legend' : 'Show legend';
+legendBtn.addEventListener('click', () => {
+  legendVis = !legendVis;
+  legendEl.classList.toggle('hidden', !legendVis);
+  legendBtn.textContent = legendVis ? 'Hide legend' : 'Legend';
 });
 
-// ── Build legend ──────────────────────────────────────────
 const highwayCounts = {};
-TOLL_DATA.forEach(t => {
-  highwayCounts[t.highway] = (highwayCounts[t.highway] || 0) + 1;
-});
+TOLL_DATA.forEach(t => { highwayCounts[t.highway] = (highwayCounts[t.highway] || 0) + 1; });
 
 const legendList = document.getElementById('legend-list');
 const dimmedSet  = new Set();
 
 Object.entries(highwayCounts).forEach(([hwy, count]) => {
-  const color     = HIGHWAY_COLORS[hwy] || '#aaa';
-  const name      = TOLL_DATA.find(t => t.highway === hwy)?.highway_name || hwy;
-  const shortName = name.split('(')[0].trim();
+  const color     = HIGHWAY_COLORS[hwy] || '#888';
+  const entry     = TOLL_DATA.find(t => t.highway === hwy);
+  const shortName = (entry?.highway_name || hwy).split('(')[0].trim();
 
   const item = document.createElement('div');
   item.className = 'legend-item';
   item.innerHTML = `
     <div class="legend-dot" style="background:${color}"></div>
     <span>${shortName}</span>
-    <span class="legend-count">${count}</span>
-  `;
+    <span class="legend-count">${count}</span>`;
 
   item.addEventListener('click', () => {
     if (dimmedSet.has(hwy)) {
@@ -254,27 +147,9 @@ Object.entries(highwayCounts).forEach(([hwy, count]) => {
     } else {
       dimmedSet.add(hwy);
       item.classList.add('dimmed');
-      markersByHighway[hwy]?.forEach(m => m.setOpacity(0.08));
+      markersByHighway[hwy]?.forEach(m => m.setOpacity(0.1));
     }
   });
 
   legendList.appendChild(item);
 });
-
-// ── Marker type key ───────────────────────────────────────
-const typeKeyEl = document.getElementById('type-key');
-if (typeKeyEl) {
-  const types = [
-    { shape: '◆', label: 'Frontal (both directions)' },
-    { shape: '▲', label: 'Entry ramp' },
-    { shape: '▼', label: 'Exit ramp' },
-    { shape: '●', label: 'Bridge / Tunnel' },
-  ];
-  types.forEach(t => {
-    const row = document.createElement('div');
-    row.className = 'legend-item';
-    row.style.cursor = 'default';
-    row.innerHTML = `<span style="font-size:0.8rem;width:10px;text-align:center">${t.shape}</span><span>${t.label}</span>`;
-    typeKeyEl.appendChild(row);
-  });
-}
