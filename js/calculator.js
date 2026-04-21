@@ -1,358 +1,274 @@
 /**
  * DIODIO — calculator.js
- * Bottom-panel logic:
- *   • Panel collapse / expand
- *   • Time-value slider
- *   • Route analysis via Claude API
- *   • Result rendering
- *   • Map highlighting of matched toll booths
+ * Compact bottom bar, OSRM real route, toll snapping
  */
 
-// ── Panel collapse ────────────────────────────────────────
-const panelWrapper = document.getElementById('panel-wrapper');
-const panelHandle  = document.getElementById('panel-handle');
-let   panelOpen    = true;
+// ── Slider ────────────────────────────────────────────────
+const slider  = document.getElementById('tv-slider');
+const tvVal   = document.getElementById('tv-val');
 
-panelHandle.addEventListener('click', () => {
-  panelOpen = !panelOpen;
-  panelWrapper.classList.toggle('collapsed', !panelOpen);
+slider.addEventListener('input', () => { tvVal.textContent = slider.value; });
+
+// ── UI helpers ────────────────────────────────────────────
+const analyseBtn  = document.getElementById('analyse-btn');
+const btnText     = document.getElementById('btn-text');
+const errorPill   = document.getElementById('error-pill');
+const resultsPanel = document.getElementById('results-panel');
+const rpTitle     = document.getElementById('rp-title');
+const rpStats     = document.getElementById('rp-stats');
+const rpBody      = document.getElementById('rp-body');
+
+document.getElementById('rp-close').addEventListener('click', () => {
+  resultsPanel.classList.remove('open');
+  clearRoute();
 });
-
-// ── Time value slider ─────────────────────────────────────
-const slider     = document.getElementById('tv-slider');
-const tvDisplay  = document.getElementById('tv-val');
-const tvHourly   = document.getElementById('tv-hourly');
-const presetBtns = document.querySelectorAll('.preset');
-
-function updateSlider(val) {
-  tvDisplay.textContent = val;
-  tvHourly.textContent  = (60 / val).toFixed(2);
-  slider.value          = val;
-  presetBtns.forEach(b => b.classList.toggle('active', parseInt(b.dataset.val) === parseInt(val)));
-}
-
-slider.addEventListener('input', () => updateSlider(slider.value));
-presetBtns.forEach(btn => {
-  btn.addEventListener('click', () => updateSlider(btn.dataset.val));
-});
-updateSlider(10);
-
-// ── UI state helpers ──────────────────────────────────────
-const analyzeBtn = document.getElementById('analyze-btn');
-const btnText    = document.getElementById('btn-text');
-const resultsCol = document.getElementById('results-col');
-const errorBar   = document.getElementById('error-bar');
 
 function setLoading(on) {
-  analyzeBtn.disabled = on;
-  analyzeBtn.classList.toggle('btn-loading', on);
-  btnText.textContent = on ? 'Analysing…' : 'Analyse Route';
+  analyseBtn.disabled = on;
+  analyseBtn.classList.toggle('loading', on);
+  btnText.textContent = on ? 'Analysing…' : 'Analyse';
 }
 
 function showError(msg) {
-  errorBar.textContent = msg;
-  errorBar.classList.add('visible');
+  errorPill.textContent = msg;
+  errorPill.classList.add('visible');
 }
-function clearError() { errorBar.classList.remove('visible'); }
+function clearError() { errorPill.classList.remove('visible'); }
 
-function showEmpty() {
-  resultsCol.innerHTML = `
-    <div class="results-empty">
-      <div class="results-empty-icon">⊕</div>
-      Enter a route and click<br>Analyse to see results
-    </div>`;
-}
+// ── Route drawing (OSRM) ──────────────────────────────────
+let routeLayer    = null;
+let routeMarkers  = [];
 
-function showResultsLoading() {
-  resultsCol.innerHTML = `
-    <div class="results-loading">
-      <div class="dots">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
-      </div>
-      <div class="loading-text">Querying toll database<br>and calculating alternatives…</div>
-    </div>`;
+function clearRoute() {
+  if (routeLayer)  { map.removeLayer(routeLayer);  routeLayer = null; }
+  routeMarkers.forEach(m => map.removeLayer(m));
+  routeMarkers = [];
 }
 
-// ── Match AI toll name against TOLL_DATA ──────────────────
-// Returns the best matching TOLL_DATA entry or null
-function matchTollToData(aiName) {
-  if (!aiName) return null;
-  const needle = aiName.toLowerCase().replace(/[^a-z0-9]/g, '');
+// Geocode a city name using Nominatim
+async function geocode(name) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name + ', Greece')}&format=json&limit=1`;
+  const r = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+  const d = await r.json();
+  if (!d.length) throw new Error(`Could not find "${name}" on the map`);
+  return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
+}
 
-  let bestMatch = null;
-  let bestScore = 0;
+// Fetch real road route from OSRM
+async function fetchRoute(from, to) {
+  const url = `https://router.project-osrm.org/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson`;
+  const r = await fetch(url);
+  const d = await r.json();
+  if (d.code !== 'Ok') throw new Error('Could not calculate route');
+  return d.routes[0].geometry.coordinates.map(c => [c[1], c[0]]); // [lat,lng]
+}
 
-  TOLL_DATA.forEach(t => {
-    const haystack = t.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+// Point-to-segment distance (degrees, good enough for snapping)
+function distToSegment(p, a, b) {
+  const dx = b[0]-a[0], dy = b[1]-a[1];
+  if (dx===0 && dy===0) return Math.hypot(p[0]-a[0], p[1]-a[1]);
+  const t = Math.max(0, Math.min(1, ((p[0]-a[0])*dx + (p[1]-a[1])*dy) / (dx*dx+dy*dy)));
+  return Math.hypot(p[0]-(a[0]+t*dx), p[1]-(a[1]+t*dy));
+}
 
-    // Exact match
-    if (haystack === needle) { bestMatch = t; bestScore = 100; return; }
-
-    // One contains the other
-    if (haystack.includes(needle) || needle.includes(haystack)) {
-      const score = 80 - Math.abs(haystack.length - needle.length);
-      if (score > bestScore) { bestScore = score; bestMatch = t; }
-      return;
+// Find which TOLL_DATA entries lie close to the route polyline
+function tollsOnRoute(coords, thresholdDeg = 0.025) {
+  const on = [];
+  TOLL_DATA.forEach(toll => {
+    const p = [toll.lat, toll.lng];
+    for (let i = 0; i < coords.length - 1; i++) {
+      if (distToSegment(p, coords[i], coords[i+1]) < thresholdDeg) {
+        on.push(toll);
+        break;
+      }
     }
-
-    // Count matching characters at start (prefix match)
-    let common = 0;
-    for (let i = 0; i < Math.min(needle.length, haystack.length); i++) {
-      if (needle[i] === haystack[i]) common++; else break;
-    }
-    const score = (common / Math.max(needle.length, haystack.length)) * 60;
-    if (score > bestScore && score > 20) { bestScore = score; bestMatch = t; }
   });
-
-  return bestMatch;
-}
-
-// ── Highlight route tolls on map ──────────────────────────
-let routeHighlightMarkers = [];
-let routePolyline = null;
-
-function clearRouteHighlights() {
-  routeHighlightMarkers.forEach(m => map.removeLayer(m));
-  routeHighlightMarkers = [];
-  if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
-}
-
-function highlightRouteTolls(tolls) {
-  clearRouteHighlights();
-
-  const coords = [];
-  const verdictColors = { PAY: '#3d5a22', AVOID: '#b33a22', MARGINAL: '#c49a2e' };
-
-  tolls.forEach(toll => {
-    const matched = matchTollToData(toll.name);
-    if (!matched) return;
-
-    coords.push([matched.lat, matched.lng]);
-
-    const color  = verdictColors[toll.verdict] || '#aaa';
-    const size   = 22;
-
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="
-        width:${size}px;height:${size}px;
-        background:${color};
-        border:3px solid white;
-        border-radius:50%;
-        box-shadow:0 0 0 3px ${color}, 0 0 16px ${color}99;
-        display:flex;align-items:center;justify-content:center;
-        font-size:9px;font-weight:700;color:white;
-        font-family:sans-serif;
-      ">${toll.verdict === 'PAY' ? '✓' : toll.verdict === 'AVOID' ? '✕' : '~'}</div>`,
-      iconSize:   [size, size],
-      iconAnchor: [size / 2, size / 2],
-    });
-
-    const marker = L.marker([matched.lat, matched.lng], { icon, zIndexOffset: 1000 });
-
-    // Popup with verdict info
-    marker.bindPopup(`
-      <div style="font-family:monospace;font-size:12px;min-width:160px">
-        <strong>${matched.name}</strong><br>
-        <span style="color:${color};font-weight:700">${toll.verdict}</span>
-        · €${toll.cost_eur}<br>
-        <span style="color:#666;font-size:11px">${toll.reasoning || ''}</span>
-      </div>
-    `, { maxWidth: 220 });
-
-    marker.addTo(map);
-    routeHighlightMarkers.push(marker);
+  // Sort by position along route (project onto first coord axis)
+  on.sort((a,b) => {
+    const pa = coords.findIndex(c => distToSegment([a.lat,a.lng], c, c) < 0.05);
+    const pb = coords.findIndex(c => distToSegment([b.lat,b.lng], c, c) < 0.05);
+    return pa - pb;
   });
-
-  // Draw a line connecting the route tolls in order
-  if (coords.length >= 2) {
-    routePolyline = L.polyline(coords, {
-      color: '#c49a2e',
-      weight: 3,
-      opacity: 0.6,
-      dashArray: '8 6',
-    }).addTo(map);
-  }
-
-  // Fit map to show all highlighted markers
-  if (coords.length > 0) {
-    map.fitBounds(L.latLngBounds(coords).pad(0.2));
-  }
+  return on;
 }
 
 // ── Analyze ───────────────────────────────────────────────
 async function analyze() {
-  const origin      = document.getElementById('origin').value.trim();
-  const destination = document.getElementById('dest').value.trim();
-  const vehicle     = document.getElementById('vehicle').value;
-  const timeValue   = parseInt(slider.value);
+  const origin = document.getElementById('origin').value.trim();
+  const dest   = document.getElementById('dest').value.trim();
+  const vehicle = document.getElementById('vehicle').value;
+  const timeValue = parseInt(slider.value);
 
-  if (!origin || !destination) {
-    showError('Please enter both origin and destination.');
-    return;
-  }
+  if (!origin || !dest) { showError('Enter origin and destination'); return; }
 
   clearError();
+  clearRoute();
+  resultsPanel.classList.remove('open');
   setLoading(true);
-  showResultsLoading();
-  clearRouteHighlights();
 
-  if (!panelOpen) {
-    panelOpen = true;
-    panelWrapper.classList.remove('collapsed');
-  }
+  try {
+    // 1. Geocode both cities
+    const [fromCoord, toCoord] = await Promise.all([geocode(origin), geocode(dest)]);
 
-  const vehicleLabels = {
-    motorcycle: 'Motorcycle (Category 1)',
-    car:        'Car / light vehicle (Category 2)',
-    lighttruck: 'Light truck / minibus (Category 3)',
-    heavytruck: 'Heavy truck (Category 4)',
-  };
-  const vehicleLabel = vehicleLabels[vehicle];
-  const hourlyRate   = (60 / timeValue).toFixed(2);
+    // 2. Get real route from OSRM
+    const routeCoords = await fetchRoute(fromCoord, toCoord);
 
-  // Build a list of our known toll names to help the AI match them
-  const knownNames = TOLL_DATA.map(t => t.name).join(', ');
+    // 3. Draw route on map
+    routeLayer = L.polyline(routeCoords, {
+      color: '#1a4a8a',
+      weight: 4,
+      opacity: 0.65,
+    }).addTo(map);
 
-  const prompt = `You are a Greek toll road expert with detailed knowledge of all toll plazas on Greek motorways as of 2024.
+    map.fitBounds(routeLayer.getBounds().pad(0.15));
 
-Route: **${origin}** → **${destination}** (Greece)
-Vehicle: **${vehicleLabel}**
-Time preference: The user will accept **${timeValue} minutes** of extra driving to save **€1** in tolls (implied hourly value: **€${hourlyRate}/hr**).
+    // 4. Find tolls along the route
+    const matchedTolls = tollsOnRoute(routeCoords);
 
-IMPORTANT: When naming toll plazas, use names from this official list where possible:
-${knownNames}
+    if (matchedTolls.length === 0) {
+      showError('No tolls found on this route');
+      setLoading(false);
+      return;
+    }
 
-Task:
-1. Identify all toll plazas on the primary motorway route between these two cities.
-2. For each toll, assess whether a free bypass road exists and its approximate extra travel time.
-3. Apply the user's time-value formula: a toll is worth AVOIDING if (bypass_extra_minutes / toll_cost_eur) is less than or equal to ${timeValue}. Otherwise it is worth PAYING. If within 20% of the threshold, mark MARGINAL.
-4. Summarise total costs and recommendations.
+    // 5. Ask AI for bypass info and verdicts
+    const vehicleLabels = {
+      motorcycle: 'Motorcycle (cat1)',
+      car:        'Car (cat2)',
+      lighttruck: 'Light truck (cat3)',
+      heavytruck: 'Heavy truck (cat4)',
+    };
+    const catKey = { motorcycle:'cat1', car:'cat2', lighttruck:'cat3', heavytruck:'cat4' }[vehicle];
+    const hourlyRate = (60 / timeValue).toFixed(2);
 
-Respond ONLY with valid JSON — no markdown fences, no preamble — using this exact schema:
+    const tollList = matchedTolls.map(t =>
+      `- ${t.name} (${t.highway}): €${t[catKey].toFixed(2)}`
+    ).join('\n');
+
+    const prompt = `You are a Greek toll road expert.
+
+Route: ${origin} → ${dest}
+Vehicle: ${vehicleLabels[vehicle]}
+Time preference: user accepts ${timeValue} min extra driving to save €1 (time value: €${hourlyRate}/hr)
+
+These toll booths are confirmed on the route (names and prices are correct, do NOT change them):
+${tollList}
+
+For each toll:
+1. Is there a realistic free bypass? If yes, how many extra minutes?
+2. Verdict: AVOID if bypass_minutes ≤ (cost × ${timeValue}), PAY otherwise, MARGINAL if within 20%.
+
+Respond ONLY with valid JSON, no markdown:
 {
-  "route_summary": "string — brief description of primary motorway used",
-  "total_distance_km": number,
   "tolls": [
     {
-      "name": "string — use official name from the list above where possible",
-      "highway": "string — e.g. A1, A2, A8",
-      "location": "string — brief location note",
-      "cost_eur": number,
+      "name": "exact name from list above",
       "has_bypass": boolean,
       "bypass_extra_minutes": number or null,
       "verdict": "PAY" or "AVOID" or "MARGINAL",
-      "reasoning": "string — 1 sentence"
+      "reasoning": "one sentence"
     }
   ],
-  "summary": {
-    "total_toll_cost": number,
-    "recommended_savings": number,
-    "total_extra_bypass_minutes": number,
-    "overall_advice": "string — 1-2 sentences"
-  }
+  "overall_advice": "1-2 sentences"
 }`;
 
-  try {
     const resp = await fetch('https://diodio-proxy.stergiosgousios.workers.dev', {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        model:      'claude-sonnet-4-6',
-        max_tokens: 4000,
-        messages:   [{ role: 'user', content: prompt }],
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }],
       }),
     });
 
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error?.message || `HTTP ${resp.status}`);
 
-    const rawText = data.content.map(b => b.text || '').join('');
-    let parsed;
-    try {
-      parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
-    } catch {
-      throw new Error('Could not parse AI response. Raw: ' + rawText.slice(0, 200));
+    const raw = data.content.map(b => b.text || '').join('');
+    let ai;
+    try { ai = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
+    catch { throw new Error('Could not parse AI response'); }
+
+    // 6. Merge AI verdicts with matched tolls
+    const verdictMap = {};
+    (ai.tolls || []).forEach(t => { verdictMap[t.name] = t; });
+
+    const results = matchedTolls.map(toll => {
+      const aiData = verdictMap[toll.name] || { verdict: 'PAY', has_bypass: false, bypass_extra_minutes: null, reasoning: '' };
+      return { toll, ...aiData };
+    });
+
+    // 7. Draw verdict markers on map
+    const verdictColors = { PAY: '#3d5a22', AVOID: '#b33a22', MARGINAL: '#9a6f1a' };
+    results.forEach(r => {
+      const color = verdictColors[r.verdict] || '#555';
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="
+          width:20px;height:20px;
+          background:${color};
+          border:2.5px solid white;
+          border-radius:50%;
+          box-shadow:0 1px 6px rgba(0,0,0,0.25);
+          display:flex;align-items:center;justify-content:center;
+          font-size:9px;font-weight:700;color:white;
+          font-family:sans-serif;
+        ">${r.verdict === 'PAY' ? '✓' : r.verdict === 'AVOID' ? '✕' : '~'}</div>`,
+        iconSize:   [20, 20],
+        iconAnchor: [10, 10],
+      });
+
+      const m = L.marker([r.toll.lat, r.toll.lng], { icon, zIndexOffset: 1000 });
+      m.bindPopup(`
+        <div class="map-popup">
+          <div class="map-popup-name">${r.toll.name}</div>
+          <div class="map-popup-verdict ${r.verdict}">${r.verdict} · €${r.toll[catKey].toFixed(2)}</div>
+          <div class="map-popup-reason">${r.reasoning}</div>
+        </div>`, { maxWidth: 200 });
+      m.addTo(map);
+      routeMarkers.push(m);
+    });
+
+    // 8. Render results panel
+    const totalCost = results.reduce((s, r) => s + r.toll[catKey], 0);
+    const savings   = results.filter(r => r.verdict === 'AVOID').reduce((s, r) => s + r.toll[catKey], 0);
+    const extraMin  = results.filter(r => r.verdict === 'AVOID' && r.bypass_extra_minutes).reduce((s, r) => s + r.bypass_extra_minutes, 0);
+
+    rpTitle.textContent = `${origin} → ${dest}`;
+    rpStats.innerHTML = `
+      <span class="rp-stat">Total <strong>€${totalCost.toFixed(2)}</strong></span>
+      <span class="rp-stat green">Save <strong>€${savings.toFixed(2)}</strong></span>
+      <span class="rp-stat red">+<strong>${extraMin} min</strong></span>`;
+
+    let html = '';
+    results.forEach(r => {
+      const bypass = r.has_bypass ? `+${r.bypass_extra_minutes ?? '?'} min` : 'no bypass';
+      html += `<div class="toll-chip verdict-${r.verdict}" onclick="this.querySelector('.chip-reason').style.display = this.querySelector('.chip-reason').style.display === 'block' ? 'none' : 'block'">
+        <span class="chip-name">${r.toll.name}</span>
+        <span class="chip-price">€${r.toll[catKey].toFixed(2)}</span>
+        <span class="chip-verdict">${r.verdict}</span>
+        <span class="chip-reason">${r.reasoning} (${bypass})</span>
+      </div>`;
+    });
+
+    if (ai.overall_advice) {
+      html += `<div class="rp-advice">💡 ${ai.overall_advice}</div>`;
     }
 
-    // Highlight matched tolls on the map
-    if (parsed.tolls?.length) {
-      highlightRouteTolls(parsed.tolls);
-    }
-
-    renderResults(parsed, origin, destination, timeValue);
+    rpBody.innerHTML = html;
+    resultsPanel.classList.add('open');
 
   } catch (err) {
-    showError('Analysis failed: ' + err.message);
-    showEmpty();
+    showError(err.message);
   } finally {
     setLoading(false);
   }
 }
 
-// ── Render results ────────────────────────────────────────
-function renderResults(data, origin, destination, timeValue) {
-  const s = data.summary || {};
-
-  let html = '';
-
-  html += `<div class="result-route-title">
-    ${origin} <span class="arrow">→</span> ${destination}
-    <span style="font-weight:400;font-size:0.65rem;color:rgba(255,255,255,0.4);margin-left:4px">~${data.total_distance_km || '?'} km</span>
-  </div>`;
-
-  html += `<div class="summary-bar">
-    <div class="sum-cell">
-      <span class="sum-val" style="color:var(--gold-lt)">€${(s.total_toll_cost || 0).toFixed(2)}</span>
-      <span class="sum-lbl">Total tolls</span>
-    </div>
-    <div class="sum-cell">
-      <span class="sum-val" style="color:#6fcf97">€${(s.recommended_savings || 0).toFixed(2)}</span>
-      <span class="sum-lbl">Savings possible</span>
-    </div>
-    <div class="sum-cell">
-      <span class="sum-val" style="color:var(--rust)">${s.total_extra_bypass_minutes || 0}'</span>
-      <span class="sum-lbl">Extra time</span>
-    </div>
-  </div>`;
-
-  html += `<div class="toll-results-list">`;
-  for (const toll of (data.tolls || [])) {
-    const matched    = matchTollToData(toll.name);
-    const matchedTag = matched
-      ? `<span style="color:rgba(255,255,255,0.3);font-size:0.58rem"> · 📍 matched</span>`
-      : `<span style="color:rgba(255,100,100,0.5);font-size:0.58rem"> · unmatched</span>`;
-
-    const bypassText = toll.has_bypass
-      ? `bypass +${toll.bypass_extra_minutes ?? '?'} min`
-      : 'no bypass';
-
-    html += `<div class="result-card verdict-${toll.verdict}">
-      <div class="rc-name">${toll.name}${matchedTag}</div>
-      <div class="rc-verdict">${toll.verdict === 'PAY' ? 'Pay' : toll.verdict === 'AVOID' ? 'Avoid' : 'Marginal'}</div>
-      <div class="rc-meta">
-        <strong>€${toll.cost_eur}</strong> · ${toll.highway} · ${bypassText}
-      </div>
-      <div class="rc-reason">${toll.reasoning || ''}</div>
-    </div>`;
-  }
-  html += `</div>`;
-
-  if (s.overall_advice) {
-    html += `<div class="overall-advice">💡 ${s.overall_advice}</div>`;
-  }
-
-  resultsCol.innerHTML = html;
-}
-
-// ── Enter key triggers analyze ────────────────────────────
+// ── Enter key ─────────────────────────────────────────────
 ['origin', 'dest'].forEach(id => {
   document.getElementById(id).addEventListener('keydown', e => {
     if (e.key === 'Enter') analyze();
   });
 });
-
-// ── Init empty state ──────────────────────────────────────
-showEmpty();
