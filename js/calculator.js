@@ -1,22 +1,31 @@
 /**
  * DIODIO — calculator.js
- * Compact bottom bar, OSRM real route, toll snapping
+ * Compact bottom bar, OSRM real route, toll snapping,
+ * bypass route drawing in green
  */
 
 // ── Slider ────────────────────────────────────────────────
-const slider  = document.getElementById('tv-slider');
-const tvVal   = document.getElementById('tv-val');
-
+const slider = document.getElementById('tv-slider');
+const tvVal  = document.getElementById('tv-val');
 slider.addEventListener('input', () => { tvVal.textContent = slider.value; });
 
+// ── Swap button ───────────────────────────────────────────
+document.getElementById('swap-btn').addEventListener('click', () => {
+  const originEl = document.getElementById('origin');
+  const destEl   = document.getElementById('dest');
+  const tmp = originEl.value;
+  originEl.value = destEl.value;
+  destEl.value   = tmp;
+});
+
 // ── UI helpers ────────────────────────────────────────────
-const analyseBtn  = document.getElementById('analyse-btn');
-const btnText     = document.getElementById('btn-text');
-const errorPill   = document.getElementById('error-pill');
+const analyseBtn   = document.getElementById('analyse-btn');
+const btnText      = document.getElementById('btn-text');
+const errorPill    = document.getElementById('error-pill');
 const resultsPanel = document.getElementById('results-panel');
-const rpTitle     = document.getElementById('rp-title');
-const rpStats     = document.getElementById('rp-stats');
-const rpBody      = document.getElementById('rp-body');
+const rpTitle      = document.getElementById('rp-title');
+const rpStats      = document.getElementById('rp-stats');
+const rpBody       = document.getElementById('rp-body');
 
 document.getElementById('rp-close').addEventListener('click', () => {
   resultsPanel.classList.remove('open');
@@ -35,17 +44,20 @@ function showError(msg) {
 }
 function clearError() { errorPill.classList.remove('visible'); }
 
-// ── Route drawing (OSRM) ──────────────────────────────────
-let routeLayer    = null;
-let routeMarkers  = [];
+// ── Route drawing ─────────────────────────────────────────
+let routeLayer   = null;
+let bypassLayers = [];
+let routeMarkers = [];
 
 function clearRoute() {
-  if (routeLayer)  { map.removeLayer(routeLayer);  routeLayer = null; }
+  if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+  bypassLayers.forEach(l => map.removeLayer(l));
+  bypassLayers = [];
   routeMarkers.forEach(m => map.removeLayer(m));
   routeMarkers = [];
 }
 
-// Geocode a city name using Nominatim
+// Geocode via Nominatim
 async function geocode(name) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name + ', Greece')}&format=json&limit=1`;
   const r = await fetch(url, { headers: { 'Accept-Language': 'en' } });
@@ -54,16 +66,19 @@ async function geocode(name) {
   return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
 }
 
-// Fetch real road route from OSRM
-async function fetchRoute(from, to) {
-  const url = `https://router.project-osrm.org/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson`;
+// Fetch route from OSRM — returns { coords, legs }
+async function fetchRoute(from, to, avoidHighways = false) {
+  const profile = avoidHighways ? 'driving' : 'driving';
+  // For bypass we pass exclude=motorway hint
+  const exclude = avoidHighways ? '&exclude=motorway' : '';
+  const url = `https://router.project-osrm.org/route/v1/${profile}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson${exclude}`;
   const r = await fetch(url);
   const d = await r.json();
   if (d.code !== 'Ok') throw new Error('Could not calculate route');
-  return d.routes[0].geometry.coordinates.map(c => [c[1], c[0]]); // [lat,lng]
+  return d.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
 }
 
-// Point-to-segment distance (degrees, good enough for snapping)
+// Point-to-segment distance in degrees
 function distToSegment(p, a, b) {
   const dx = b[0]-a[0], dy = b[1]-a[1];
   if (dx===0 && dy===0) return Math.hypot(p[0]-a[0], p[1]-a[1]);
@@ -71,32 +86,60 @@ function distToSegment(p, a, b) {
   return Math.hypot(p[0]-(a[0]+t*dx), p[1]-(a[1]+t*dy));
 }
 
-// Find which TOLL_DATA entries lie close to the route polyline
-function tollsOnRoute(coords, thresholdDeg = 0.025) {
+// Find tolls near the route polyline
+function tollsOnRoute(coords, threshold = 0.025) {
   const on = [];
   TOLL_DATA.forEach(toll => {
     const p = [toll.lat, toll.lng];
     for (let i = 0; i < coords.length - 1; i++) {
-      if (distToSegment(p, coords[i], coords[i+1]) < thresholdDeg) {
-        on.push(toll);
+      if (distToSegment(p, coords[i], coords[i+1]) < threshold) {
+        // Record the index along the route for ordering
+        on.push({ toll, routeIdx: i });
         break;
       }
     }
   });
-  // Sort by position along route (project onto first coord axis)
-  on.sort((a,b) => {
-    const pa = coords.findIndex(c => distToSegment([a.lat,a.lng], c, c) < 0.05);
-    const pb = coords.findIndex(c => distToSegment([b.lat,b.lng], c, c) < 0.05);
-    return pa - pb;
+  on.sort((a, b) => a.routeIdx - b.routeIdx);
+  return on.map(x => x.toll);
+}
+
+// Get nearest point index on route to a coord
+function nearestIdx(coords, lat, lng) {
+  let best = 0, bestDist = Infinity;
+  coords.forEach(([clat, clng], i) => {
+    const d = Math.hypot(clat - lat, clng - lng);
+    if (d < bestDist) { bestDist = d; best = i; }
   });
-  return on;
+  return best;
+}
+
+// Draw bypass route between two toll coords avoiding motorways
+async function drawBypass(tollA, tollB) {
+  try {
+    const from = { lat: tollA.lat, lng: tollA.lng };
+    const to   = { lat: tollB.lat, lng: tollB.lng };
+    const bypassCoords = await fetchRoute(from, to, true);
+
+    const layer = L.polyline(bypassCoords, {
+      color:   '#2d7a3a',
+      weight:  4,
+      opacity: 0.8,
+      dashArray: '1 6',
+      lineCap: 'round',
+    }).addTo(map);
+
+    layer.bindTooltip('🟢 Free bypass', { sticky: true, className: 'bypass-tooltip' });
+    bypassLayers.push(layer);
+  } catch (e) {
+    // bypass fetch failed silently — not critical
+  }
 }
 
 // ── Analyze ───────────────────────────────────────────────
 async function analyze() {
-  const origin = document.getElementById('origin').value.trim();
-  const dest   = document.getElementById('dest').value.trim();
-  const vehicle = document.getElementById('vehicle').value;
+  const origin    = document.getElementById('origin').value.trim();
+  const dest      = document.getElementById('dest').value.trim();
+  const vehicle   = document.getElementById('vehicle').value;
   const timeValue = parseInt(slider.value);
 
   if (!origin || !dest) { showError('Enter origin and destination'); return; }
@@ -107,31 +150,30 @@ async function analyze() {
   setLoading(true);
 
   try {
-    // 1. Geocode both cities
+    // 1. Geocode
     const [fromCoord, toCoord] = await Promise.all([geocode(origin), geocode(dest)]);
 
-    // 2. Get real route from OSRM
+    // 2. Main route
     const routeCoords = await fetchRoute(fromCoord, toCoord);
 
-    // 3. Draw route on map
+    // 3. Draw main route (blue)
     routeLayer = L.polyline(routeCoords, {
-      color: '#1a4a8a',
-      weight: 4,
-      opacity: 0.65,
+      color:   '#1a4a8a',
+      weight:  4,
+      opacity: 0.6,
     }).addTo(map);
 
     map.fitBounds(routeLayer.getBounds().pad(0.15));
 
-    // 4. Find tolls along the route
+    // 4. Find tolls on route
     const matchedTolls = tollsOnRoute(routeCoords);
-
     if (matchedTolls.length === 0) {
       showError('No tolls found on this route');
       setLoading(false);
       return;
     }
 
-    // 5. Ask AI for bypass info and verdicts
+    // 5. Ask AI for bypass info
     const vehicleLabels = {
       motorcycle: 'Motorcycle (cat1)',
       car:        'Car (cat2)',
@@ -176,9 +218,9 @@ Respond ONLY with valid JSON, no markdown:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model:      'claude-sonnet-4-6',
         max_tokens: 2000,
-        messages: [{ role: 'user', content: prompt }],
+        messages:   [{ role: 'user', content: prompt }],
       }),
     });
 
@@ -190,16 +232,15 @@ Respond ONLY with valid JSON, no markdown:
     try { ai = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
     catch { throw new Error('Could not parse AI response'); }
 
-    // 6. Merge AI verdicts with matched tolls (match by index, not name)
+    // 6. Merge by index
     const aiTolls = ai.tolls || [];
-
     const results = matchedTolls.map((toll, i) => {
       const aiData = aiTolls[i] || { verdict: 'PAY', has_bypass: false, bypass_extra_minutes: null, reasoning: '' };
       return { toll, ...aiData };
     });
 
-    // 7. Draw verdict markers on map
-    const verdictColors = { PAY: '#3d5a22', AVOID: '#b33a22', MARGINAL: '#9a6f1a' };
+    // 7. Draw verdict markers
+    const verdictColors = { PAY: '#1a4a8a', AVOID: '#2d7a3a', MARGINAL: '#b8860b' };
     results.forEach(r => {
       const color = verdictColors[r.verdict] || '#555';
       const icon = L.divIcon({
@@ -211,8 +252,7 @@ Respond ONLY with valid JSON, no markdown:
           border-radius:50%;
           box-shadow:0 1px 6px rgba(0,0,0,0.25);
           display:flex;align-items:center;justify-content:center;
-          font-size:9px;font-weight:700;color:white;
-          font-family:sans-serif;
+          font-size:9px;font-weight:700;color:white;font-family:sans-serif;
         ">${r.verdict === 'PAY' ? '✓' : r.verdict === 'AVOID' ? '✕' : '~'}</div>`,
         iconSize:   [20, 20],
         iconAnchor: [10, 10],
@@ -229,10 +269,52 @@ Respond ONLY with valid JSON, no markdown:
       routeMarkers.push(m);
     });
 
-    // 8. Render results panel
+    // 8. Draw bypass routes for AVOID tolls
+    // Group consecutive AVOID tolls and draw bypass between the toll before and after the group
+    const avoidGroups = [];
+    let currentGroup = null;
+
+    results.forEach((r, i) => {
+      if (r.verdict === 'AVOID' && r.has_bypass) {
+        if (!currentGroup) {
+          // Start of a new group — anchor from previous toll or route start
+          const prevToll = i > 0 ? results[i-1].toll : null;
+          currentGroup = { start: prevToll, tolls: [r], endIdx: i };
+        } else {
+          currentGroup.tolls.push(r);
+          currentGroup.endIdx = i;
+        }
+      } else {
+        if (currentGroup) {
+          // End of group — anchor to this toll
+          currentGroup.end = r.toll;
+          avoidGroups.push(currentGroup);
+          currentGroup = null;
+        }
+      }
+    });
+    // Close any open group at end of route
+    if (currentGroup) {
+      currentGroup.end = null;
+      avoidGroups.push(currentGroup);
+    }
+
+    // Draw bypass for each group
+    for (const group of avoidGroups) {
+      const startPt = group.start
+        ? { lat: group.start.lat, lng: group.start.lng }
+        : fromCoord;
+      const endPt = group.end
+        ? { lat: group.end.lat, lng: group.end.lng }
+        : toCoord;
+      await drawBypass(startPt, endPt);
+    }
+
+    // 9. Results panel
     const totalCost = results.reduce((s, r) => s + r.toll[catKey], 0);
     const savings   = results.filter(r => r.verdict === 'AVOID').reduce((s, r) => s + r.toll[catKey], 0);
-    const extraMin  = results.filter(r => r.verdict === 'AVOID' && r.bypass_extra_minutes).reduce((s, r) => s + r.bypass_extra_minutes, 0);
+    const extraMin  = results.filter(r => r.verdict === 'AVOID' && r.bypass_extra_minutes)
+                             .reduce((s, r) => s + r.bypass_extra_minutes, 0);
 
     rpTitle.textContent = `${origin} → ${dest}`;
     rpStats.innerHTML = `
@@ -243,7 +325,8 @@ Respond ONLY with valid JSON, no markdown:
     let html = '';
     results.forEach(r => {
       const bypass = r.has_bypass ? `+${r.bypass_extra_minutes ?? '?'} min` : 'no bypass';
-      html += `<div class="toll-chip verdict-${r.verdict}" onclick="this.querySelector('.chip-reason').style.display = this.querySelector('.chip-reason').style.display === 'block' ? 'none' : 'block'">
+      html += `<div class="toll-chip verdict-${r.verdict}"
+        onclick="this.querySelector('.chip-reason').style.display = this.querySelector('.chip-reason').style.display === 'block' ? 'none' : 'block'">
         <span class="chip-name">${r.toll.name}</span>
         <span class="chip-price">€${r.toll[catKey].toFixed(2)}</span>
         <span class="chip-verdict">${r.verdict}</span>
