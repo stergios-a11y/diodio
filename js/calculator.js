@@ -144,7 +144,7 @@ Respond ONLY with valid JSON — no markdown fences, no preamble — using this 
 }`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('https://diodio-proxy.stergiosgousios.workers.dev', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
