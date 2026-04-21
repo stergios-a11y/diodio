@@ -366,6 +366,24 @@ body {
 .bar-input::placeholder { color: var(--ink3); }
 .bar-input:focus { border-color: var(--olive); background: #fff; }
 
+.swap-btn {
+  height: 34px;
+  width: 30px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  color: var(--ink2);
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all 0.12s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.swap-btn:hover { background: var(--bg); border-color: var(--ink); color: var(--ink); }
+
 .bar-select {
   height: 34px;
   background: var(--bg2);
@@ -488,7 +506,7 @@ input[type="range"]::-moz-range-thumb {
 .error-pill.visible { display: block; }
 
 /* ═══════════════════
-   RESULTS PANEL (slides up from bar)
+   RESULTS PANEL
    ═══════════════════ */
 #results-panel {
   position: fixed;
@@ -534,7 +552,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .rp-stat strong { color: var(--ink); font-weight: 700; }
 .rp-stat.green strong { color: var(--olive); }
-.rp-stat.red strong { color: var(--rust); }
+.rp-stat.red   strong { color: var(--rust); }
 
 .rp-close {
   margin-left: auto;
@@ -562,7 +580,7 @@ input[type="range"]::-moz-range-thumb {
 .rp-body::-webkit-scrollbar { height: 3px; width: 3px; }
 .rp-body::-webkit-scrollbar-thumb { background: var(--border2); }
 
-/* Toll chips */
+/* ── Toll chips ── */
 .toll-chip {
   display: flex;
   align-items: center;
@@ -579,12 +597,14 @@ input[type="range"]::-moz-range-thumb {
   transition: box-shadow 0.12s;
 }
 .toll-chip:hover { box-shadow: var(--shadow); }
-.toll-chip.verdict-PAY      { border-left-color: var(--olive); }
-.toll-chip.verdict-AVOID    { border-left-color: var(--rust); }
-.toll-chip.verdict-MARGINAL { border-left-color: var(--gold-lt); }
 
-.chip-name { font-weight: 600; color: var(--ink); }
-.chip-price { color: var(--ink2); }
+.toll-chip.verdict-PAY      { border-left-color: #1a4a8a; }
+.toll-chip.verdict-AVOID    { border-left-color: #2d7a3a; }
+.toll-chip.verdict-MARGINAL { border-left-color: #b8860b; }
+
+.chip-name    { font-weight: 600; color: var(--ink); }
+.chip-price   { color: var(--ink2); }
+
 .chip-verdict {
   font-size: 0.58rem;
   font-weight: 700;
@@ -593,15 +613,17 @@ input[type="range"]::-moz-range-thumb {
   padding: 1px 5px;
   border-radius: 1px;
 }
-.verdict-PAY    .chip-verdict { background: var(--olive-bg); color: var(--olive); }
-.verdict-AVOID  .chip-verdict { background: var(--rust-bg);  color: var(--rust); }
-.verdict-MARGINAL .chip-verdict { background: var(--gold-bg); color: var(--gold); }
+.verdict-PAY      .chip-verdict { background: #e8eef8; color: #1a4a8a; }
+.verdict-AVOID    .chip-verdict { background: #e8f5eb; color: #2d7a3a; }
+.verdict-MARGINAL .chip-verdict { background: #fef9e0; color: #8a6010; }
 
 .chip-reason {
   font-size: 0.62rem;
   color: var(--ink3);
   font-style: italic;
   display: none;
+  width: 100%;
+  padding-top: 4px;
 }
 
 .rp-advice {
@@ -615,7 +637,7 @@ input[type="range"]::-moz-range-thumb {
   line-height: 1.5;
 }
 
-/* Route popup */
+/* ── Map popups ── */
 .leaflet-popup-content-wrapper {
   background: var(--bg) !important;
   border: 1px solid var(--border) !important;
@@ -627,63 +649,39 @@ input[type="range"]::-moz-range-thumb {
   margin: 0 !important;
   font-family: var(--font-body) !important;
 }
-.leaflet-popup-tip { background: var(--bg) !important; }
+.leaflet-popup-tip         { background: var(--bg) !important; }
 .leaflet-popup-close-button {
   color: var(--ink3) !important;
   font-size: 1rem !important;
   padding: 4px 6px !important;
 }
 
-.map-popup {
-  padding: 10px 12px;
-  min-width: 160px;
+.map-popup         { padding: 10px 12px; min-width: 160px; }
+.map-popup-name    { font-family: var(--font-display); font-weight: 700; font-size: 0.82rem; color: var(--ink); margin-bottom: 3px; }
+.map-popup-verdict { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.map-popup-verdict.PAY      { color: #1a4a8a; }
+.map-popup-verdict.AVOID    { color: #2d7a3a; }
+.map-popup-verdict.MARGINAL { color: #b8860b; }
+.map-popup-reason  { font-size: 0.65rem; color: var(--ink2); line-height: 1.5; }
+
+/* ── Bypass tooltip ── */
+.bypass-tooltip {
+  background: #e8f5eb !important;
+  border: 1px solid #2d7a3a !important;
+  color: #2d7a3a !important;
+  font-size: 0.68rem !important;
+  font-family: var(--font-body) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: none !important;
 }
-.map-popup-name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.82rem;
-  color: var(--ink);
-  margin-bottom: 3px;
-}
-.map-popup-verdict {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.map-popup-verdict.PAY      { color: var(--olive); }
-.map-popup-verdict.AVOID    { color: var(--rust); }
-.map-popup-verdict.MARGINAL { color: var(--gold); }
-.map-popup-reason {
-  font-size: 0.65rem;
-  color: var(--ink2);
-  line-height: 1.5;
-}
+.bypass-tooltip::before { display: none !important; }
 
 /* ═══════════════════
    RESPONSIVE
    ═══════════════════ */
 @media (max-width: 700px) {
-  .bar-label { display: none; }
-  .bar-sep   { display: none; }
-  .tv-compact .lbl { display: none; }
-  #bottom-bar { gap: 6px; padding: 0 10px; }
+  .bar-label            { display: none; }
+  .bar-sep              { display: none; }
+  .tv-compact .lbl      { display: none; }
+  #bottom-bar           { gap: 6px; padding: 0 10px; }
 }
-.swap-btn {
-  height: 34px;
-  width: 30px;
-  background: var(--bg2);
-  border: 1px solid var(--border2);
-  color: var(--ink2);
-  font-size: 1rem;
-  cursor: pointer;
-  border-radius: var(--radius);
-  transition: all 0.12s;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-.swap-btn:hover { background: var(--bg); border-color: var(--ink); color: var(--ink); }
