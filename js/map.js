@@ -1,12 +1,11 @@
 /**
  * DIODIO — map.js
- * - Accurate highway route polylines
+ * - Accurate highway route polylines in each highway's colour
  * - Help modal
- * - Light theme, legend on by default
+ * - Legend on by default
  * - Hover tooltip + click side panel
  */
 
-// ── Map init ──────────────────────────────────────────────
 const map = L.map('map', {
   center: [38.9, 22.5],
   zoom: 7,
@@ -28,7 +27,7 @@ L.tileLayer(
 const highwayRouteLayers = {};
 
 Object.entries(HIGHWAY_ROUTES).forEach(([hwy, coords]) => {
-  const color = HIGHWAY_COLORS[hwy] || '#a8c8e8';
+  const color = HIGHWAY_COLORS[hwy] || '#888';
   const layer = L.polyline(coords, {
     color:    color,
     weight:   3,
@@ -39,7 +38,6 @@ Object.entries(HIGHWAY_ROUTES).forEach(([hwy, coords]) => {
   highwayRouteLayers[hwy] = layer;
 });
 
-// Active route highlight (called from calculator.js)
 window.setActiveRouteLayer = function(coords) {
   if (window._activeRouteHighlight) map.removeLayer(window._activeRouteHighlight);
   window._activeRouteHighlight = L.polyline(coords, {
@@ -59,14 +57,13 @@ const helpModal = document.getElementById('help-modal');
 const helpBtn   = document.getElementById('help-btn');
 const helpClose = document.getElementById('help-close');
 
-helpBtn.addEventListener('click', () => {
-  helpModal.classList.add('open');
-});
-helpClose.addEventListener('click', () => {
-  helpModal.classList.remove('open');
-});
+helpBtn.addEventListener('click', () => { helpModal.classList.add('open'); });
+helpClose.addEventListener('click', () => { helpModal.classList.remove('open'); });
 helpModal.addEventListener('click', (e) => {
   if (e.target === helpModal) helpModal.classList.remove('open');
+});
+document.getElementById('help-close-btn').addEventListener('click', () => {
+  helpModal.classList.remove('open');
 });
 
 // ── Hover tooltip ─────────────────────────────────────────
@@ -321,9 +318,5 @@ Object.entries(highwayCounts).forEach(([hwy, count]) => {
     }
   });
 
- legendList.appendChild(item);
-});
-
-document.getElementById('help-close-btn').addEventListener('click', () => {
-  helpModal.classList.remove('open');
+  legendList.appendChild(item);
 });
