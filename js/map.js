@@ -1,9 +1,6 @@
 /**
  * DIODIO — map.js
- * - Accurate highway route polylines in each highway's colour
- * - Help modal
- * - Legend on by default
- * - Hover tooltip + click side panel
+ * Fixes: legend solo-filter, side panel overlap, help modal, correct highway groups
  */
 
 const map = L.map('map', {
@@ -29,9 +26,9 @@ const highwayRouteLayers = {};
 Object.entries(HIGHWAY_ROUTES).forEach(([hwy, coords]) => {
   const color = HIGHWAY_COLORS[hwy] || '#888';
   const layer = L.polyline(coords, {
-    color:    color,
+    color,
     weight:   3,
-    opacity:  0.25,
+    opacity:  0.3,
     lineCap:  'round',
     lineJoin: 'round',
   }).addTo(map);
@@ -53,17 +50,16 @@ window.clearActiveRouteLayer = function() {
 };
 
 // ── Help modal ────────────────────────────────────────────
-const helpModal = document.getElementById('help-modal');
-const helpBtn   = document.getElementById('help-btn');
-const helpClose = document.getElementById('help-close');
+const helpModal    = document.getElementById('help-modal');
+const helpBtn      = document.getElementById('help-btn');
+const helpClose    = document.getElementById('help-close');
+const helpCloseBtn = document.getElementById('help-close-btn');
 
-helpBtn.addEventListener('click', () => { helpModal.classList.add('open'); });
-helpClose.addEventListener('click', () => { helpModal.classList.remove('open'); });
-helpModal.addEventListener('click', (e) => {
+helpBtn.addEventListener('click',      () => helpModal.classList.add('open'));
+helpClose.addEventListener('click',    () => helpModal.classList.remove('open'));
+helpCloseBtn.addEventListener('click', () => helpModal.classList.remove('open'));
+helpModal.addEventListener('click', e => {
   if (e.target === helpModal) helpModal.classList.remove('open');
-});
-document.getElementById('help-close-btn').addEventListener('click', () => {
-  helpModal.classList.remove('open');
 });
 
 // ── Hover tooltip ─────────────────────────────────────────
@@ -124,6 +120,7 @@ document.addEventListener('mousemove', e => {
 // ── Side panel ────────────────────────────────────────────
 let inspectLayers = [];
 let sidePanelOpen = false;
+const legendEl    = document.getElementById('legend');
 
 function clearInspectLayers() {
   inspectLayers.forEach(l => map.removeLayer(l));
@@ -132,6 +129,7 @@ function clearInspectLayers() {
 
 function closeSidePanel() {
   document.getElementById('toll-side-panel')?.classList.remove('open');
+  legendEl.classList.remove('pushed');
   clearInspectLayers();
   sidePanelOpen = false;
 }
@@ -139,6 +137,7 @@ function closeSidePanel() {
 function openSidePanel(toll) {
   clearInspectLayers();
   sidePanelOpen = true;
+  legendEl.classList.add('pushed');
   map.setView([toll.lat, toll.lng], Math.max(map.getZoom(), 11), { animate: true });
 
   const bd    = toll.bypass_directions;
@@ -187,7 +186,7 @@ function openSidePanel(toll) {
     const lastDir  = Object.values(bd)[Object.values(bd).length - 1];
     if (firstDir?.exit && lastDir?.entry) {
       const seg = L.polyline(
-        [[firstDir.exit.lat, firstDir.exit.lng],[toll.lat, toll.lng],[lastDir.entry.lat, lastDir.entry.lng]],
+        [[firstDir.exit.lat,firstDir.exit.lng],[toll.lat,toll.lng],[lastDir.entry.lat,lastDir.entry.lng]],
         { color: '#c87020', weight: 5, opacity: 0.7, dashArray: '10 6', lineCap: 'round' }
       ).addTo(map);
       seg.bindTooltip('🟠 Toll section on motorway', { sticky: true, className: 'bypass-tooltip' });
@@ -238,11 +237,11 @@ function openSidePanel(toll) {
 
 // ── Markers ───────────────────────────────────────────────
 const markersByHighway = {};
-const allMarkers = [];
+const allMarkers       = [];
 
 TOLL_DATA.forEach(toll => {
   const color = HIGHWAY_COLORS[toll.highway] || '#888';
-  const icon = L.divIcon({
+  const icon  = L.divIcon({
     className: '',
     html: `<div class="toll-marker" style="background:${color}"></div>`,
     iconSize: [11, 11], iconAnchor: [5.5, 5.5],
@@ -273,7 +272,6 @@ map.on('click', () => { closeSidePanel(); });
 document.getElementById('sp-close').addEventListener('click', closeSidePanel);
 
 // ── Legend ────────────────────────────────────────────────
-const legendEl  = document.getElementById('legend');
 const legendBtn = document.getElementById('legend-toggle');
 let   legendVis = true;
 
@@ -286,37 +284,70 @@ legendBtn.addEventListener('click', () => {
   legendBtn.textContent = legendVis ? 'Hide legend' : 'Legend';
 });
 
+// Legend groups — ordered display with labels
+const LEGEND_GROUPS = [
+  { key: 'A1',     label: 'PATHE (A1)',           sub: 'Afidnes → Malgara' },
+  { key: 'A2',     label: 'Egnatia Odos (A2)',     sub: 'Igoumenitsa → Ardanio' },
+  { key: 'A5',     label: 'Nea Odos (A5)',          sub: 'Klokova → Terovos' },
+  { key: 'A8',     label: 'Olympia Odos (A8)',      sub: 'Elefsina → Pyrgos' },
+  { key: 'E65',    label: 'Kentriki Odos (E65)',    sub: 'Lianokladi → Trikala' },
+  { key: 'A7',     label: 'Moreas (A7)',            sub: 'Corinth → Kalamata' },
+  { key: 'A6',     label: 'Attiki Odos (A6)',       sub: 'Athens ring road' },
+  { key: 'BRIDGE', label: 'Bridges & Tunnels',      sub: 'Rio–Antirrio · Aktio' },
+];
+
 const highwayCounts = {};
 TOLL_DATA.forEach(t => { highwayCounts[t.highway] = (highwayCounts[t.highway] || 0) + 1; });
 
-const legendList = document.getElementById('legend-list');
-const dimmedSet  = new Set();
+const legendList   = document.getElementById('legend-list');
+let   activeFilter = null;
 
-Object.entries(highwayCounts).forEach(([hwy, count]) => {
-  const color     = HIGHWAY_COLORS[hwy] || '#888';
-  const entry     = TOLL_DATA.find(t => t.highway === hwy);
-  const shortName = (entry?.highway_name || hwy).split('(')[0].trim();
+function applyFilter(selectedKey) {
+  const allKeys = Object.keys(markersByHighway);
+
+  if (activeFilter === selectedKey) {
+    // Deselect — show all
+    activeFilter = null;
+    allKeys.forEach(k => {
+      markersByHighway[k]?.forEach(m => m.setOpacity(1));
+      if (highwayRouteLayers[k]) highwayRouteLayers[k].setStyle({ opacity: 0.3 });
+    });
+    legendList.querySelectorAll('.legend-item').forEach(el => {
+      el.classList.remove('active-filter', 'dimmed-filter');
+    });
+  } else {
+    // Solo selected highway
+    activeFilter = selectedKey;
+    allKeys.forEach(k => {
+      const solo = k === selectedKey;
+      markersByHighway[k]?.forEach(m => m.setOpacity(solo ? 1 : 0.07));
+      if (highwayRouteLayers[k]) {
+        highwayRouteLayers[k].setStyle({ opacity: solo ? 0.7 : 0.03 });
+      }
+    });
+    legendList.querySelectorAll('.legend-item').forEach(el => {
+      const sel = el.dataset.hwy === selectedKey;
+      el.classList.toggle('active-filter',  sel);
+      el.classList.toggle('dimmed-filter', !sel);
+    });
+  }
+}
+
+LEGEND_GROUPS.forEach(({ key, label, sub }) => {
+  const color = HIGHWAY_COLORS[key] || '#888';
+  const count = highwayCounts[key] || 0;
 
   const item = document.createElement('div');
-  item.className = 'legend-item';
-  item.innerHTML = `
+  item.className   = 'legend-item';
+  item.dataset.hwy = key;
+  item.innerHTML   = `
     <div class="legend-dot" style="background:${color}"></div>
-    <span>${shortName}</span>
+    <div class="legend-text">
+      <div class="legend-label">${label}</div>
+      <div class="legend-sub">${sub}</div>
+    </div>
     <span class="legend-count">${count}</span>`;
 
-  item.addEventListener('click', () => {
-    if (dimmedSet.has(hwy)) {
-      dimmedSet.delete(hwy);
-      item.classList.remove('dimmed');
-      markersByHighway[hwy]?.forEach(m => m.setOpacity(1));
-      if (highwayRouteLayers[hwy]) highwayRouteLayers[hwy].setStyle({ opacity: 0.25 });
-    } else {
-      dimmedSet.add(hwy);
-      item.classList.add('dimmed');
-      markersByHighway[hwy]?.forEach(m => m.setOpacity(0.1));
-      if (highwayRouteLayers[hwy]) highwayRouteLayers[hwy].setStyle({ opacity: 0.03 });
-    }
-  });
-
+  item.addEventListener('click', () => applyFilter(key));
   legendList.appendChild(item);
 });
