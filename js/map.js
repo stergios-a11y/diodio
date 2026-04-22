@@ -1,11 +1,9 @@
 /**
  * DIODIO — map.js
- * - Light CartoDB tiles
- * - Highway routes drawn in light blue at all times
- * - Active route drawn in dark blue on analysis
- * - Legend visible by default
- * - Hover tooltip on markers
- * - Click: map centres on toll, side panel opens with bypass info
+ * - Accurate highway route polylines
+ * - Help modal
+ * - Light theme, legend on by default
+ * - Hover tooltip + click side panel
  */
 
 // ── Map init ──────────────────────────────────────────────
@@ -26,29 +24,26 @@ L.tileLayer(
   }
 ).addTo(map);
 
-// ── Draw background highway routes ───────────────────────
+// ── Highway route polylines ───────────────────────────────
 const highwayRouteLayers = {};
 
 Object.entries(HIGHWAY_ROUTES).forEach(([hwy, coords]) => {
+  const color = HIGHWAY_COLORS[hwy] || '#a8c8e8';
   const layer = L.polyline(coords, {
-    color:    '#a8c8e8',
+    color:    color,
     weight:   3,
-    opacity:  0.6,
+    opacity:  0.25,
     lineCap:  'round',
     lineJoin: 'round',
   }).addTo(map);
   highwayRouteLayers[hwy] = layer;
 });
 
-// Public function so calculator.js can highlight active route
+// Active route highlight (called from calculator.js)
 window.setActiveRouteLayer = function(coords) {
-  if (window._activeRouteHighlight) {
-    map.removeLayer(window._activeRouteHighlight);
-  }
+  if (window._activeRouteHighlight) map.removeLayer(window._activeRouteHighlight);
   window._activeRouteHighlight = L.polyline(coords, {
-    color:   '#1a4a8a',
-    weight:  4,
-    opacity: 0.75,
+    color: '#1a4a8a', weight: 4, opacity: 0.75,
   }).addTo(map);
 };
 
@@ -58,6 +53,21 @@ window.clearActiveRouteLayer = function() {
     window._activeRouteHighlight = null;
   }
 };
+
+// ── Help modal ────────────────────────────────────────────
+const helpModal = document.getElementById('help-modal');
+const helpBtn   = document.getElementById('help-btn');
+const helpClose = document.getElementById('help-close');
+
+helpBtn.addEventListener('click', () => {
+  helpModal.classList.add('open');
+});
+helpClose.addEventListener('click', () => {
+  helpModal.classList.remove('open');
+});
+helpModal.addEventListener('click', (e) => {
+  if (e.target === helpModal) helpModal.classList.remove('open');
+});
 
 // ── Hover tooltip ─────────────────────────────────────────
 const tooltipEl = document.createElement('div');
@@ -124,8 +134,7 @@ function clearInspectLayers() {
 }
 
 function closeSidePanel() {
-  const panel = document.getElementById('toll-side-panel');
-  if (panel) panel.classList.remove('open');
+  document.getElementById('toll-side-panel')?.classList.remove('open');
   clearInspectLayers();
   sidePanelOpen = false;
 }
@@ -133,7 +142,6 @@ function closeSidePanel() {
 function openSidePanel(toll) {
   clearInspectLayers();
   sidePanelOpen = true;
-
   map.setView([toll.lat, toll.lng], Math.max(map.getZoom(), 11), { animate: true });
 
   const bd    = toll.bypass_directions;
@@ -231,18 +239,16 @@ function openSidePanel(toll) {
   document.getElementById('toll-side-panel').classList.add('open');
 }
 
-// ── Build markers ─────────────────────────────────────────
+// ── Markers ───────────────────────────────────────────────
 const markersByHighway = {};
 const allMarkers = [];
 
 TOLL_DATA.forEach(toll => {
   const color = HIGHWAY_COLORS[toll.highway] || '#888';
-
   const icon = L.divIcon({
     className: '',
     html: `<div class="toll-marker" style="background:${color}"></div>`,
-    iconSize:   [11, 11],
-    iconAnchor: [ 5.5, 5.5],
+    iconSize: [11, 11], iconAnchor: [5.5, 5.5],
   });
 
   const marker = L.marker([toll.lat, toll.lng], { icon, zIndexOffset: 100 });
@@ -254,7 +260,6 @@ TOLL_DATA.forEach(toll => {
   });
   marker.on('mousemove', function(e) { positionTooltip(e.originalEvent); });
   marker.on('mouseout',  function()  { tooltipEl.style.display = 'none'; });
-
   marker.on('click', function(e) {
     L.DomEvent.stopPropagation(e);
     tooltipEl.style.display = 'none';
@@ -263,16 +268,14 @@ TOLL_DATA.forEach(toll => {
 
   marker.addTo(map);
   allMarkers.push({ toll, marker });
-
   if (!markersByHighway[toll.highway]) markersByHighway[toll.highway] = [];
   markersByHighway[toll.highway].push(marker);
 });
 
 map.on('click', () => { closeSidePanel(); });
-
 document.getElementById('sp-close').addEventListener('click', closeSidePanel);
 
-// ── Legend (visible by default) ───────────────────────────
+// ── Legend ────────────────────────────────────────────────
 const legendEl  = document.getElementById('legend');
 const legendBtn = document.getElementById('legend-toggle');
 let   legendVis = true;
@@ -309,12 +312,12 @@ Object.entries(highwayCounts).forEach(([hwy, count]) => {
       dimmedSet.delete(hwy);
       item.classList.remove('dimmed');
       markersByHighway[hwy]?.forEach(m => m.setOpacity(1));
-      if (highwayRouteLayers[hwy]) highwayRouteLayers[hwy].setStyle({ opacity: 0.6 });
+      if (highwayRouteLayers[hwy]) highwayRouteLayers[hwy].setStyle({ opacity: 0.25 });
     } else {
       dimmedSet.add(hwy);
       item.classList.add('dimmed');
       markersByHighway[hwy]?.forEach(m => m.setOpacity(0.1));
-      if (highwayRouteLayers[hwy]) highwayRouteLayers[hwy].setStyle({ opacity: 0.05 });
+      if (highwayRouteLayers[hwy]) highwayRouteLayers[hwy].setStyle({ opacity: 0.03 });
     }
   });
 
