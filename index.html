@@ -12,32 +12,82 @@
 </head>
 <body>
 
-  <!-- TOPBAR -->
   <header id="topbar">
     <div class="logo">DIO<em>DIO</em></div>
     <div class="topbar-sep"></div>
     <div class="topbar-tagline">Greek highway toll map &amp; route advisor</div>
     <div class="topbar-right">
       <button class="btn-ghost" id="legend-toggle">Hide legend</button>
-      <a class="btn-ghost" href="https://github.com/stergios-a11y/diodio" target="_blank" rel="noopener">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+      <button class="btn-ghost btn-help" id="help-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
-        GitHub
-      </a>
+        How to use
+      </button>
     </div>
   </header>
 
-  <!-- MAP -->
   <div id="map-container"><div id="map"></div></div>
 
-  <!-- LEGEND -->
   <aside id="legend">
     <div class="legend-title">Highways · click to filter</div>
     <div id="legend-list"></div>
   </aside>
 
-  <!-- TOLL SIDE PANEL -->
+  <div id="help-modal">
+    <div class="help-box">
+      <button class="help-close" id="help-close">✕</button>
+      <div class="help-logo">DIO<em>DIO</em></div>
+      <div class="help-subtitle">Greece Toll Road Advisor</div>
+
+      <div class="help-section">
+        <div class="help-section-icon">◆</div>
+        <div class="help-section-content">
+          <div class="help-section-title">Explore any toll booth</div>
+          <div class="help-section-body">
+            Every diamond marker on the map is a toll station. <strong>Hover</strong> over any marker to see prices for motorcycles, cars and vans. <strong>Click</strong> any marker to open a detailed panel showing:
+            <ul>
+              <li>Prices for all 4 vehicle categories</li>
+              <li>Which direction(s) you pay</li>
+              <li>Bypass options — the free parallel road with the extra time it costs per direction</li>
+              <li>The bypass route drawn in green on the map, with exit ↙ and re-entry ↗ markers</li>
+            </ul>
+            Click anywhere on the map to close the panel.
+          </div>
+        </div>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-section">
+        <div class="help-section-icon">⊕</div>
+        <div class="help-section-content">
+          <div class="help-section-title">Analyse a route</div>
+          <div class="help-section-body">
+            Use the bar at the bottom for personalised advice on any journey:
+            <ol>
+              <li>Enter your <strong>origin</strong> and <strong>destination</strong></li>
+              <li>Select your <strong>vehicle type</strong></li>
+              <li>Set your <strong>time value</strong> — how many minutes of extra driving you'd accept to save €1. At 10 min/€1 your time is worth €6/hr.</li>
+              <li>Press <strong>Analyse</strong></li>
+            </ol>
+            The app draws your route, finds every toll on it, and tells you which are worth paying and which to bypass — based on your time value. <span style="color:#2d7a3a;font-weight:600;">Green = avoid</span>, <span style="color:#1a4a8a;font-weight:600;">blue = pay</span>, <span style="color:#b8860b;font-weight:600;">yellow = marginal</span>.
+          </div>
+        </div>
+      </div>
+
+      <div class="help-divider"></div>
+
+      <div class="help-tip">
+        💡 <strong>Tip:</strong> Bypass routes shown are approximate — always verify with Google Maps before taking an unfamiliar detour.
+      </div>
+
+      <button class="help-cta" id="help-close-btn">Got it, show me the map</button>
+    </div>
+  </div>
+
   <div id="toll-side-panel">
     <div class="sp-header">
       <span class="sp-header-title">Toll details</span>
@@ -48,7 +98,6 @@
     </div>
   </div>
 
-  <!-- RESULTS PANEL -->
   <div id="results-panel">
     <div class="rp-head">
       <div class="rp-title" id="rp-title">Route Analysis</div>
@@ -58,7 +107,6 @@
     <div class="rp-body" id="rp-body"></div>
   </div>
 
-  <!-- BOTTOM BAR -->
   <div id="bottom-bar">
     <span class="bar-label">From</span>
     <input class="bar-input" id="origin" value="Athens" autocomplete="off" style="flex:1;max-width:150px" />
