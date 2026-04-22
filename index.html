@@ -34,6 +34,24 @@
   <aside id="legend">
     <div class="legend-title">Highways · click to filter</div>
     <div id="legend-list"></div>
+    <div class="legend-section-sep"></div>
+    <div class="legend-title legend-title-sub">
+      Exit &amp; Entry ramps
+      <label class="legend-toggle-switch">
+        <input type="checkbox" id="ramps-toggle" />
+        <span class="legend-toggle-track"></span>
+      </label>
+    </div>
+    <div id="ramps-key" class="ramps-key">
+      <div class="ramps-key-row">
+        <span class="ramp-icon ramp-exit">↙</span>
+        <span class="ramps-key-label">Exit ramp (leave motorway)</span>
+      </div>
+      <div class="ramps-key-row">
+        <span class="ramp-icon ramp-entry">↗</span>
+        <span class="ramps-key-label">Entry ramp (rejoin motorway)</span>
+      </div>
+    </div>
   </aside>
 
   <div id="help-modal">
@@ -51,8 +69,8 @@
             <ul>
               <li>Prices for all 4 vehicle categories</li>
               <li>Which direction(s) you pay</li>
-              <li>Bypass options — the free parallel road with the extra time it costs per direction</li>
-              <li>The bypass route drawn in green on the map, with exit ↙ and re-entry ↗ markers</li>
+              <li>Bypass options — the exact exit and entry ramps to use, with the extra time per direction</li>
+              <li>The bypass route drawn in green on the map</li>
             </ul>
             Click anywhere on the map to close the panel.
           </div>
@@ -73,7 +91,7 @@
               <li>Set your <strong>time value</strong> — how many minutes of extra driving you'd accept to save €1. At 10 min/€1 your time is worth €6/hr.</li>
               <li>Press <strong>Analyse</strong></li>
             </ol>
-            The app draws your route, finds every toll on it, and tells you which are worth paying and which to bypass — based on your time value. <span style="color:#2d7a3a;font-weight:600;">Green = avoid</span>, <span style="color:#1a4a8a;font-weight:600;">blue = pay</span>, <span style="color:#b8860b;font-weight:600;">yellow = marginal</span>.
+            The app draws your route, finds every toll on it, and tells you which are worth paying and which to bypass. <span style="color:#2d7a3a;font-weight:600;">Green = avoid</span>, <span style="color:#1a4a8a;font-weight:600;">blue = pay</span>, <span style="color:#b8860b;font-weight:600;">yellow = marginal</span>.
           </div>
         </div>
       </div>
@@ -81,7 +99,7 @@
       <div class="help-divider"></div>
 
       <div class="help-tip">
-        💡 <strong>Tip:</strong> Bypass routes shown are approximate — always verify with Google Maps before taking an unfamiliar detour.
+        💡 <strong>Tip:</strong> Bypass routes are based on the 2026 Greek toll avoidance guide. Always verify with Google Maps before taking an unfamiliar detour.
       </div>
 
       <button class="help-cta" id="help-close-btn">Got it, show me the map</button>
@@ -134,6 +152,8 @@
     </button>
     <div class="error-pill" id="error-pill"></div>
   </div>
+
+  <div id="copyright">© 2026 Stergios Gousios · DIODIO</div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="data/tolls.js"></script>
