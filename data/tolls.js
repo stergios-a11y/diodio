@@ -3,23 +3,44 @@
  * Coordinates sourced from diodia.com.gr KMZ (49 verified points)
  * Prices updated January 2026.
  *
- * Each entry includes:
- *   name_gr  — Greek name as shown on road signs
- *   name_en  — English transliteration
+ * Operator / highway group corrections:
+ *   - Lianokladi  → Kentriki Odos / E65 group
+ *   - Malgara     → A1 (PATHE endpoint towards Thessaloniki)
+ *   - BRIDGE      → independent group (Rio-Antirrio + Aktio)
  *
- * bypass_directions: keyed by "north"/"south"/"east"/"west"
- *   minutes  — extra travel time for that direction
- *   exit     — {lat,lng} where driver leaves the motorway
- *   entry    — {lat,lng} where driver rejoins
- *   via      — [{lat,lng},...] waypoints on the free parallel road
+ * HIGHWAY_ROUTES: traced carefully along actual road corridors.
+ *   Branch tolls (Evzoni, Promahonas, Strymoniko, Kleidi, Veligosti)
+ *   are NOT included in the main route line — they are plotted as
+ *   markers only.
  */
 
 const TOLL_DATA = [
 
   // ══════════════════════════════════════════════════════════
-  // A1 / E75 · PATHE · Athens – Thessaloniki – Evzoni
+  // A1 · PATHE · Afidnes (Athens) → Malgara (Thessaloniki)
+  // Operator mix: Nea Odos (south), Kentriki Odos (central),
+  //               Aegean Motorway (north)
   // ══════════════════════════════════════════════════════════
 
+  {
+    id: "a1_afidnes",
+    name_gr: "Διόδια Αφιδνών",
+    name_en: "Afidnes",
+    highway: "A1", highway_name: "PATHE (A1/E75) · Nea Odos",
+    operator: "Nea Odos",
+    type: "frontal", direction_label: "Both directions",
+    lat: 38.1764690, lng: 23.8546228,
+    cat1: 1.00, cat2: 1.90, cat3: 3.80, cat4: 5.70,
+    notes: "Northern Attica. First toll heading north from Athens.",
+    bypass_directions: {
+      south: { label: "Southbound (towards Athens)", minutes: 9,
+        exit:  { lat: 38.210, lng: 23.840 }, entry: { lat: 38.140, lng: 23.870 },
+        via: [{ lat: 38.210, lng: 23.840 },{ lat: 38.195, lng: 23.847 },{ lat: 38.177, lng: 23.854 },{ lat: 38.158, lng: 23.862 },{ lat: 38.140, lng: 23.870 }] },
+      north: { label: "Northbound (towards Thessaloniki)", minutes: 10,
+        exit:  { lat: 38.140, lng: 23.870 }, entry: { lat: 38.210, lng: 23.840 },
+        via: [{ lat: 38.140, lng: 23.870 },{ lat: 38.158, lng: 23.862 },{ lat: 38.177, lng: 23.854 },{ lat: 38.195, lng: 23.847 },{ lat: 38.210, lng: 23.840 }] },
+    },
+  },
   {
     id: "a1_thiva",
     name_gr: "Διόδια Θήβας",
@@ -40,22 +61,22 @@ const TOLL_DATA = [
     },
   },
   {
-    id: "a1_afidnes",
-    name_gr: "Διόδια Αφιδνών",
-    name_en: "Afidnes",
+    id: "a1_traganas",
+    name_gr: "Διόδια Τραγάνας",
+    name_en: "Traganas",
     highway: "A1", highway_name: "PATHE (A1/E75) · Nea Odos",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
-    lat: 38.1764690, lng: 23.8546228,
-    cat1: 1.00, cat2: 1.90, cat3: 3.80, cat4: 5.70,
-    notes: "Northern Attica, old national road via Afidnes village.",
+    lat: 38.6174740, lng: 23.1434298,
+    cat1: 1.20, cat2: 2.30, cat3: 4.60, cat4: 6.90,
+    notes: "Between Thiva and Kamena Vourla.",
     bypass_directions: {
-      south: { label: "Southbound (towards Athens)", minutes: 9,
-        exit:  { lat: 38.210, lng: 23.840 }, entry: { lat: 38.140, lng: 23.870 },
-        via: [{ lat: 38.210, lng: 23.840 },{ lat: 38.195, lng: 23.847 },{ lat: 38.177, lng: 23.854 },{ lat: 38.158, lng: 23.862 },{ lat: 38.140, lng: 23.870 }] },
-      north: { label: "Northbound (towards Thessaloniki)", minutes: 10,
-        exit:  { lat: 38.140, lng: 23.870 }, entry: { lat: 38.210, lng: 23.840 },
-        via: [{ lat: 38.140, lng: 23.870 },{ lat: 38.158, lng: 23.862 },{ lat: 38.177, lng: 23.854 },{ lat: 38.195, lng: 23.847 },{ lat: 38.210, lng: 23.840 }] },
+      south: { label: "Southbound (towards Athens)", minutes: 13,
+        exit:  { lat: 38.645, lng: 23.120 }, entry: { lat: 38.592, lng: 23.165 },
+        via: [{ lat: 38.645, lng: 23.120 },{ lat: 38.630, lng: 23.132 },{ lat: 38.617, lng: 23.143 },{ lat: 38.604, lng: 23.154 },{ lat: 38.592, lng: 23.165 }] },
+      north: { label: "Northbound (towards Thessaloniki)", minutes: 14,
+        exit:  { lat: 38.592, lng: 23.165 }, entry: { lat: 38.645, lng: 23.120 },
+        via: [{ lat: 38.592, lng: 23.165 },{ lat: 38.604, lng: 23.154 },{ lat: 38.617, lng: 23.143 },{ lat: 38.630, lng: 23.132 },{ lat: 38.645, lng: 23.120 }] },
     },
   },
   {
@@ -94,44 +115,6 @@ const TOLL_DATA = [
       north: { label: "Northbound (towards Thessaloniki)", minutes: 12,
         exit:  { lat: 38.893, lng: 22.652 }, entry: { lat: 38.955, lng: 22.608 },
         via: [{ lat: 38.893, lng: 22.652 },{ lat: 38.908, lng: 22.641 },{ lat: 38.924, lng: 22.630 },{ lat: 38.940, lng: 22.618 },{ lat: 38.955, lng: 22.608 }] },
-    },
-  },
-  {
-    id: "a1_traganas",
-    name_gr: "Διόδια Τραγάνας",
-    name_en: "Traganas (Kamena Vourla area)",
-    highway: "A1", highway_name: "PATHE (A1/E75) · Nea Odos",
-    operator: "Nea Odos",
-    type: "frontal", direction_label: "Both directions",
-    lat: 38.6174740, lng: 23.1434298,
-    cat1: 1.20, cat2: 2.30, cat3: 4.60, cat4: 6.90,
-    notes: "Between Thiva and Kamena Vourla, near Tragana village.",
-    bypass_directions: {
-      south: { label: "Southbound (towards Athens)", minutes: 13,
-        exit:  { lat: 38.645, lng: 23.120 }, entry: { lat: 38.592, lng: 23.165 },
-        via: [{ lat: 38.645, lng: 23.120 },{ lat: 38.630, lng: 23.132 },{ lat: 38.617, lng: 23.143 },{ lat: 38.604, lng: 23.154 },{ lat: 38.592, lng: 23.165 }] },
-      north: { label: "Northbound (towards Thessaloniki)", minutes: 14,
-        exit:  { lat: 38.592, lng: 23.165 }, entry: { lat: 38.645, lng: 23.120 },
-        via: [{ lat: 38.592, lng: 23.165 },{ lat: 38.604, lng: 23.154 },{ lat: 38.617, lng: 23.143 },{ lat: 38.630, lng: 23.132 },{ lat: 38.645, lng: 23.120 }] },
-    },
-  },
-  {
-    id: "a1_lianokladi",
-    name_gr: "Διόδια Λιανοκλαδίου",
-    name_en: "Lianokladi",
-    highway: "A1", highway_name: "PATHE (A1/E75) · Kentriki Odos",
-    operator: "Kentriki Odos",
-    type: "frontal", direction_label: "Both directions",
-    lat: 38.9148821, lng: 22.3487648,
-    cat1: 1.20, cat2: 2.30, cat3: 4.60, cat4: 6.90,
-    notes: "Near Lamia. Junction with E65 Central Greece motorway.",
-    bypass_directions: {
-      south: { label: "Southbound (towards Athens)", minutes: 16,
-        exit:  { lat: 38.950, lng: 22.318 }, entry: { lat: 38.880, lng: 22.380 },
-        via: [{ lat: 38.950, lng: 22.318 },{ lat: 38.935, lng: 22.330 },{ lat: 38.920, lng: 22.342 },{ lat: 38.905, lng: 22.355 },{ lat: 38.880, lng: 22.380 }] },
-      north: { label: "Northbound (towards Thessaloniki)", minutes: 18,
-        exit:  { lat: 38.880, lng: 22.380 }, entry: { lat: 38.950, lng: 22.318 },
-        via: [{ lat: 38.880, lng: 22.380 },{ lat: 38.905, lng: 22.355 },{ lat: 38.920, lng: 22.342 },{ lat: 38.935, lng: 22.330 },{ lat: 38.950, lng: 22.318 }] },
     },
   },
   {
@@ -224,7 +207,7 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.6024027, lng: 22.6982903,
     cat1: 0.58, cat2: 1.15, cat3: 2.30, cat4: 3.45,
-    notes: "Thessaloniki ring junction. Connects to Egnatia Odos westbound.",
+    notes: "Thessaloniki ring junction. Northern terminus of PATHE / start of Egnatia Odos.",
     bypass_directions: {
       south: { label: "Southbound (towards Athens)", minutes: 9,
         exit:  { lat: 40.637, lng: 22.682 }, entry: { lat: 40.568, lng: 22.716 },
@@ -291,6 +274,7 @@ const TOLL_DATA = [
         via: [{ lat: 40.825, lng: 24.182 },{ lat: 40.841, lng: 24.172 },{ lat: 40.858, lng: 24.162 },{ lat: 40.875, lng: 24.152 },{ lat: 40.892, lng: 24.143 }] },
     },
   },
+  // Branch: Evzoni (not on main A1 line)
   {
     id: "a1_evzoni",
     name_gr: "Διόδια Ευζώνων",
@@ -300,12 +284,13 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Southbound (entering Greece from N. Macedonia)",
     lat: 41.1081360, lng: 22.5590944,
     cat1: 1.48, cat2: 2.95, cat3: 5.90, cat4: 8.85,
-    notes: "Greek–North Macedonian border. No practical bypass.",
+    notes: "Greek–North Macedonian border. Branch from main A1 line at Thessaloniki.",
     bypass_directions: null,
   },
 
   // ══════════════════════════════════════════════════════════
-  // A2 / E90 · EGNATIA ODOS
+  // A2 · EGNATIA ODOS · Tyria (Igoumenitsa) → Ardanio
+  // Branches (not on main line): Strymoniko, Promahonas, Ieropigi
   // ══════════════════════════════════════════════════════════
 
   {
@@ -359,6 +344,25 @@ const TOLL_DATA = [
     },
   },
   {
+    id: "egnatia_ieropigi",
+    name_gr: "Διόδια Ιεροπηγής",
+    name_en: "Ieropigi",
+    highway: "A2", highway_name: "Egnatia Odos (A2/E90) — branch",
+    operator: "Egnatia Odos",
+    type: "frontal", direction_label: "Both directions",
+    lat: 40.5665678, lng: 21.0665417,
+    cat1: 0.80, cat2: 1.60, cat3: 3.20, cat4: 4.80,
+    notes: "Branch spur of Egnatia towards Kastoria / Albanian border.",
+    bypass_directions: {
+      west: { label: "Westbound (towards Kastoria)", minutes: 22,
+        exit:  { lat: 40.598, lng: 21.045 }, entry: { lat: 40.535, lng: 21.088 },
+        via: [{ lat: 40.598, lng: 21.045 },{ lat: 40.582, lng: 21.056 },{ lat: 40.566, lng: 21.067 },{ lat: 40.550, lng: 21.078 },{ lat: 40.535, lng: 21.088 }] },
+      east: { label: "Eastbound (towards Kozani)", minutes: 25,
+        exit:  { lat: 40.535, lng: 21.088 }, entry: { lat: 40.598, lng: 21.045 },
+        via: [{ lat: 40.535, lng: 21.088 },{ lat: 40.550, lng: 21.078 },{ lat: 40.566, lng: 21.067 },{ lat: 40.582, lng: 21.056 },{ lat: 40.598, lng: 21.045 }] },
+    },
+  },
+  {
     id: "egnatia_kozani",
     name_gr: "Διόδια Σιάτιστας",
     name_en: "Siatista / Kozani",
@@ -375,25 +379,6 @@ const TOLL_DATA = [
       east: { label: "Eastbound (towards Thessaloniki)", minutes: 20,
         exit:  { lat: 40.205, lng: 21.601 }, entry: { lat: 40.271, lng: 21.561 },
         via: [{ lat: 40.205, lng: 21.601 },{ lat: 40.220, lng: 21.592 },{ lat: 40.237, lng: 21.582 },{ lat: 40.254, lng: 21.572 },{ lat: 40.271, lng: 21.561 }] },
-    },
-  },
-  {
-    id: "egnatia_ieropigi",
-    name_gr: "Διόδια Ιεροπηγής",
-    name_en: "Ieropigi",
-    highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
-    operator: "Egnatia Odos",
-    type: "frontal", direction_label: "Both directions",
-    lat: 40.5665678, lng: 21.0665417,
-    cat1: 0.80, cat2: 1.60, cat3: 3.20, cat4: 4.80,
-    notes: "Western Macedonia section near Kastoria junction.",
-    bypass_directions: {
-      west: { label: "Westbound (towards Ioannina)", minutes: 22,
-        exit:  { lat: 40.598, lng: 21.045 }, entry: { lat: 40.535, lng: 21.088 },
-        via: [{ lat: 40.598, lng: 21.045 },{ lat: 40.582, lng: 21.056 },{ lat: 40.566, lng: 21.067 },{ lat: 40.550, lng: 21.078 },{ lat: 40.535, lng: 21.088 }] },
-      east: { label: "Eastbound (towards Thessaloniki)", minutes: 25,
-        exit:  { lat: 40.535, lng: 21.088 }, entry: { lat: 40.598, lng: 21.045 },
-        via: [{ lat: 40.535, lng: 21.088 },{ lat: 40.550, lng: 21.078 },{ lat: 40.566, lng: 21.067 },{ lat: 40.582, lng: 21.056 },{ lat: 40.598, lng: 21.045 }] },
     },
   },
   {
@@ -434,16 +419,17 @@ const TOLL_DATA = [
         via: [{ lat: 40.666, lng: 22.933 },{ lat: 40.680, lng: 22.925 },{ lat: 40.695, lng: 22.917 },{ lat: 40.710, lng: 22.908 },{ lat: 40.726, lng: 22.900 }] },
     },
   },
+  // Branch: Strymoniko
   {
     id: "egnatia_strymoniko",
     name_gr: "Διόδια Στρυμονικού",
     name_en: "Strymoniko",
-    highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
+    highway: "A2", highway_name: "Egnatia Odos (A2/E90) — branch",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 41.0435183, lng: 23.2952374,
     cat1: 0.90, cat2: 1.80, cat3: 3.60, cat4: 5.40,
-    notes: "Between Thessaloniki and Kavala.",
+    notes: "Branch spur north of Thessaloniki ring.",
     bypass_directions: {
       west: { label: "Westbound (towards Thessaloniki)", minutes: 18,
         exit:  { lat: 41.074, lng: 23.278 }, entry: { lat: 41.013, lng: 23.313 },
@@ -500,7 +486,7 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.9441053, lng: 26.2045028,
     cat1: 0.80, cat2: 1.60, cat3: 3.20, cat4: 4.80,
-    notes: "Near Turkish border.",
+    notes: "Eastern terminus of main Egnatia line.",
     bypass_directions: {
       west: { label: "Westbound (towards Komotini)", minutes: 13,
         exit:  { lat: 40.974, lng: 26.187 }, entry: { lat: 40.915, lng: 26.222 },
@@ -510,33 +496,34 @@ const TOLL_DATA = [
         via: [{ lat: 40.915, lng: 26.222 },{ lat: 40.929, lng: 26.214 },{ lat: 40.944, lng: 26.205 },{ lat: 40.959, lng: 26.196 },{ lat: 40.974, lng: 26.187 }] },
     },
   },
+  // Branch: Promahonas (Bulgarian border)
   {
     id: "egnatia_promahonas",
     name_gr: "Διόδια Προμαχώνα",
     name_en: "Promahonas (Bulgarian Border)",
-    highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
+    highway: "A2", highway_name: "Egnatia Odos (A2/E90) — branch",
     operator: "Egnatia Odos",
     type: "entry", direction_label: "Westbound (entering Greece from Bulgaria)",
     lat: 41.3641919, lng: 23.3567727,
     cat1: 1.18, cat2: 2.35, cat3: 4.70, cat4: 7.05,
-    notes: "Greek–Bulgarian border spur.",
+    notes: "Greek–Bulgarian border spur, branches from Thessaloniki area.",
     bypass_directions: null,
   },
 
   // ══════════════════════════════════════════════════════════
-  // A5 · IONIA ODOS
+  // A5 · NEA ODOS · Klokova (Antirrio) → Terovos (Arta)
   // ══════════════════════════════════════════════════════════
 
   {
     id: "ionia_klokova",
     name_gr: "Διόδια Κλόκοβας",
     name_en: "Klokova",
-    highway: "A5", highway_name: "Ionia Odos (A5)",
+    highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.3592412, lng: 21.6565418,
     cat1: 1.20, cat2: 2.40, cat3: 4.80, cat4: 7.20,
-    notes: "Zone 1 frontal (Antirrio – Chaliki).",
+    notes: "First toll northbound from Antirrio. Zone 1 (Antirrio – Chaliki).",
     bypass_directions: {
       south: { label: "Southbound (towards Antirrio)", minutes: 18,
         exit:  { lat: 38.389, lng: 21.641 }, entry: { lat: 38.330, lng: 21.673 },
@@ -550,7 +537,7 @@ const TOLL_DATA = [
     id: "ionia_aggelokastro",
     name_gr: "Διόδια Αγγελοκάστρου",
     name_en: "Aggelokastro",
-    highway: "A5", highway_name: "Ionia Odos (A5)",
+    highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.5494744, lng: 21.2723798,
@@ -569,7 +556,7 @@ const TOLL_DATA = [
     id: "ionia_menidi",
     name_gr: "Διόδια Μενιδίου",
     name_en: "Menidi",
-    highway: "A5", highway_name: "Ionia Odos (A5)",
+    highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.9898946, lng: 21.1709225,
@@ -588,12 +575,12 @@ const TOLL_DATA = [
     id: "ionia_terovos",
     name_gr: "Διόδια Τέροβου",
     name_en: "Terovos / Arta",
-    highway: "A5", highway_name: "Ionia Odos (A5)",
+    highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 39.4252460, lng: 20.9053087,
     cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
-    notes: "Near Arta. Zone 4 frontal station.",
+    notes: "Near Arta. Northern terminus of Nea Odos A5 section.",
     bypass_directions: {
       south: { label: "Southbound (towards Antirrio)", minutes: 18,
         exit:  { lat: 39.455, lng: 20.889 }, entry: { lat: 39.396, lng: 20.922 },
@@ -605,7 +592,7 @@ const TOLL_DATA = [
   },
 
   // ══════════════════════════════════════════════════════════
-  // A8 / E94 · OLYMPIA ODOS
+  // A8 · OLYMPIA ODOS · Elefsina (Athens) → Pyrgos
   // ══════════════════════════════════════════════════════════
 
   {
@@ -693,7 +680,7 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.1449493, lng: 21.6191570,
     cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
-    notes: "Eastern approach to Patras. Junction with A7 Moreas and A5 Ionia Odos.",
+    notes: "Eastern approach to Patras.",
     bypass_directions: {
       east: { label: "Eastbound (towards Athens)", minutes: 13,
         exit:  { lat: 38.175, lng: 21.602 }, entry: { lat: 38.116, lng: 21.637 },
@@ -731,12 +718,74 @@ const TOLL_DATA = [
     type: "exit", direction_label: "Exit — towards Pyrgos / Ancient Olympia",
     lat: 37.7525508, lng: 21.3585639,
     cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
-    notes: "Exit for Pyrgos and Ancient Olympia archaeological site.",
+    notes: "Southern terminus of Olympia Odos. Exit for Ancient Olympia archaeological site.",
     bypass_directions: null,
   },
 
   // ══════════════════════════════════════════════════════════
-  // BRIDGES & TUNNELS
+  // E65 · KENTRIKI ODOS · Lianokladi → Trikala
+  // ══════════════════════════════════════════════════════════
+
+  {
+    id: "e65_lianokladi",
+    name_gr: "Διόδια Λιανοκλαδίου",
+    name_en: "Lianokladi",
+    highway: "E65", highway_name: "Kentriki Odos (E65)",
+    operator: "Kentriki Odos",
+    type: "frontal", direction_label: "Both directions",
+    lat: 38.9148821, lng: 22.3487648,
+    cat1: 1.20, cat2: 2.30, cat3: 4.60, cat4: 6.90,
+    notes: "Southern terminus of Kentriki Odos. Near Lamia, junction with A1.",
+    bypass_directions: {
+      south: { label: "Southbound (towards Lamia/A1)", minutes: 16,
+        exit:  { lat: 38.950, lng: 22.318 }, entry: { lat: 38.880, lng: 22.380 },
+        via: [{ lat: 38.950, lng: 22.318 },{ lat: 38.935, lng: 22.330 },{ lat: 38.920, lng: 22.342 },{ lat: 38.905, lng: 22.355 },{ lat: 38.880, lng: 22.380 }] },
+      north: { label: "Northbound (towards Karditsa)", minutes: 18,
+        exit:  { lat: 38.880, lng: 22.380 }, entry: { lat: 38.950, lng: 22.318 },
+        via: [{ lat: 38.880, lng: 22.380 },{ lat: 38.905, lng: 22.355 },{ lat: 38.920, lng: 22.342 },{ lat: 38.935, lng: 22.330 },{ lat: 38.950, lng: 22.318 }] },
+    },
+  },
+  {
+    id: "e65_sofades",
+    name_gr: "Διόδια Σοφάδων",
+    name_en: "Sofades",
+    highway: "E65", highway_name: "Kentriki Odos (E65)",
+    operator: "Kentriki Odos",
+    type: "frontal", direction_label: "Both directions",
+    lat: 39.2566317, lng: 22.0831633,
+    cat1: 0.98, cat2: 1.95, cat3: 3.90, cat4: 5.85,
+    notes: "",
+    bypass_directions: {
+      south: { label: "Southbound (towards Lamia)", minutes: 13,
+        exit:  { lat: 39.286, lng: 22.068 }, entry: { lat: 39.228, lng: 22.099 },
+        via: [{ lat: 39.286, lng: 22.068 },{ lat: 39.271, lng: 22.076 },{ lat: 39.256, lng: 22.084 },{ lat: 39.242, lng: 22.092 },{ lat: 39.228, lng: 22.099 }] },
+      north: { label: "Northbound (towards Karditsa)", minutes: 15,
+        exit:  { lat: 39.228, lng: 22.099 }, entry: { lat: 39.286, lng: 22.068 },
+        via: [{ lat: 39.228, lng: 22.099 },{ lat: 39.242, lng: 22.092 },{ lat: 39.256, lng: 22.084 },{ lat: 39.271, lng: 22.076 },{ lat: 39.286, lng: 22.068 }] },
+    },
+  },
+  {
+    id: "e65_trikala",
+    name_gr: "Διόδια Τρικάλων",
+    name_en: "Trikala",
+    highway: "E65", highway_name: "Kentriki Odos (E65)",
+    operator: "Kentriki Odos",
+    type: "frontal", direction_label: "Both directions",
+    lat: 39.5204295, lng: 21.8322372,
+    cat1: 1.00, cat2: 2.00, cat3: 4.00, cat4: 6.00,
+    notes: "Northern terminus of Kentriki Odos.",
+    bypass_directions: {
+      south: { label: "Southbound (towards Karditsa)", minutes: 10,
+        exit:  { lat: 39.549, lng: 21.817 }, entry: { lat: 39.492, lng: 21.848 },
+        via: [{ lat: 39.549, lng: 21.817 },{ lat: 39.534, lng: 21.825 },{ lat: 39.520, lng: 21.833 },{ lat: 39.506, lng: 21.841 },{ lat: 39.492, lng: 21.848 }] },
+      north: { label: "Northbound (towards Trikala city)", minutes: 12,
+        exit:  { lat: 39.492, lng: 21.848 }, entry: { lat: 39.549, lng: 21.817 },
+        via: [{ lat: 39.492, lng: 21.848 },{ lat: 39.506, lng: 21.841 },{ lat: 39.520, lng: 21.833 },{ lat: 39.534, lng: 21.825 },{ lat: 39.549, lng: 21.817 }] },
+    },
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // BRIDGE · Rio–Antirrio + Aktio (independent group)
   // ══════════════════════════════════════════════════════════
 
   {
@@ -748,7 +797,7 @@ const TOLL_DATA = [
     type: "bridge", direction_label: "Westbound only. Eastbound is FREE.",
     lat: 38.3337794, lng: 21.7660189,
     cat1: 7.60, cat2: 15.50, cat3: 25.00, cat4: 35.00,
-    notes: "World's longest multi-span cable-stayed bridge (2.88 km). Toll collected only westbound. Return is free.",
+    notes: "World's longest multi-span cable-stayed bridge (2.88 km). Toll only westbound at Antirrio plaza. Return eastbound is free.",
     bypass_directions: null,
   },
   {
@@ -760,12 +809,12 @@ const TOLL_DATA = [
     type: "bridge", direction_label: "Both directions",
     lat: 38.9481954, lng: 20.7569504,
     cat1: 1.50, cat2: 3.00, cat3: 6.00, cat4: 9.00,
-    notes: "Only underwater tunnel in Greece (910m). No bypass.",
+    notes: "Only underwater tunnel in Greece (910m). Essential for reaching Lefkada overland. No bypass.",
     bypass_directions: null,
   },
 
   // ══════════════════════════════════════════════════════════
-  // A6 · ATTIKI ODOS
+  // A6 · ATTIKI ODOS · Athens ring road
   // ══════════════════════════════════════════════════════════
 
   {
@@ -782,7 +831,7 @@ const TOLL_DATA = [
   },
 
   // ══════════════════════════════════════════════════════════
-  // A7 · MOREAS
+  // A7 · MOREAS · Corinth → Kalamata
   // ══════════════════════════════════════════════════════════
 
   {
@@ -851,7 +900,7 @@ const TOLL_DATA = [
     type: "exit", direction_label: "Exit — towards Sparta / Mystras",
     lat: 37.3450082, lng: 22.1103072,
     cat1: 1.05, cat2: 2.10, cat3: 4.20, cat4: 6.30,
-    notes: "Lateral ramp exit for Lefktro–Sparta branch.",
+    notes: "Branch exit for Lefktro–Sparta.",
     bypass_directions: null,
   },
   {
@@ -874,136 +923,124 @@ const TOLL_DATA = [
     },
   },
 
-  // ══════════════════════════════════════════════════════════
-  // E65 · CENTRAL GREECE
-  // ══════════════════════════════════════════════════════════
-
-  {
-    id: "e65_sofades",
-    name_gr: "Διόδια Σοφάδων",
-    name_en: "Sofades",
-    highway: "E65", highway_name: "Central Greece (E65)",
-    operator: "Kentriki Odos",
-    type: "frontal", direction_label: "Both directions",
-    lat: 39.2566317, lng: 22.0831633,
-    cat1: 0.98, cat2: 1.95, cat3: 3.90, cat4: 5.85,
-    notes: "First station on E65 north of Lamia junction.",
-    bypass_directions: {
-      south: { label: "Southbound (towards Lamia)", minutes: 13,
-        exit:  { lat: 39.286, lng: 22.068 }, entry: { lat: 39.228, lng: 22.099 },
-        via: [{ lat: 39.286, lng: 22.068 },{ lat: 39.271, lng: 22.076 },{ lat: 39.256, lng: 22.084 },{ lat: 39.242, lng: 22.092 },{ lat: 39.228, lng: 22.099 }] },
-      north: { label: "Northbound (towards Karditsa)", minutes: 15,
-        exit:  { lat: 39.228, lng: 22.099 }, entry: { lat: 39.286, lng: 22.068 },
-        via: [{ lat: 39.228, lng: 22.099 },{ lat: 39.242, lng: 22.092 },{ lat: 39.256, lng: 22.084 },{ lat: 39.271, lng: 22.076 },{ lat: 39.286, lng: 22.068 }] },
-    },
-  },
-  {
-    id: "e65_trikala",
-    name_gr: "Διόδια Τρικάλων",
-    name_en: "Trikala",
-    highway: "E65", highway_name: "Central Greece (E65)",
-    operator: "Kentriki Odos",
-    type: "frontal", direction_label: "Both directions",
-    lat: 39.5204295, lng: 21.8322372,
-    cat1: 1.00, cat2: 2.00, cat3: 4.00, cat4: 6.00,
-    notes: "Northern terminus of E65.",
-    bypass_directions: {
-      south: { label: "Southbound (towards Karditsa)", minutes: 10,
-        exit:  { lat: 39.549, lng: 21.817 }, entry: { lat: 39.492, lng: 21.848 },
-        via: [{ lat: 39.549, lng: 21.817 },{ lat: 39.534, lng: 21.825 },{ lat: 39.520, lng: 21.833 },{ lat: 39.506, lng: 21.841 },{ lat: 39.492, lng: 21.848 }] },
-      north: { label: "Northbound (towards Trikala city)", minutes: 12,
-        exit:  { lat: 39.492, lng: 21.848 }, entry: { lat: 39.549, lng: 21.817 },
-        via: [{ lat: 39.492, lng: 21.848 },{ lat: 39.506, lng: 21.841 },{ lat: 39.520, lng: 21.833 },{ lat: 39.534, lng: 21.825 },{ lat: 39.549, lng: 21.817 }] },
-    },
-  },
-
 ];
 
+// ── Highway colour palette ────────────────────────────────
 const HIGHWAY_COLORS = {
   "A1":     "#1a6b3c",
   "A2":     "#1a4fa8",
   "A5":     "#8b5e1a",
   "A8":     "#b84c2e",
-  "BRIDGE": "#8b2fc9",
-  "A6":     "#c8a84b",
-  "A7":     "#2e7d8b",
   "E65":    "#5e7a1a",
+  "A7":     "#2e7d8b",
+  "A6":     "#c8a84b",
+  "BRIDGE": "#8b2fc9",
 };
 
+// ── Highway route polylines ───────────────────────────────
+// Coordinates traced along actual motorway corridors.
+// Branch tolls (Evzoni, Promahonas, Strymoniko, Ieropigi, Veligosti)
+// are excluded from these lines — they appear as markers only.
 const HIGHWAY_ROUTES = {
+
+  // A1: Athens (Afidnes area) → Thiva → Kamena Vourla →
+  //     Lamia → Larissa → Tempi → Katerini → Thessaloniki (Malgara)
   "A1": [
-    [37.950,23.680],[38.000,23.680],[38.030,23.690],[38.063,23.762],
-    [38.100,23.820],[38.140,23.870],[38.176,23.854],[38.230,23.840],
-    [38.280,23.790],[38.330,23.730],[38.371,23.287],[38.420,23.200],
-    [38.480,23.100],[38.530,23.060],[38.580,23.050],[38.617,23.143],
-    [38.660,23.080],[38.710,22.980],[38.750,22.880],[38.809,22.603],
-    [38.860,22.600],[38.900,22.620],[38.924,22.629],[38.960,22.580],
-    [38.915,22.349],[38.960,22.820],[39.000,22.750],[39.084,22.417],
-    [39.200,22.420],[39.300,22.430],[39.356,22.430],[39.450,22.490],
-    [39.523,22.557],[39.600,22.510],[39.660,22.420],[39.720,22.430],
-    [39.804,22.503],[39.880,22.510],[39.950,22.540],[40.036,22.570],
-    [40.100,22.520],[40.180,22.510],[40.270,22.509],[40.350,22.520],
-    [40.395,22.537],[40.480,22.550],[40.520,22.573],[40.560,22.610],
-    [40.602,22.698],[40.640,22.800],[40.660,22.870],[40.680,22.930],
-    [40.696,22.916],[40.707,23.191],[40.715,23.350],[40.720,23.500],
-    [40.727,23.694],[40.780,23.850],[40.820,24.000],[40.858,24.162],
-    [40.890,24.300],[40.920,24.420],[41.108,22.559],
+    [38.176,23.855],[38.220,23.840],[38.270,23.810],[38.330,23.730],
+    [38.371,23.287],[38.430,23.200],[38.490,23.100],[38.540,23.055],
+    [38.617,23.143],[38.660,23.090],[38.720,22.980],[38.760,22.880],
+    [38.809,22.603],[38.870,22.590],[38.924,22.629],[38.980,22.590],
+    [38.915,22.349],[38.925,22.280],[38.940,22.200],[38.965,22.100],
+    [38.985,22.000],[38.975,21.950],[38.920,22.846],[38.975,22.810],
+    [39.010,22.730],[39.084,22.417],[39.180,22.410],[39.280,22.425],
+    [39.356,22.430],[39.450,22.490],[39.523,22.557],[39.600,22.510],
+    [39.660,22.420],[39.720,22.430],[39.804,22.503],[39.880,22.510],
+    [39.950,22.540],[40.036,22.570],[40.100,22.515],[40.180,22.510],
+    [40.270,22.509],[40.350,22.520],[40.395,22.537],[40.480,22.550],
+    [40.520,22.573],[40.560,22.620],[40.602,22.698],
   ],
+
+  // A2: Igoumenitsa (Tyria) → Ioannina → Metsovo tunnel →
+  //     Kozani/Siatista → Veroia/Polymylo → Thessaloniki W →
+  //     east to Xanthi → Komotini → Ardanio
+  // (Ieropigi branch, Strymoniko branch, Promahonas branch excluded)
   "A2": [
-    [39.500,20.230],[39.510,20.400],[39.530,20.550],[39.540,20.674],
-    [39.560,20.780],[39.580,20.870],[39.619,20.948],[39.650,21.050],
-    [39.680,21.120],[39.720,21.180],[39.786,21.285],[39.820,21.350],
-    [39.860,21.400],[39.900,21.430],[39.940,21.460],[39.970,21.490],
-    [40.000,21.500],[40.050,21.520],[40.100,21.530],[40.150,21.540],
-    [40.200,21.550],[40.238,21.581],[40.270,21.570],[40.300,21.530],
-    [40.340,21.500],[40.367,22.060],[40.400,22.100],[40.450,22.100],
-    [40.500,22.080],[40.567,21.067],[40.580,21.200],[40.590,21.400],
-    [40.600,21.600],[40.610,21.800],[40.620,22.000],[40.630,22.200],
-    [40.636,22.820],[40.650,22.870],[40.660,22.900],[40.696,22.916],
-    [40.636,23.115],[40.700,23.200],[40.750,23.250],[40.800,23.270],
-    [41.044,23.295],[41.000,23.500],[40.980,23.700],[40.960,23.900],
-    [41.120,25.080],[41.013,25.533],[40.944,26.204],[41.364,23.357],
+    [39.540,20.674],[39.555,20.730],[39.580,20.840],[39.619,20.948],
+    [39.645,21.030],[39.680,21.110],[39.725,21.175],[39.786,21.285],
+    [39.820,21.350],[39.870,21.400],[39.910,21.440],[39.950,21.470],
+    [39.990,21.500],[40.045,21.520],[40.100,21.535],[40.165,21.548],
+    [40.238,21.581],[40.270,21.570],[40.310,21.540],[40.367,22.060],
+    [40.400,22.095],[40.440,22.095],[40.490,22.080],[40.540,22.040],
+    [40.580,21.980],[40.630,21.950],[40.650,22.050],[40.660,22.200],
+    [40.666,22.400],[40.670,22.600],[40.675,22.780],[40.696,22.916],
+    [40.700,23.000],[40.710,23.100],[40.730,23.200],[40.760,23.300],
+    [40.810,23.500],[40.850,23.700],[40.870,23.900],[40.890,24.100],
+    [40.910,24.300],[40.930,24.500],[40.944,26.204],
+    // continue east
+    [40.960,25.900],[40.990,25.700],[41.013,25.533],[41.030,25.400],
+    [41.060,25.200],[41.100,25.100],[41.120,25.080],
+    [41.110,24.900],[41.080,24.700],[41.060,24.500],[41.044,23.295],
   ],
+
+  // A5: Klokova (near Antirrio) → Aggelokastro → Menidi → Terovos (Arta)
   "A5": [
-    [38.334,21.770],[38.340,21.730],[38.350,21.700],[38.359,21.657],
-    [38.380,21.600],[38.400,21.520],[38.430,21.450],[38.460,21.380],
-    [38.480,21.320],[38.510,21.290],[38.549,21.272],[38.580,21.250],
-    [38.620,21.220],[38.660,21.200],[38.700,21.190],[38.740,21.180],
-    [38.780,21.170],[38.820,21.170],[38.860,21.170],[38.900,21.170],
-    [38.940,21.170],[38.990,21.171],[39.040,21.080],[39.080,21.010],
-    [39.100,20.990],[39.160,20.985],[39.200,20.970],[39.250,20.950],
-    [39.300,20.940],[39.350,20.930],[39.400,20.910],[39.425,20.905],
-    [39.460,20.880],[39.500,20.870],[39.540,20.860],[39.619,20.948],
+    [38.334,21.770],[38.350,21.710],[38.359,21.657],
+    [38.395,21.590],[38.430,21.510],[38.465,21.420],
+    [38.500,21.340],[38.520,21.295],[38.549,21.272],
+    [38.590,21.250],[38.640,21.225],[38.690,21.205],
+    [38.740,21.188],[38.790,21.175],[38.840,21.170],
+    [38.890,21.170],[38.940,21.170],[38.990,21.171],
+    [39.040,21.100],[39.080,21.030],[39.110,20.990],
+    [39.160,20.985],[39.200,20.975],[39.260,20.955],
+    [39.320,20.940],[39.370,20.925],[39.425,20.905],
   ],
+
+  // A8: Elefsina → coast → Isthmos canal → Zevgolatio →
+  //     Kiato → Aigio → Patras → Rio → (bridge end)
   "A8": [
-    [38.042,23.496],[38.010,23.450],[37.990,23.380],[37.993,23.346],
-    [37.970,23.250],[37.950,23.150],[37.940,23.080],[37.925,23.033],
-    [37.922,22.810],[37.920,22.750],[37.930,22.700],[37.950,22.650],
-    [37.980,22.620],[38.013,22.741],[38.050,22.700],[38.070,22.650],
-    [38.076,22.634],[38.100,22.560],[38.130,22.500],[38.160,22.430],
-    [38.190,22.360],[38.206,22.139],[38.220,22.050],[38.230,21.980],
-    [38.230,21.880],[38.220,21.800],[38.200,21.720],[38.145,21.619],
-    [38.180,21.720],[38.220,21.770],[38.280,21.810],[38.316,21.830],
+    [38.042,23.496],[38.010,23.450],[37.990,23.390],
+    [37.970,23.300],[37.950,23.180],[37.940,23.080],
+    [37.925,23.033],[37.922,22.810],[37.920,22.750],
+    [37.935,22.700],[37.960,22.660],[37.990,22.630],
+    [38.013,22.741],[38.050,22.710],[38.075,22.645],
+    [38.100,22.570],[38.135,22.500],[38.165,22.430],
+    [38.195,22.360],[38.206,22.139],[38.220,22.055],
+    [38.230,21.980],[38.228,21.880],[38.215,21.790],
+    [38.195,21.720],[38.145,21.619],[38.180,21.720],
+    [38.225,21.775],[38.280,21.815],[38.316,21.830],
     [38.334,21.766],
   ],
-  "A6": [
-    [38.042,23.496],[38.062,23.600],[38.062,23.750],[38.020,23.850],
-    [37.980,23.900],[37.941,23.935],
-  ],
-  "A7": [
-    [37.836,22.808],[37.800,22.760],[37.760,22.700],[37.720,22.650],
-    [37.680,22.600],[37.640,22.550],[37.601,22.446],[37.560,22.400],
-    [37.520,22.360],[37.480,22.330],[37.440,22.300],[37.400,22.280],
-    [37.360,22.260],[37.345,22.110],[37.330,22.200],[37.299,22.210],
-    [37.270,22.200],[37.240,22.170],[37.210,22.140],[37.180,22.100],
-    [37.160,22.060],[37.137,22.038],
-  ],
+
+  // E65 / Kentriki Odos: Lianokladi → Sofades → Karditsa → Trikala
   "E65": [
-    [38.915,22.349],[38.950,22.280],[39.000,22.220],[39.050,22.180],
-    [39.100,22.150],[39.150,22.130],[39.200,22.110],[39.257,22.083],
-    [39.300,22.040],[39.330,21.990],[39.364,21.925],[39.400,21.890],
-    [39.440,21.870],[39.480,21.850],[39.520,21.832],
+    [38.915,22.349],[38.940,22.290],[38.975,22.240],
+    [39.010,22.200],[39.060,22.175],[39.110,22.155],
+    [39.160,22.135],[39.210,22.115],[39.257,22.083],
+    [39.295,22.050],[39.330,21.995],[39.364,21.925],
+    [39.400,21.895],[39.445,21.875],[39.490,21.855],
+    [39.520,21.832],
   ],
+
+  // A7 / Moreas: Corinth → Argos/Nestani → Tripoli/Petrina → Kalamata
+  // (Veligosti branch excluded)
+  "A7": [
+    [37.836,22.808],[37.800,22.760],[37.760,22.710],
+    [37.720,22.660],[37.680,22.610],[37.640,22.555],
+    [37.601,22.446],[37.560,22.400],[37.520,22.360],
+    [37.480,22.335],[37.440,22.310],[37.400,22.285],
+    [37.360,22.265],[37.330,22.240],[37.299,22.210],
+    [37.270,22.195],[37.240,22.175],[37.210,22.145],
+    [37.180,22.105],[37.160,22.065],[37.137,22.038],
+  ],
+
+  // A6 / Attiki Odos: Elefsina → ring → Airport
+  "A6": [
+    [38.042,23.496],[38.055,23.570],[38.063,23.640],
+    [38.062,23.750],[38.040,23.830],[38.010,23.880],
+    [37.980,23.910],[37.941,23.935],
+  ],
+
+  // BRIDGE: Rio–Antirrio (short line just for the bridge itself)
   "BRIDGE": [
     [38.319,21.720],[38.325,21.740],[38.330,21.755],[38.334,21.766],
   ],
