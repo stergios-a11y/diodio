@@ -321,5 +321,9 @@ Object.entries(highwayCounts).forEach(([hwy, count]) => {
     }
   });
 
-  legendList.appendChild(item);
+ legendList.appendChild(item);
+});
+
+document.getElementById('help-close-btn').addEventListener('click', () => {
+  helpModal.classList.remove('open');
 });
