@@ -1,6 +1,9 @@
 /**
  * DIODIO — map.js
- * Fixes: legend solo-filter, side panel overlap, help modal, correct highway groups
+ * - OSRM highway route polylines fetched at load
+ * - Help modal
+ * - Legend with solo-filter + ramps layer toggle
+ * - Hover tooltip + click side panel with legend push
  */
 
 const map = L.map('map', {
@@ -20,77 +23,58 @@ L.tileLayer(
   }
 ).addTo(map);
 
-// ── Highway route polylines ───────────────────────────────
-// Browser fetches real road geometry from OSRM at page load.
-// Waypoints: [lng, lat] pairs that pin the route to the correct road.
+// ── Highway route polylines (fetched from OSRM at load) ───
 const HIGHWAY_WAYPOINTS = {
-
-  // PATHE A1: from your link 38.106747,23.8184657 → 40.6528427,22.8384533
   "A1": [
-    [23.8184657, 38.1067470],  // Athens start
-    [23.2868636, 38.3708752],  // Thiva
-    [23.1434298, 38.6174740],  // Traganas
-    [22.6025569, 38.8087016],  // Agios Konstantinos
-    [22.3487648, 38.9148821],  // Lianokladi/Lamia
-    [22.5028431, 39.8044068],  // Makrychori/Larissa
-    [22.5698233, 40.0357339],  // Leptokarya/Tempi
-    [22.8384533, 40.6528427],  // Thessaloniki end
+    [23.8184657, 38.1067470],
+    [23.2868636, 38.3708752],
+    [23.1434298, 38.6174740],
+    [22.6025569, 38.8087016],
+    [22.3487648, 38.9148821],
+    [22.5028431, 39.8044068],
+    [22.5698233, 40.0357339],
+    [22.8384533, 40.6528427],
   ],
-
-  // Egnatia A2: Igoumenitsa → Ardanio (Turkish border)
   "A2": [
-    [20.2618948, 39.4861509],  // Igoumenitsa start
-    [20.9475803, 39.6188630],  // Ioannina
-    [21.2854099, 39.7855212],  // Metsovo tunnel
-    [21.5810286, 40.2378869],  // Kozani/Siatista
-    [22.0602089, 40.3671958],  // Veroia/Polymylo
-    [22.9162091, 40.6956111],  // Thessaloniki West
-    [25.0802422, 41.1203415],  // Xanthi/Iasmos
-    [25.5332019, 41.0135240],  // Komotini/Mestis
-    [26.308717,  40.9452663],  // Ardanio end
+    [20.2618948, 39.4861509],
+    [20.9475803, 39.6188630],
+    [21.2854099, 39.7855212],
+    [21.5810286, 40.2378869],
+    [22.0602089, 40.3671958],
+    [22.9162091, 40.6956111],
+    [25.0802422, 41.1203415],
+    [25.5332019, 41.0135240],
+    [26.308717,  40.9452663],
   ],
-
-  // Nea Odos A5: Klokova → Terovos/Arta
   "A5": [
-    [21.6565418, 38.3592412],  // Klokova
-    [21.2723798, 38.5494744],  // Aggelokastro
-    [21.1709225, 38.9898946],  // Menidi
-    [20.9053087, 39.4252460],  // Terovos/Arta
+    [21.6565418, 38.3592412],
+    [21.2723798, 38.5494744],
+    [21.1709225, 38.9898946],
+    [20.9053087, 39.4252460],
   ],
-
-  // Olympia Odos A8: from your link 38.0499433,23.5039038 → 37.7120702,21.3913023
   "A8": [
-    [23.5039038, 38.0499433],  // Athens/Elefsina start
-    [23.0325365, 37.9249719],  // Isthmos canal
-    [22.8096664, 37.9222552],  // Zevgolatio/Corinth
-    [22.1392536, 38.2057293],  // Aigio/Elaionas
-    [21.6191570, 38.1449493],  // Patras
-    [21.3913023, 37.7120702],  // Pyrgos end
+    [23.5039038, 38.0499433],
+    [23.0325365, 37.9249719],
+    [22.8096664, 37.9222552],
+    [22.1392536, 38.2057293],
+    [21.6191570, 38.1449493],
+    [21.3913023, 37.7120702],
   ],
-
-  // Kentriki Odos E65: Lianokladi → Trikala
   "E65": [
-    [22.3487648, 38.9148821],  // Lianokladi
-    [22.0831633, 39.2566317],  // Sofades
-    [21.8322372, 39.5204295],  // Trikala
+    [22.3487648, 38.9148821],
+    [22.0831633, 39.2566317],
+    [21.8322372, 39.5204295],
   ],
-
-  // Moreas A7: from your link 37.9142092,22.9066924 → 37.0463151,22.1253947
-  // No Petrina via point — OSRM follows direct lowland route
   "A7": [
-    [22.9066924, 37.9142092],  // Corinth start
-    [22.4464524, 37.6007682],  // Nestani/Argos
-    [22.1253947, 37.0463151],  // Kalamata end
+    [22.9066924, 37.9142092],
+    [22.4464524, 37.6007682],
+    [22.1253947, 37.0463151],
   ],
-
-  // Attiki Odos A6: Elefsina junction → Airport
   "A6": [
     [23.4958076, 38.0422442],
     [23.7495232, 38.0620135],
     [23.9350000, 37.9410000],
   ],
-
-  // Rio–Antirrio bridge
   "BRIDGE": [
     [21.7200000, 38.3190000],
     [21.7660189, 38.3337794],
@@ -117,21 +101,13 @@ async function fetchAndDrawRoute(hwy, waypoints) {
     const coords = simplify(raw, 4).map(c => [c[1], c[0]]);
     const color  = HIGHWAY_COLORS[hwy] || '#888';
     const layer  = L.polyline(coords, {
-      color,
-      weight:   3,
-      opacity:  0.3,
-      lineCap:  'round',
-      lineJoin: 'round',
+      color, weight: 3, opacity: 0.3, lineCap: 'round', lineJoin: 'round',
     }).addTo(map);
     highwayRouteLayers[hwy] = layer;
-  } catch (e) {
-    // fail silently — routes are decorative
-  }
+  } catch (e) { /* fail silently */ }
 }
 
-Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, waypoints]) => {
-  fetchAndDrawRoute(hwy, waypoints);
-});
+Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, wps]) => fetchAndDrawRoute(hwy, wps));
 
 window.setActiveRouteLayer = function(coords) {
   if (window._activeRouteHighlight) map.removeLayer(window._activeRouteHighlight);
@@ -262,7 +238,7 @@ function openSidePanel(toll) {
           iconSize: [14,14], iconAnchor: [7,7],
         });
         const em = L.marker([dir.exit.lat, dir.exit.lng], { icon: ei, zIndexOffset: 500 });
-        em.bindTooltip(`Exit motorway · ${dir.label}`, { className: 'bypass-tooltip' });
+        em.bindTooltip(`Exit: ${dir.exit_name}`, { className: 'bypass-tooltip' });
         em.addTo(map);
         inspectLayers.push(em);
       }
@@ -274,7 +250,7 @@ function openSidePanel(toll) {
           iconSize: [14,14], iconAnchor: [7,7],
         });
         const nm = L.marker([dir.entry.lat, dir.entry.lng], { icon: ni, zIndexOffset: 500 });
-        nm.bindTooltip(`Rejoin motorway · ${dir.label}`, { className: 'bypass-tooltip' });
+        nm.bindTooltip(`Re-enter: ${dir.entry_name}`, { className: 'bypass-tooltip' });
         nm.addTo(map);
         inspectLayers.push(nm);
       }
@@ -302,7 +278,10 @@ function openSidePanel(toll) {
         <div class="sp-dir">
           <div class="sp-dir-label">${dir.label}</div>
           <div class="sp-dir-time">+${dir.minutes} min detour</div>
-          <div class="sp-dir-desc">Exit before toll → parallel road → rejoin after toll</div>
+          <div class="sp-dir-exits">
+            <span class="sp-exit-tag">↙ Exit: ${dir.exit_name}</span>
+            <span class="sp-entry-tag">↗ Re-enter: ${dir.entry_name}</span>
+          </div>
         </div>`;
     });
   }
@@ -368,6 +347,59 @@ TOLL_DATA.forEach(toll => {
 
 map.on('click', () => { closeSidePanel(); });
 document.getElementById('sp-close').addEventListener('click', closeSidePanel);
+
+// ── Ramp markers (exit/entry layer, off by default) ───────
+const rampMarkers = [];
+let   rampsVisible = false;
+
+function buildRampMarkers() {
+  TOLL_DATA.forEach(toll => {
+    const bd = toll.bypass_directions;
+    if (!bd) return;
+
+    Object.entries(bd).forEach(([dirKey, dir]) => {
+      // Exit ramp marker
+      if (dir.exit) {
+        const ei = L.divIcon({
+          className: '',
+          html: `<div class="ramp-marker ramp-exit-marker">↙</div>`,
+          iconSize: [18,18], iconAnchor: [9,9],
+        });
+        const em = L.marker([dir.exit.lat, dir.exit.lng], { icon: ei, zIndexOffset: 50 });
+        em.bindTooltip(
+          `<strong>Exit:</strong> ${dir.exit_name}<br><small>Avoid ${toll.name_en}</small>`,
+          { className: 'ramp-tooltip' }
+        );
+        rampMarkers.push(em);
+      }
+
+      // Entry ramp marker
+      if (dir.entry) {
+        const ni = L.divIcon({
+          className: '',
+          html: `<div class="ramp-marker ramp-entry-marker">↗</div>`,
+          iconSize: [18,18], iconAnchor: [9,9],
+        });
+        const nm = L.marker([dir.entry.lat, dir.entry.lng], { icon: ni, zIndexOffset: 50 });
+        nm.bindTooltip(
+          `<strong>Re-enter:</strong> ${dir.entry_name}<br><small>Avoid ${toll.name_en}</small>`,
+          { className: 'ramp-tooltip' }
+        );
+        rampMarkers.push(nm);
+      }
+    });
+  });
+}
+
+buildRampMarkers();
+
+document.getElementById('ramps-toggle').addEventListener('change', function() {
+  rampsVisible = this.checked;
+  rampMarkers.forEach(m => {
+    if (rampsVisible) m.addTo(map);
+    else map.removeLayer(m);
+  });
+});
 
 // ── Legend ────────────────────────────────────────────────
 const legendBtn = document.getElementById('legend-toggle');
