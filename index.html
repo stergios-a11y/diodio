@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DIODIO — Greece Toll Road Advisor</title>
   <meta name="description" content="Interactive map of every Greek highway toll booth. Calculate whether each toll is worth paying based on your personal time value." />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -19,7 +18,7 @@
     <div class="topbar-sep"></div>
     <div class="topbar-tagline">Greek highway toll map &amp; route advisor</div>
     <div class="topbar-right">
-      <button class="btn-ghost" id="legend-toggle">Legend</button>
+      <button class="btn-ghost" id="legend-toggle">Hide legend</button>
       <a class="btn-ghost" href="https://github.com/stergios-a11y/diodio" target="_blank" rel="noopener">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
@@ -33,10 +32,21 @@
   <div id="map-container"><div id="map"></div></div>
 
   <!-- LEGEND -->
-  <aside id="legend" class="hidden">
+  <aside id="legend">
     <div class="legend-title">Highways · click to filter</div>
     <div id="legend-list"></div>
   </aside>
+
+  <!-- TOLL SIDE PANEL -->
+  <div id="toll-side-panel">
+    <div class="sp-header">
+      <span class="sp-header-title">Toll details</span>
+      <button class="sp-close" id="sp-close">✕ Close</button>
+    </div>
+    <div class="sp-scroll">
+      <div id="sp-content"></div>
+    </div>
+  </div>
 
   <!-- RESULTS PANEL -->
   <div id="results-panel">
@@ -55,32 +65,25 @@
     <button class="swap-btn" id="swap-btn" title="Reverse route">⇄</button>
     <span class="bar-label">To</span>
     <input class="bar-input" id="dest" value="Larissa" autocomplete="off" style="flex:1;max-width:150px" />
-
     <div class="bar-sep"></div>
-
     <select class="bar-select" id="vehicle">
       <option value="motorcycle">🏍 Moto</option>
       <option value="car" selected>🚗 Car</option>
       <option value="lighttruck">🚐 Van</option>
       <option value="heavytruck">🚛 Truck</option>
     </select>
-
     <div class="bar-sep"></div>
-
     <div class="tv-compact">
       <span class="lbl">€1 =</span>
       <span class="val" id="tv-val">10</span>
       <span class="lbl">min</span>
       <input type="range" id="tv-slider" min="2" max="60" value="10" step="1" />
     </div>
-
     <div class="bar-sep"></div>
-
     <button class="analyse-btn" id="analyse-btn" onclick="analyze()">
       <div class="btn-spinner"></div>
       <span id="btn-text">Analyse</span>
     </button>
-
     <div class="error-pill" id="error-pill"></div>
   </div>
 
