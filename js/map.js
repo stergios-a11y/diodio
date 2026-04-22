@@ -21,12 +21,23 @@ L.tileLayer(
 ).addTo(map);
 
 // ── Highway route polylines ───────────────────────────────
-// OSRM waypoints for each highway — start and end (and key via points
-// to keep the route on the correct road).
-// Coordinates: [lng, lat] for OSRM.
+// Browser fetches real road geometry from OSRM at page load.
+// Waypoints: [lng, lat] pairs that pin the route to the correct road.
 const HIGHWAY_WAYPOINTS = {
-  // Egnatia: Igoumenitsa → Ardanio (Turkish border)
-  // via Ioannina, Metsovo, Kozani, Veroia, Thessaloniki, Kavala, Xanthi, Komotini
+
+  // PATHE A1: from your link 38.106747,23.8184657 → 40.6528427,22.8384533
+  "A1": [
+    [23.8184657, 38.1067470],  // Athens start
+    [23.2868636, 38.3708752],  // Thiva
+    [23.1434298, 38.6174740],  // Traganas
+    [22.6025569, 38.8087016],  // Agios Konstantinos
+    [22.3487648, 38.9148821],  // Lianokladi/Lamia
+    [22.5028431, 39.8044068],  // Makrychori/Larissa
+    [22.5698233, 40.0357339],  // Leptokarya/Tempi
+    [22.8384533, 40.6528427],  // Thessaloniki end
+  ],
+
+  // Egnatia A2: Igoumenitsa → Ardanio (Turkish border)
   "A2": [
     [20.2618948, 39.4861509],  // Igoumenitsa start
     [20.9475803, 39.6188630],  // Ioannina
@@ -38,24 +49,7 @@ const HIGHWAY_WAYPOINTS = {
     [25.5332019, 41.0135240],  // Komotini/Mestis
     [26.308717,  40.9452663],  // Ardanio end
   ],
-  // Moreas: Corinth (Spathvounio) → Kalamata
-  // via Argos/Nestani, Tripoli/Petrina
-  "A7": [
-    [22.9066924, 37.9142092],  // Corinth start
-    [22.4464524, 37.6007682],  // Nestani/Argos
-    [22.2102678, 37.2988500],  // Petrina/Tripoli
-    [22.1253947, 37.0463151],  // Kalamata end
-  ],
-  // PATHE A1: Afidnes → Malgara (Thessaloniki)
-  "A1": [
-    [23.8546228, 38.1764690],  // Afidnes
-    [23.2868636, 38.3708752],  // Thiva
-    [22.6025569, 38.8087016],  // Agios Konstantinos
-    [22.3487648, 38.9148821],  // Lianokladi junction
-    [22.5028431, 39.8044068],  // Makrychori/Larissa
-    [22.5698233, 40.0357339],  // Leptokarya/Tempi
-    [22.6982903, 40.6024027],  // Malgara
-  ],
+
   // Nea Odos A5: Klokova → Terovos/Arta
   "A5": [
     [21.6565418, 38.3592412],  // Klokova
@@ -63,27 +57,39 @@ const HIGHWAY_WAYPOINTS = {
     [21.1709225, 38.9898946],  // Menidi
     [20.9053087, 39.4252460],  // Terovos/Arta
   ],
-  // Olympia Odos A8: Elefsina → Rio (bridge end)
+
+  // Olympia Odos A8: from your link 38.0499433,23.5039038 → 37.7120702,21.3913023
   "A8": [
-    [23.4958076, 38.0422442],  // Elefsina
+    [23.5039038, 38.0499433],  // Athens/Elefsina start
     [23.0325365, 37.9249719],  // Isthmos canal
-    [22.8096664, 37.9222552],  // Zevgolatio
-    [22.1392536, 38.2057293],  // Aigio
+    [22.8096664, 37.9222552],  // Zevgolatio/Corinth
+    [22.1392536, 38.2057293],  // Aigio/Elaionas
     [21.6191570, 38.1449493],  // Patras
-    [21.7660189, 38.3337794],  // Rio bridge
+    [21.3913023, 37.7120702],  // Pyrgos end
   ],
+
   // Kentriki Odos E65: Lianokladi → Trikala
   "E65": [
     [22.3487648, 38.9148821],  // Lianokladi
     [22.0831633, 39.2566317],  // Sofades
     [21.8322372, 39.5204295],  // Trikala
   ],
-  // Attiki Odos A6: Elefsina end → Airport
+
+  // Moreas A7: from your link 37.9142092,22.9066924 → 37.0463151,22.1253947
+  // No Petrina via point — OSRM follows direct lowland route
+  "A7": [
+    [22.9066924, 37.9142092],  // Corinth start
+    [22.4464524, 37.6007682],  // Nestani/Argos
+    [22.1253947, 37.0463151],  // Kalamata end
+  ],
+
+  // Attiki Odos A6: Elefsina junction → Airport
   "A6": [
     [23.4958076, 38.0422442],
     [23.7495232, 38.0620135],
     [23.9350000, 37.9410000],
   ],
+
   // Rio–Antirrio bridge
   "BRIDGE": [
     [21.7200000, 38.3190000],
@@ -93,7 +99,6 @@ const HIGHWAY_WAYPOINTS = {
 
 const highwayRouteLayers = {};
 
-// Simplify polyline: keep every Nth point
 function simplify(coords, n) {
   const out = [coords[0]];
   for (let i = n; i < coords.length - 1; i += n) out.push(coords[i]);
@@ -120,17 +125,10 @@ async function fetchAndDrawRoute(hwy, waypoints) {
     }).addTo(map);
     highwayRouteLayers[hwy] = layer;
   } catch (e) {
-    // Fallback: draw static line if OSRM fails
-    if (HIGHWAY_ROUTES[hwy]) {
-      const color = HIGHWAY_COLORS[hwy] || '#888';
-      highwayRouteLayers[hwy] = L.polyline(HIGHWAY_ROUTES[hwy], {
-        color, weight: 3, opacity: 0.3, lineCap: 'round',
-      }).addTo(map);
-    }
+    // fail silently — routes are decorative
   }
 }
 
-// Fetch all routes in parallel at startup
 Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, waypoints]) => {
   fetchAndDrawRoute(hwy, waypoints);
 });
@@ -384,7 +382,6 @@ legendBtn.addEventListener('click', () => {
   legendBtn.textContent = legendVis ? 'Hide legend' : 'Legend';
 });
 
-// Legend groups — ordered display with labels
 const LEGEND_GROUPS = [
   { key: 'A1',     label: 'PATHE (A1)',           sub: 'Afidnes → Malgara' },
   { key: 'A2',     label: 'Egnatia Odos (A2)',     sub: 'Igoumenitsa → Ardanio' },
@@ -406,7 +403,6 @@ function applyFilter(selectedKey) {
   const allKeys = Object.keys(markersByHighway);
 
   if (activeFilter === selectedKey) {
-    // Deselect — show all
     activeFilter = null;
     allKeys.forEach(k => {
       markersByHighway[k]?.forEach(m => m.setOpacity(1));
@@ -416,7 +412,6 @@ function applyFilter(selectedKey) {
       el.classList.remove('active-filter', 'dimmed-filter');
     });
   } else {
-    // Solo selected highway
     activeFilter = selectedKey;
     allKeys.forEach(k => {
       const solo = k === selectedKey;
