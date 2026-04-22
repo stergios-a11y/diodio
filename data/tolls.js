@@ -1,25 +1,24 @@
 /**
  * DIODIO — Greek Toll Booth Dataset
- * Coordinates sourced from diodia.com.gr Google My Maps (KMZ)
+ * Coordinates sourced from diodia.com.gr KMZ file.
  * Prices updated January 2026.
  *
- * Vehicle categories:
- *   cat1 = Motorcycles
- *   cat2 = Cars / light vehicles (height ≤2.20m)
- *   cat3 = 3-axle / height >2.20m
- *   cat4 = 4+ axle / height >2.20m
+ * Each toll entry optionally includes bypass data:
+ *   bypass_minutes  — extra travel time vs motorway
+ *   bypass_exit     — {lat,lng} where driver leaves the motorway (last exit before toll)
+ *   bypass_entry    — {lat,lng} where driver rejoins the motorway (first entry after toll)
+ *   bypass_via      — [{lat,lng}, ...] waypoints along the free parallel road (Ethniki Odos)
+ *                     OSRM will be called once at build time to draw the green line.
+ *                     These points are on the old national road, forcing routing off motorway.
  *
- * Station types:
- *   "frontal" — main barrier, both directions pay
- *   "entry"   — lateral ramp, pay on entry
- *   "exit"    — lateral ramp, pay on exit
- *   "bridge"  — bridge or tunnel
+ * null bypass_exit/entry means no practical bypass exists.
  */
 
 const TOLL_DATA = [
 
   // ══════════════════════════════════════════════════════════
   // A1 / E75  ·  PATHE  ·  Athens – Thessaloniki – Evzoni
+  // Parallel free road: Ethniki Odos 1 (EO1)
   // ══════════════════════════════════════════════════════════
 
   {
@@ -30,7 +29,18 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.3708752, lng: 23.2868636,
     cat1: 1.30, cat2: 2.40, cat3: 4.80, cat4: 7.20,
-    notes: "Thebes / Thiva area. First major frontal station north of Athens on A1."
+    notes: "Thebes / Thiva area.",
+    bypass_minutes: 12,
+    bypass_exit:  { lat: 38.318, lng: 23.318 },
+    bypass_entry: { lat: 38.419, lng: 23.221 },
+    bypass_via: [
+      { lat: 38.318, lng: 23.318 },
+      { lat: 38.330, lng: 23.290 },
+      { lat: 38.355, lng: 23.270 },
+      { lat: 38.374, lng: 23.256 },
+      { lat: 38.399, lng: 23.238 },
+      { lat: 38.419, lng: 23.221 },
+    ],
   },
   {
     id: "a1_afidnes",
@@ -40,7 +50,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.176469, lng: 23.8546228,
     cat1: 1.00, cat2: 1.90, cat3: 3.80, cat4: 5.70,
-    notes: ""
+    notes: "",
+    bypass_minutes: 10,
+    bypass_exit:  { lat: 38.140, lng: 23.870 },
+    bypass_entry: { lat: 38.210, lng: 23.840 },
+    bypass_via: [
+      { lat: 38.140, lng: 23.870 },
+      { lat: 38.155, lng: 23.858 },
+      { lat: 38.170, lng: 23.845 },
+      { lat: 38.185, lng: 23.837 },
+      { lat: 38.210, lng: 23.840 },
+    ],
   },
   {
     id: "a1_agios_konstantinos",
@@ -50,7 +70,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.8087016, lng: 22.6025569,
     cat1: 1.40, cat2: 2.60, cat3: 5.20, cat4: 7.80,
-    notes: "Near ferry port for Sporades islands (Skiathos, Skopelos)."
+    notes: "Near ferry port for Sporades islands.",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 38.770, lng: 22.650 },
+    bypass_entry: { lat: 38.848, lng: 22.558 },
+    bypass_via: [
+      { lat: 38.770, lng: 22.650 },
+      { lat: 38.785, lng: 22.633 },
+      { lat: 38.800, lng: 22.617 },
+      { lat: 38.820, lng: 22.592 },
+      { lat: 38.848, lng: 22.558 },
+    ],
   },
   {
     id: "a1_traganas",
@@ -60,7 +90,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.9238268, lng: 22.6291966,
     cat1: 1.20, cat2: 2.30, cat3: 4.60, cat4: 6.90,
-    notes: "Zone boundary station."
+    notes: "Zone boundary station.",
+    bypass_minutes: 12,
+    bypass_exit:  { lat: 38.893, lng: 22.652 },
+    bypass_entry: { lat: 38.955, lng: 22.608 },
+    bypass_via: [
+      { lat: 38.893, lng: 22.652 },
+      { lat: 38.908, lng: 22.641 },
+      { lat: 38.924, lng: 22.630 },
+      { lat: 38.940, lng: 22.618 },
+      { lat: 38.955, lng: 22.608 },
+    ],
   },
   {
     id: "a1_lianokladi",
@@ -70,7 +110,18 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.9148821, lng: 22.3487648,
     cat1: 1.20, cat2: 2.30, cat3: 4.60, cat4: 6.90,
-    notes: "Near Lamia junction."
+    notes: "Near Lamia junction.",
+    bypass_minutes: 18,
+    bypass_exit:  { lat: 38.880, lng: 22.380 },
+    bypass_entry: { lat: 38.950, lng: 22.318 },
+    bypass_via: [
+      { lat: 38.880, lng: 22.380 },
+      { lat: 38.895, lng: 22.365 },
+      { lat: 38.910, lng: 22.350 },
+      { lat: 38.925, lng: 22.338 },
+      { lat: 38.940, lng: 22.326 },
+      { lat: 38.950, lng: 22.318 },
+    ],
   },
   {
     id: "a1_pelasgia",
@@ -80,7 +131,18 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.9203273, lng: 22.8462812,
     cat1: 1.90, cat2: 3.70, cat3: 7.40, cat4: 11.10,
-    notes: "Highest-priced station on Kentriki Odos section."
+    notes: "Highest-priced station on Kentriki Odos.",
+    bypass_minutes: 20,
+    bypass_exit:  { lat: 38.882, lng: 22.878 },
+    bypass_entry: { lat: 38.958, lng: 22.815 },
+    bypass_via: [
+      { lat: 38.882, lng: 22.878 },
+      { lat: 38.895, lng: 22.863 },
+      { lat: 38.910, lng: 22.850 },
+      { lat: 38.928, lng: 22.838 },
+      { lat: 38.945, lng: 22.826 },
+      { lat: 38.958, lng: 22.815 },
+    ],
   },
   {
     id: "a1_larissa_aegean",
@@ -90,7 +152,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 39.8044068, lng: 22.5028431,
     cat1: 0.85, cat2: 1.60, cat3: 3.20, cat4: 4.80,
-    notes: "Entry to Aegean Motorway section north of Larissa."
+    notes: "Entry to Aegean Motorway section.",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 39.769, lng: 22.520 },
+    bypass_entry: { lat: 39.840, lng: 22.488 },
+    bypass_via: [
+      { lat: 39.769, lng: 22.520 },
+      { lat: 39.782, lng: 22.512 },
+      { lat: 39.800, lng: 22.505 },
+      { lat: 39.820, lng: 22.496 },
+      { lat: 39.840, lng: 22.488 },
+    ],
   },
   {
     id: "a1_kileler_ramp",
@@ -100,7 +172,9 @@ const TOLL_DATA = [
     type: "exit", direction_label: "Exit — towards Volos / Larissa east",
     lat: 39.5227965, lng: 22.5567985,
     cat1: 1.30, cat2: 2.60, cat3: 5.20, cat4: 7.80,
-    notes: "Lateral exit ramp."
+    notes: "Lateral exit ramp.",
+    bypass_minutes: null,
+    bypass_exit: null, bypass_entry: null, bypass_via: null,
   },
   {
     id: "a1_leptokarya",
@@ -110,7 +184,21 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.0357339, lng: 22.5698233,
     cat1: 4.30, cat2: 8.60, cat3: 17.20, cat4: 25.80,
-    notes: "Largest frontal station on Aegean Motorway — covers Tempi Valley section."
+    notes: "Highest toll on Aegean Motorway. Covers Tempi Valley tunnel section.",
+    bypass_minutes: 35,
+    bypass_exit:  { lat: 39.988, lng: 22.590 },
+    bypass_entry: { lat: 40.080, lng: 22.549 },
+    bypass_via: [
+      { lat: 39.988, lng: 22.590 },
+      { lat: 39.998, lng: 22.582 },
+      // Through Stomio coastal village on old EO1
+      { lat: 40.008, lng: 22.573 },
+      { lat: 40.020, lng: 22.564 },
+      { lat: 40.035, lng: 22.558 },
+      { lat: 40.050, lng: 22.552 },
+      { lat: 40.065, lng: 22.550 },
+      { lat: 40.080, lng: 22.549 },
+    ],
   },
   {
     id: "a1_aeginio_ramp",
@@ -120,7 +208,9 @@ const TOLL_DATA = [
     type: "exit", direction_label: "Exit — towards Aeginio / Pieria coast",
     lat: 40.5195819, lng: 22.5726664,
     cat1: 0.85, cat2: 1.70, cat3: 3.40, cat4: 5.10,
-    notes: ""
+    notes: "",
+    bypass_minutes: null,
+    bypass_exit: null, bypass_entry: null, bypass_via: null,
   },
   {
     id: "a1_malgara",
@@ -130,7 +220,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.6024027, lng: 22.6982903,
     cat1: 0.58, cat2: 1.15, cat3: 2.30, cat4: 3.45,
-    notes: "Thessaloniki ring junction. Connects to Egnatia Odos."
+    notes: "Thessaloniki ring junction.",
+    bypass_minutes: 10,
+    bypass_exit:  { lat: 40.568, lng: 22.716 },
+    bypass_entry: { lat: 40.637, lng: 22.682 },
+    bypass_via: [
+      { lat: 40.568, lng: 22.716 },
+      { lat: 40.583, lng: 22.708 },
+      { lat: 40.600, lng: 22.699 },
+      { lat: 40.618, lng: 22.690 },
+      { lat: 40.637, lng: 22.682 },
+    ],
   },
   {
     id: "a1_analipsi",
@@ -140,7 +240,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.7068438, lng: 23.1914413,
     cat1: 1.18, cat2: 2.35, cat3: 4.70, cat4: 7.05,
-    notes: "North of Thessaloniki towards Kavala / Halkidiki."
+    notes: "North of Thessaloniki.",
+    bypass_minutes: 18,
+    bypass_exit:  { lat: 40.672, lng: 23.210 },
+    bypass_entry: { lat: 40.742, lng: 23.173 },
+    bypass_via: [
+      { lat: 40.672, lng: 23.210 },
+      { lat: 40.688, lng: 23.202 },
+      { lat: 40.705, lng: 23.193 },
+      { lat: 40.722, lng: 23.183 },
+      { lat: 40.742, lng: 23.173 },
+    ],
   },
   {
     id: "a1_asprovalta",
@@ -150,7 +260,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.7269335, lng: 23.6936209,
     cat1: 0.70, cat2: 1.40, cat3: 2.80, cat4: 4.20,
-    notes: "Popular summer exit for Asprovalta beach."
+    notes: "Popular summer exit.",
+    bypass_minutes: 12,
+    bypass_exit:  { lat: 40.700, lng: 23.710 },
+    bypass_entry: { lat: 40.754, lng: 23.678 },
+    bypass_via: [
+      { lat: 40.700, lng: 23.710 },
+      { lat: 40.714, lng: 23.702 },
+      { lat: 40.727, lng: 23.694 },
+      { lat: 40.740, lng: 23.686 },
+      { lat: 40.754, lng: 23.678 },
+    ],
   },
   {
     id: "a1_moustheni",
@@ -160,7 +280,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.8582573, lng: 24.1623607,
     cat1: 1.33, cat2: 2.65, cat3: 5.30, cat4: 7.95,
-    notes: "Between Kavala and Drama junctions."
+    notes: "Between Kavala and Drama.",
+    bypass_minutes: 20,
+    bypass_exit:  { lat: 40.825, lng: 24.182 },
+    bypass_entry: { lat: 40.892, lng: 24.143 },
+    bypass_via: [
+      { lat: 40.825, lng: 24.182 },
+      { lat: 40.840, lng: 24.173 },
+      { lat: 40.857, lng: 24.163 },
+      { lat: 40.874, lng: 24.153 },
+      { lat: 40.892, lng: 24.143 },
+    ],
   },
   {
     id: "a1_evzoni",
@@ -170,11 +300,14 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Southbound (entering Greece from N. Macedonia)",
     lat: 41.108136, lng: 22.5590944,
     cat1: 1.48, cat2: 2.95, cat3: 5.90, cat4: 8.85,
-    notes: "Greek–North Macedonian border. First toll entering Greece from the north."
+    notes: "Greek–North Macedonian border.",
+    bypass_minutes: null,
+    bypass_exit: null, bypass_entry: null, bypass_via: null,
   },
 
   // ══════════════════════════════════════════════════════════
-  // A2 / E90  ·  EGNATIA ODOS  ·  Igoumenitsa – Kipoi
+  // A2 / E90  ·  EGNATIA ODOS
+  // Parallel free road: old regional roads (varies by section)
   // ══════════════════════════════════════════════════════════
 
   {
@@ -185,7 +318,9 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 39.5403268, lng: 20.6743276,
     cat1: 1.00, cat2: 2.00, cat3: 4.00, cat4: 6.00,
-    notes: "Western terminus of Egnatia. Departure from Igoumenitsa ferry."
+    notes: "Western terminus of Egnatia.",
+    bypass_minutes: null,
+    bypass_exit: null, bypass_entry: null, bypass_via: null,
   },
   {
     id: "egnatia_ioannina",
@@ -195,7 +330,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 39.618863, lng: 20.9475803,
     cat1: 1.10, cat2: 2.15, cat3: 4.30, cat4: 6.45,
-    notes: "Ioannina bypass station. Pamvotida lake area."
+    notes: "Ioannina bypass.",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 39.588, lng: 20.968 },
+    bypass_entry: { lat: 39.650, lng: 20.928 },
+    bypass_via: [
+      { lat: 39.588, lng: 20.968 },
+      { lat: 39.600, lng: 20.960 },
+      { lat: 39.615, lng: 20.950 },
+      { lat: 39.633, lng: 20.940 },
+      { lat: 39.650, lng: 20.928 },
+    ],
   },
   {
     id: "egnatia_metsovo",
@@ -205,7 +350,20 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 39.7855212, lng: 21.2854099,
     cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
-    notes: "Highest point on Egnatia. Mountain tunnel complex through Pindus."
+    notes: "Mountain tunnel through Pindus. Old road via Metsovo village is scenic but slow.",
+    bypass_minutes: 45,
+    bypass_exit:  { lat: 39.748, lng: 21.310 },
+    bypass_entry: { lat: 39.823, lng: 21.261 },
+    bypass_via: [
+      { lat: 39.748, lng: 21.310 },
+      { lat: 39.757, lng: 21.303 },
+      // Through Metsovo village on old mountain road
+      { lat: 39.769, lng: 21.295 },
+      { lat: 39.781, lng: 21.283 },
+      { lat: 39.795, lng: 21.272 },
+      { lat: 39.810, lng: 21.266 },
+      { lat: 39.823, lng: 21.261 },
+    ],
   },
   {
     id: "egnatia_kozani",
@@ -215,7 +373,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.2378869, lng: 21.5810286,
     cat1: 0.90, cat2: 1.80, cat3: 3.60, cat4: 5.40,
-    notes: ""
+    notes: "",
+    bypass_minutes: 20,
+    bypass_exit:  { lat: 40.205, lng: 21.601 },
+    bypass_entry: { lat: 40.271, lng: 21.561 },
+    bypass_via: [
+      { lat: 40.205, lng: 21.601 },
+      { lat: 40.220, lng: 21.592 },
+      { lat: 40.237, lng: 21.582 },
+      { lat: 40.254, lng: 21.572 },
+      { lat: 40.271, lng: 21.561 },
+    ],
   },
   {
     id: "egnatia_ieropigi",
@@ -225,7 +393,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.5665678, lng: 21.0665417,
     cat1: 0.80, cat2: 1.60, cat3: 3.20, cat4: 4.80,
-    notes: "Western Macedonia section."
+    notes: "",
+    bypass_minutes: 25,
+    bypass_exit:  { lat: 40.535, lng: 21.088 },
+    bypass_entry: { lat: 40.598, lng: 21.045 },
+    bypass_via: [
+      { lat: 40.535, lng: 21.088 },
+      { lat: 40.550, lng: 21.078 },
+      { lat: 40.566, lng: 21.067 },
+      { lat: 40.582, lng: 21.056 },
+      { lat: 40.598, lng: 21.045 },
+    ],
   },
   {
     id: "egnatia_veroia",
@@ -235,7 +413,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.3671958, lng: 22.0602089,
     cat1: 0.80, cat2: 1.60, cat3: 3.20, cat4: 4.80,
-    notes: ""
+    notes: "",
+    bypass_minutes: 18,
+    bypass_exit:  { lat: 40.336, lng: 22.079 },
+    bypass_entry: { lat: 40.399, lng: 22.042 },
+    bypass_via: [
+      { lat: 40.336, lng: 22.079 },
+      { lat: 40.350, lng: 22.071 },
+      { lat: 40.367, lng: 22.061 },
+      { lat: 40.383, lng: 22.051 },
+      { lat: 40.399, lng: 22.042 },
+    ],
   },
   {
     id: "egnatia_thessaloniki_west",
@@ -245,7 +433,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.6956111, lng: 22.9162091,
     cat1: 0.60, cat2: 1.20, cat3: 2.40, cat4: 3.60,
-    notes: "Western Thessaloniki bypass."
+    notes: "Western Thessaloniki bypass.",
+    bypass_minutes: 20,
+    bypass_exit:  { lat: 40.666, lng: 22.933 },
+    bypass_entry: { lat: 40.726, lng: 22.900 },
+    bypass_via: [
+      { lat: 40.666, lng: 22.933 },
+      { lat: 40.680, lng: 22.925 },
+      { lat: 40.695, lng: 22.917 },
+      { lat: 40.710, lng: 22.908 },
+      { lat: 40.726, lng: 22.900 },
+    ],
   },
   {
     id: "egnatia_strymoniko",
@@ -255,7 +453,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 41.0435183, lng: 23.2952374,
     cat1: 0.90, cat2: 1.80, cat3: 3.60, cat4: 5.40,
-    notes: "Between Thessaloniki and Kavala."
+    notes: "",
+    bypass_minutes: 20,
+    bypass_exit:  { lat: 41.013, lng: 23.313 },
+    bypass_entry: { lat: 41.074, lng: 23.278 },
+    bypass_via: [
+      { lat: 41.013, lng: 23.313 },
+      { lat: 41.027, lng: 23.305 },
+      { lat: 41.043, lng: 23.296 },
+      { lat: 41.058, lng: 23.287 },
+      { lat: 41.074, lng: 23.278 },
+    ],
   },
   {
     id: "egnatia_xanthi",
@@ -265,7 +473,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 41.1203415, lng: 25.0802422,
     cat1: 0.85, cat2: 1.70, cat3: 3.40, cat4: 5.10,
-    notes: ""
+    notes: "",
+    bypass_minutes: 18,
+    bypass_exit:  { lat: 41.091, lng: 25.098 },
+    bypass_entry: { lat: 41.150, lng: 25.063 },
+    bypass_via: [
+      { lat: 41.091, lng: 25.098 },
+      { lat: 41.105, lng: 25.090 },
+      { lat: 41.120, lng: 25.081 },
+      { lat: 41.135, lng: 25.072 },
+      { lat: 41.150, lng: 25.063 },
+    ],
   },
   {
     id: "egnatia_komotini",
@@ -275,7 +493,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 41.013524, lng: 25.5332019,
     cat1: 0.85, cat2: 1.70, cat3: 3.40, cat4: 5.10,
-    notes: ""
+    notes: "",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 40.984, lng: 25.551 },
+    bypass_entry: { lat: 41.044, lng: 25.516 },
+    bypass_via: [
+      { lat: 40.984, lng: 25.551 },
+      { lat: 40.998, lng: 25.543 },
+      { lat: 41.013, lng: 25.534 },
+      { lat: 41.029, lng: 25.525 },
+      { lat: 41.044, lng: 25.516 },
+    ],
   },
   {
     id: "egnatia_alexandroupoli",
@@ -285,7 +513,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 40.9441053, lng: 26.2045028,
     cat1: 0.80, cat2: 1.60, cat3: 3.20, cat4: 4.80,
-    notes: "Near Turkish border."
+    notes: "Near Turkish border.",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 40.915, lng: 26.222 },
+    bypass_entry: { lat: 40.974, lng: 26.187 },
+    bypass_via: [
+      { lat: 40.915, lng: 26.222 },
+      { lat: 40.929, lng: 26.214 },
+      { lat: 40.944, lng: 26.205 },
+      { lat: 40.959, lng: 26.196 },
+      { lat: 40.974, lng: 26.187 },
+    ],
   },
   {
     id: "egnatia_promahonas",
@@ -295,7 +533,9 @@ const TOLL_DATA = [
     type: "entry", direction_label: "Westbound (entering Greece from Bulgaria)",
     lat: 41.3641919, lng: 23.3567727,
     cat1: 1.18, cat2: 2.35, cat3: 4.70, cat4: 7.05,
-    notes: "Greek–Bulgarian border spur."
+    notes: "Greek–Bulgarian border spur.",
+    bypass_minutes: null,
+    bypass_exit: null, bypass_entry: null, bypass_via: null,
   },
 
   // ══════════════════════════════════════════════════════════
@@ -310,7 +550,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.3592412, lng: 21.6565418,
     cat1: 1.20, cat2: 2.40, cat3: 4.80, cat4: 7.20,
-    notes: "Zone 1 frontal station (Antirrio – Chaliki)."
+    notes: "Zone 1.",
+    bypass_minutes: 20,
+    bypass_exit:  { lat: 38.330, lng: 21.673 },
+    bypass_entry: { lat: 38.389, lng: 21.641 },
+    bypass_via: [
+      { lat: 38.330, lng: 21.673 },
+      { lat: 38.345, lng: 21.665 },
+      { lat: 38.360, lng: 21.657 },
+      { lat: 38.375, lng: 21.649 },
+      { lat: 38.389, lng: 21.641 },
+    ],
   },
   {
     id: "ionia_aggelokastro",
@@ -320,7 +570,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.5494744, lng: 21.2723798,
     cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
-    notes: "Zone 2 frontal (Chaliki – Amfilochia)."
+    notes: "Zone 2.",
+    bypass_minutes: 22,
+    bypass_exit:  { lat: 38.519, lng: 21.290 },
+    bypass_entry: { lat: 38.580, lng: 21.255 },
+    bypass_via: [
+      { lat: 38.519, lng: 21.290 },
+      { lat: 38.534, lng: 21.282 },
+      { lat: 38.549, lng: 21.273 },
+      { lat: 38.564, lng: 21.264 },
+      { lat: 38.580, lng: 21.255 },
+    ],
   },
   {
     id: "ionia_menidi",
@@ -330,7 +590,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.9898946, lng: 21.1709225,
     cat1: 1.63, cat2: 3.25, cat3: 6.50, cat4: 9.75,
-    notes: "Large station on Arta–Ioannina section."
+    notes: "Arta–Ioannina section.",
+    bypass_minutes: 25,
+    bypass_exit:  { lat: 38.960, lng: 21.188 },
+    bypass_entry: { lat: 39.021, lng: 21.154 },
+    bypass_via: [
+      { lat: 38.960, lng: 21.188 },
+      { lat: 38.975, lng: 21.180 },
+      { lat: 38.990, lng: 21.172 },
+      { lat: 39.005, lng: 21.163 },
+      { lat: 39.021, lng: 21.154 },
+    ],
   },
   {
     id: "ionia_terovos",
@@ -340,7 +610,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 39.425246, lng: 20.9053087,
     cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
-    notes: "Near Arta. Zone 4 frontal station."
+    notes: "Near Arta.",
+    bypass_minutes: 20,
+    bypass_exit:  { lat: 39.396, lng: 20.922 },
+    bypass_entry: { lat: 39.455, lng: 20.889 },
+    bypass_via: [
+      { lat: 39.396, lng: 20.922 },
+      { lat: 39.410, lng: 20.915 },
+      { lat: 39.425, lng: 20.906 },
+      { lat: 39.440, lng: 20.897 },
+      { lat: 39.455, lng: 20.889 },
+    ],
   },
   {
     id: "ionia_ioannina_south",
@@ -350,11 +630,22 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 39.580, lng: 20.862,
     cat1: 1.80, cat2: 3.60, cat3: 7.20, cat4: 10.80,
-    notes: "Southern approach to Ioannina. Junction with Egnatia Odos A2."
+    notes: "Junction with Egnatia A2.",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 39.551, lng: 20.878 },
+    bypass_entry: { lat: 39.610, lng: 20.847 },
+    bypass_via: [
+      { lat: 39.551, lng: 20.878 },
+      { lat: 39.565, lng: 20.870 },
+      { lat: 39.580, lng: 20.863 },
+      { lat: 39.595, lng: 20.855 },
+      { lat: 39.610, lng: 20.847 },
+    ],
   },
 
   // ══════════════════════════════════════════════════════════
   // A8 / E94  ·  OLYMPIA ODOS  ·  Athens – Patras
+  // Parallel free road: old EO8a coastal road
   // ══════════════════════════════════════════════════════════
 
   {
@@ -365,7 +656,18 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.0422442, lng: 23.4958076,
     cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
-    notes: "Western Athens gateway. Junction with A6 Attiki Odos."
+    notes: "Western Athens gateway.",
+    bypass_minutes: 25,
+    bypass_exit:  { lat: 38.012, lng: 23.518 },
+    bypass_entry: { lat: 38.073, lng: 23.474 },
+    bypass_via: [
+      { lat: 38.012, lng: 23.518 },
+      { lat: 38.025, lng: 23.510 },
+      { lat: 38.038, lng: 23.500 },
+      { lat: 38.053, lng: 23.490 },
+      { lat: 38.068, lng: 23.480 },
+      { lat: 38.073, lng: 23.474 },
+    ],
   },
   {
     id: "olympia_isthmos",
@@ -375,7 +677,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 37.9222552, lng: 22.8096664,
     cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
-    notes: "Near Corinth Canal. Gateway to Peloponnese."
+    notes: "Near Corinth Canal.",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 37.893, lng: 22.828 },
+    bypass_entry: { lat: 37.952, lng: 22.792 },
+    bypass_via: [
+      { lat: 37.893, lng: 22.828 },
+      { lat: 37.907, lng: 22.820 },
+      { lat: 37.922, lng: 22.811 },
+      { lat: 37.937, lng: 22.801 },
+      { lat: 37.952, lng: 22.792 },
+    ],
   },
   {
     id: "olympia_aigio",
@@ -385,7 +697,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.2057293, lng: 22.1392536,
     cat1: 1.20, cat2: 2.40, cat3: 4.80, cat4: 7.20,
-    notes: "Halfway Athens–Patras. Views of Gulf of Corinth."
+    notes: "Halfway Athens–Patras.",
+    bypass_minutes: 20,
+    bypass_exit:  { lat: 38.176, lng: 22.158 },
+    bypass_entry: { lat: 38.236, lng: 22.121 },
+    bypass_via: [
+      { lat: 38.176, lng: 22.158 },
+      { lat: 38.190, lng: 22.150 },
+      { lat: 38.205, lng: 22.140 },
+      { lat: 38.220, lng: 22.130 },
+      { lat: 38.236, lng: 22.121 },
+    ],
   },
   {
     id: "olympia_patras_east",
@@ -395,7 +717,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 38.1449493, lng: 21.619157,
     cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
-    notes: "Eastern approach to Patras. Junction with A7 Moreas."
+    notes: "Eastern approach to Patras.",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 38.116, lng: 21.637 },
+    bypass_entry: { lat: 38.175, lng: 21.602 },
+    bypass_via: [
+      { lat: 38.116, lng: 21.637 },
+      { lat: 38.130, lng: 21.629 },
+      { lat: 38.144, lng: 21.620 },
+      { lat: 38.159, lng: 21.611 },
+      { lat: 38.175, lng: 21.602 },
+    ],
   },
   {
     id: "olympia_pyrgos",
@@ -405,7 +737,9 @@ const TOLL_DATA = [
     type: "exit", direction_label: "Exit — towards Pyrgos / Ancient Olympia",
     lat: 37.7525508, lng: 21.3585639,
     cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
-    notes: "Exit for Ancient Olympia archaeological site."
+    notes: "Exit for Ancient Olympia.",
+    bypass_minutes: null,
+    bypass_exit: null, bypass_entry: null, bypass_via: null,
   },
 
   // ══════════════════════════════════════════════════════════
@@ -417,10 +751,12 @@ const TOLL_DATA = [
     name: "Rio–Antirrio Bridge",
     highway: "BRIDGE", highway_name: "Rio–Antirrio Bridge (Gefyra SA)",
     operator: "Gefyra SA",
-    type: "bridge", direction_label: "Westbound only (Antirrio side). Eastbound is FREE.",
+    type: "bridge", direction_label: "Westbound only. Eastbound is FREE.",
     lat: 38.3337794, lng: 21.7660189,
     cat1: 7.60, cat2: 15.50, cat3: 25.00, cat4: 35.00,
-    notes: "World's longest multi-span cable-stayed bridge (2.88 km). Toll collected only westbound."
+    notes: "2.88 km cable-stayed bridge. No bypass — ferry is the only alternative.",
+    bypass_minutes: null,
+    bypass_exit: null, bypass_entry: null, bypass_via: null,
   },
   {
     id: "aktio_preveza",
@@ -430,11 +766,13 @@ const TOLL_DATA = [
     type: "bridge", direction_label: "Both directions",
     lat: 38.9481954, lng: 20.7569504,
     cat1: 1.50, cat2: 3.00, cat3: 6.00, cat4: 9.00,
-    notes: "Only underwater tunnel in Greece (1.5 km). Essential for reaching Lefkada overland."
+    notes: "Only underwater tunnel in Greece. No bypass.",
+    bypass_minutes: null,
+    bypass_exit: null, bypass_entry: null, bypass_via: null,
   },
 
   // ══════════════════════════════════════════════════════════
-  // A6  ·  ATTIKI ODOS  ·  Athens ring road
+  // A6  ·  ATTIKI ODOS
   // ══════════════════════════════════════════════════════════
 
   {
@@ -442,10 +780,14 @@ const TOLL_DATA = [
     name: "Attiki Odos",
     highway: "A6", highway_name: "Attiki Odos (A6)",
     operator: "Attikes Diadromes",
-    type: "entry", direction_label: "Pay once on entry — covers full traverse (€2.55)",
+    type: "entry", direction_label: "Pay once on entry",
     lat: 38.0620135, lng: 23.7495232,
     cat1: 1.28, cat2: 2.55, cat3: 4.70, cat4: 7.00,
-    notes: "Flat-rate toll paid once on entry. Covers entire ring regardless of exit point."
+    notes: "Flat-rate on entry. Urban ring road — bypassing via city streets adds significant time.",
+    bypass_minutes: 35,
+    bypass_exit:  { lat: 38.020, lng: 23.700 },
+    bypass_entry: { lat: 38.020, lng: 23.700 },
+    bypass_via: null,
   },
 
   // ══════════════════════════════════════════════════════════
@@ -460,7 +802,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 37.8359076, lng: 22.8079391,
     cat1: 1.05, cat2: 2.10, cat3: 4.20, cat4: 6.30,
-    notes: "Start of Moreas motorway south of Corinth."
+    notes: "Start of Moreas south of Corinth.",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 37.807, lng: 22.826 },
+    bypass_entry: { lat: 37.866, lng: 22.790 },
+    bypass_via: [
+      { lat: 37.807, lng: 22.826 },
+      { lat: 37.820, lng: 22.818 },
+      { lat: 37.835, lng: 22.809 },
+      { lat: 37.850, lng: 22.800 },
+      { lat: 37.866, lng: 22.790 },
+    ],
   },
   {
     id: "moreas_argos",
@@ -470,7 +822,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 37.6007682, lng: 22.4464524,
     cat1: 1.20, cat2: 2.40, cat3: 4.80, cat4: 7.20,
-    notes: "Near ancient Mycenae. Exit for Nafplio."
+    notes: "Near Mycenae.",
+    bypass_minutes: 20,
+    bypass_exit:  { lat: 37.571, lng: 22.464 },
+    bypass_entry: { lat: 37.631, lng: 22.429 },
+    bypass_via: [
+      { lat: 37.571, lng: 22.464 },
+      { lat: 37.585, lng: 22.457 },
+      { lat: 37.600, lng: 22.447 },
+      { lat: 37.615, lng: 22.438 },
+      { lat: 37.631, lng: 22.429 },
+    ],
   },
   {
     id: "moreas_tripoli",
@@ -480,17 +842,29 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 37.29885, lng: 22.2102678,
     cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
-    notes: "Arcadian plateau section. Junction for Sparta branch."
+    notes: "Arcadian plateau.",
+    bypass_minutes: 25,
+    bypass_exit:  { lat: 37.269, lng: 22.228 },
+    bypass_entry: { lat: 37.329, lng: 22.193 },
+    bypass_via: [
+      { lat: 37.269, lng: 22.228 },
+      { lat: 37.283, lng: 22.220 },
+      { lat: 37.299, lng: 22.211 },
+      { lat: 37.314, lng: 22.202 },
+      { lat: 37.329, lng: 22.193 },
+    ],
   },
   {
     id: "moreas_veligosti",
     name: "Veligosti / Sparta branch",
     highway: "A7", highway_name: "Moreas (A7) — Sparta spur",
     operator: "Moreas SA",
-    type: "exit", direction_label: "Exit — towards Sparta / Mystras",
+    type: "exit", direction_label: "Exit — towards Sparta",
     lat: 37.3450082, lng: 22.1103072,
     cat1: 1.05, cat2: 2.10, cat3: 4.20, cat4: 6.30,
-    notes: "Lateral ramp for Lefktro–Sparta branch."
+    notes: "",
+    bypass_minutes: null,
+    bypass_exit: null, bypass_entry: null, bypass_via: null,
   },
   {
     id: "moreas_kalamata",
@@ -500,7 +874,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 37.1368508, lng: 22.0379627,
     cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
-    notes: "Southern terminus of Moreas motorway."
+    notes: "Southern terminus.",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 37.108, lng: 22.054 },
+    bypass_entry: { lat: 37.166, lng: 22.022 },
+    bypass_via: [
+      { lat: 37.108, lng: 22.054 },
+      { lat: 37.122, lng: 22.047 },
+      { lat: 37.137, lng: 22.039 },
+      { lat: 37.151, lng: 22.030 },
+      { lat: 37.166, lng: 22.022 },
+    ],
   },
 
   // ══════════════════════════════════════════════════════════
@@ -515,7 +899,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 39.2566317, lng: 22.0831633,
     cat1: 0.98, cat2: 1.95, cat3: 3.90, cat4: 5.85,
-    notes: "First station on E65 north of Lamia junction."
+    notes: "",
+    bypass_minutes: 15,
+    bypass_exit:  { lat: 39.228, lng: 22.099 },
+    bypass_entry: { lat: 39.286, lng: 22.068 },
+    bypass_via: [
+      { lat: 39.228, lng: 22.099 },
+      { lat: 39.242, lng: 22.092 },
+      { lat: 39.256, lng: 22.084 },
+      { lat: 39.271, lng: 22.076 },
+      { lat: 39.286, lng: 22.068 },
+    ],
   },
   {
     id: "e65_trikala",
@@ -525,7 +919,17 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Both directions",
     lat: 39.5204295, lng: 21.8322372,
     cat1: 1.00, cat2: 2.00, cat3: 4.00, cat4: 6.00,
-    notes: "Northern terminus of E65."
+    notes: "Northern terminus of E65.",
+    bypass_minutes: 12,
+    bypass_exit:  { lat: 39.492, lng: 21.848 },
+    bypass_entry: { lat: 39.549, lng: 21.817 },
+    bypass_via: [
+      { lat: 39.492, lng: 21.848 },
+      { lat: 39.506, lng: 21.841 },
+      { lat: 39.520, lng: 21.833 },
+      { lat: 39.534, lng: 21.825 },
+      { lat: 39.549, lng: 21.817 },
+    ],
   },
 
 ];
