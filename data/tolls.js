@@ -931,46 +931,101 @@ const HIGHWAY_COLORS = {
   "E65":    "#5e7a1a",
 };
 
-const HIGHWAY_ROUTES = {
-  "A1": [
-    [38.050, 23.680],[38.150, 23.780],[38.176, 23.854],[38.270, 23.820],
-    [38.371, 23.287],[38.530, 23.070],[38.617, 23.143],[38.720, 22.850],
-    [38.809, 22.603],[38.924, 22.629],[38.915, 22.349],[38.920, 22.846],
-    [39.084, 22.417],[39.356, 22.430],[39.523, 22.557],[39.660, 22.420],
-    [39.804, 22.503],[39.880, 22.510],[40.036, 22.570],[40.100, 22.520],
-    [40.270, 22.509],[40.395, 22.537],[40.520, 22.573],[40.602, 22.698],
-    [40.696, 22.916],[40.707, 23.191],[40.727, 23.694],[40.858, 24.162],
-    [41.000, 24.500],[41.108, 22.559],
-  ],
-  "A2": [
-    [39.540, 20.674],[39.619, 20.948],[39.786, 21.285],[40.238, 21.581],
-    [40.567, 21.067],[40.367, 22.060],[40.696, 22.916],
-    [40.636, 23.115],[41.044, 23.295],[40.944, 26.204],[41.120, 25.080],
-    [41.013, 25.533],[41.364, 23.357],
-  ],
-  "A5": [
-    [38.334, 21.766],[38.359, 21.657],[38.549, 21.272],[38.990, 21.171],
-    [39.160, 20.985],[39.425, 20.905],[39.619, 20.948],
-  ],
-  "A8": [
-    [38.042, 23.496],[37.993, 23.346],[37.925, 23.033],[37.922, 22.810],
-    [38.013, 22.741],[38.076, 22.634],[38.206, 22.139],[38.145, 21.619],
-    [38.316, 21.830],[38.334, 21.766],
-  ],
-  "A6": [
-    [38.042, 23.496],[38.062, 23.750],[37.941, 23.935],
-  ],
-  "A7": [
-    [37.836, 22.808],[37.601, 22.446],[37.345, 22.110],
-    [37.299, 22.210],[37.137, 22.038],
-  ],
-  "E65": [
-    [38.915, 22.349],[39.257, 22.083],[39.364, 21.925],[39.520, 21.832],
-  ],
-  "BRIDGE": [
-    [38.319, 21.720],[38.334, 21.766],
-  ],
-};
+/* ── HELP BUTTON ── */
+.btn-help { gap: 6px; }
+
+/* ── HELP MODAL ── */
+#help-modal {
+  position: fixed; inset: 0;
+  z-index: 2000;
+  background: rgba(20,20,18,0.55);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+  padding: 20px;
+}
+#help-modal.open { opacity: 1; pointer-events: all; }
+
+.help-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  max-width: 520px; width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px 28px 24px;
+  position: relative;
+  border-radius: var(--radius);
+}
+.help-box::-webkit-scrollbar { width: 3px; }
+.help-box::-webkit-scrollbar-thumb { background: var(--border2); }
+
+.help-close {
+  position: absolute; top: 14px; right: 14px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  color: var(--ink3); cursor: pointer; font-size: 0.75rem;
+  padding: 4px 9px; border-radius: var(--radius);
+  transition: all 0.12s;
+}
+.help-close:hover { color: var(--rust); border-color: var(--rust); background: var(--rust-bg); }
+
+.help-logo {
+  font-family: var(--font-display); font-weight: 800; font-size: 1.6rem;
+  letter-spacing: -0.04em; color: var(--ink); margin-bottom: 2px;
+}
+.help-logo em { color: var(--olive); font-style: normal; }
+
+.help-subtitle {
+  font-size: 0.72rem; color: var(--ink3); letter-spacing: 0.05em;
+  margin-bottom: 22px;
+}
+
+.help-section { display: flex; gap: 14px; margin-bottom: 18px; }
+
+.help-section-icon {
+  font-size: 1.1rem; color: var(--olive); flex-shrink: 0;
+  width: 24px; text-align: center; margin-top: 2px;
+}
+
+.help-section-title {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.88rem;
+  color: var(--ink); margin-bottom: 6px;
+}
+
+.help-section-body {
+  font-size: 0.75rem; color: var(--ink2); line-height: 1.75;
+}
+
+.help-section-body ul,
+.help-section-body ol {
+  padding-left: 18px; margin-top: 6px;
+}
+
+.help-section-body li { margin-bottom: 3px; }
+.help-section-body strong { color: var(--ink); }
+
+.help-divider {
+  border: none; border-top: 1px solid var(--border);
+  margin: 18px 0;
+}
+
+.help-tip {
+  font-size: 0.72rem; color: var(--ink2); line-height: 1.6;
+  background: var(--gold-bg); border: 1px solid #e8d89a;
+  padding: 8px 12px; margin-bottom: 20px;
+  border-radius: var(--radius);
+}
+.help-tip strong { color: var(--gold); }
+
+.help-cta {
+  width: 100%; background: var(--olive); border: none; color: white;
+  font-family: var(--font-display); font-weight: 700; font-size: 0.82rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 12px; cursor: pointer; border-radius: var(--radius);
+  transition: background 0.15s;
+}
+.help-cta:hover { background: var(--olive-lt); }
 
 const TYPE_SHAPES = {
   frontal: "diamond",
