@@ -21,18 +21,118 @@ L.tileLayer(
 ).addTo(map);
 
 // ── Highway route polylines ───────────────────────────────
+// OSRM waypoints for each highway — start and end (and key via points
+// to keep the route on the correct road).
+// Coordinates: [lng, lat] for OSRM.
+const HIGHWAY_WAYPOINTS = {
+  // Egnatia: Igoumenitsa → Ardanio (Turkish border)
+  // via Ioannina, Metsovo, Kozani, Veroia, Thessaloniki, Kavala, Xanthi, Komotini
+  "A2": [
+    [20.2618948, 39.4861509],  // Igoumenitsa start
+    [20.9475803, 39.6188630],  // Ioannina
+    [21.2854099, 39.7855212],  // Metsovo tunnel
+    [21.5810286, 40.2378869],  // Kozani/Siatista
+    [22.0602089, 40.3671958],  // Veroia/Polymylo
+    [22.9162091, 40.6956111],  // Thessaloniki West
+    [25.0802422, 41.1203415],  // Xanthi/Iasmos
+    [25.5332019, 41.0135240],  // Komotini/Mestis
+    [26.308717,  40.9452663],  // Ardanio end
+  ],
+  // Moreas: Corinth (Spathvounio) → Kalamata
+  // via Argos/Nestani, Tripoli/Petrina
+  "A7": [
+    [22.9066924, 37.9142092],  // Corinth start
+    [22.4464524, 37.6007682],  // Nestani/Argos
+    [22.2102678, 37.2988500],  // Petrina/Tripoli
+    [22.1253947, 37.0463151],  // Kalamata end
+  ],
+  // PATHE A1: Afidnes → Malgara (Thessaloniki)
+  "A1": [
+    [23.8546228, 38.1764690],  // Afidnes
+    [23.2868636, 38.3708752],  // Thiva
+    [22.6025569, 38.8087016],  // Agios Konstantinos
+    [22.3487648, 38.9148821],  // Lianokladi junction
+    [22.5028431, 39.8044068],  // Makrychori/Larissa
+    [22.5698233, 40.0357339],  // Leptokarya/Tempi
+    [22.6982903, 40.6024027],  // Malgara
+  ],
+  // Nea Odos A5: Klokova → Terovos/Arta
+  "A5": [
+    [21.6565418, 38.3592412],  // Klokova
+    [21.2723798, 38.5494744],  // Aggelokastro
+    [21.1709225, 38.9898946],  // Menidi
+    [20.9053087, 39.4252460],  // Terovos/Arta
+  ],
+  // Olympia Odos A8: Elefsina → Rio (bridge end)
+  "A8": [
+    [23.4958076, 38.0422442],  // Elefsina
+    [23.0325365, 37.9249719],  // Isthmos canal
+    [22.8096664, 37.9222552],  // Zevgolatio
+    [22.1392536, 38.2057293],  // Aigio
+    [21.6191570, 38.1449493],  // Patras
+    [21.7660189, 38.3337794],  // Rio bridge
+  ],
+  // Kentriki Odos E65: Lianokladi → Trikala
+  "E65": [
+    [22.3487648, 38.9148821],  // Lianokladi
+    [22.0831633, 39.2566317],  // Sofades
+    [21.8322372, 39.5204295],  // Trikala
+  ],
+  // Attiki Odos A6: Elefsina end → Airport
+  "A6": [
+    [23.4958076, 38.0422442],
+    [23.7495232, 38.0620135],
+    [23.9350000, 37.9410000],
+  ],
+  // Rio–Antirrio bridge
+  "BRIDGE": [
+    [21.7200000, 38.3190000],
+    [21.7660189, 38.3337794],
+  ],
+};
+
 const highwayRouteLayers = {};
 
-Object.entries(HIGHWAY_ROUTES).forEach(([hwy, coords]) => {
-  const color = HIGHWAY_COLORS[hwy] || '#888';
-  const layer = L.polyline(coords, {
-    color,
-    weight:   3,
-    opacity:  0.3,
-    lineCap:  'round',
-    lineJoin: 'round',
-  }).addTo(map);
-  highwayRouteLayers[hwy] = layer;
+// Simplify polyline: keep every Nth point
+function simplify(coords, n) {
+  const out = [coords[0]];
+  for (let i = n; i < coords.length - 1; i += n) out.push(coords[i]);
+  out.push(coords[coords.length - 1]);
+  return out;
+}
+
+async function fetchAndDrawRoute(hwy, waypoints) {
+  const coordStr = waypoints.map(w => `${w[0]},${w[1]}`).join(';');
+  const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
+  try {
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (data.code !== 'Ok') return;
+    const raw    = data.routes[0].geometry.coordinates;
+    const coords = simplify(raw, 4).map(c => [c[1], c[0]]);
+    const color  = HIGHWAY_COLORS[hwy] || '#888';
+    const layer  = L.polyline(coords, {
+      color,
+      weight:   3,
+      opacity:  0.3,
+      lineCap:  'round',
+      lineJoin: 'round',
+    }).addTo(map);
+    highwayRouteLayers[hwy] = layer;
+  } catch (e) {
+    // Fallback: draw static line if OSRM fails
+    if (HIGHWAY_ROUTES[hwy]) {
+      const color = HIGHWAY_COLORS[hwy] || '#888';
+      highwayRouteLayers[hwy] = L.polyline(HIGHWAY_ROUTES[hwy], {
+        color, weight: 3, opacity: 0.3, lineCap: 'round',
+      }).addTo(map);
+    }
+  }
+}
+
+// Fetch all routes in parallel at startup
+Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, waypoints]) => {
+  fetchAndDrawRoute(hwy, waypoints);
 });
 
 window.setActiveRouteLayer = function(coords) {
