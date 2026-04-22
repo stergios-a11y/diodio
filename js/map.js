@@ -1,9 +1,11 @@
 /**
  * DIODIO — map.js
- * - OSRM highway route polylines fetched at load
- * - Help modal
- * - Legend with solo-filter + ramps layer toggle
- * - Hover tooltip + click side panel with legend push
+ * Features:
+ *  - OSRM highway route polylines fetched at load
+ *  - Help modal
+ *  - Legend with solo-filter
+ *  - Ramp layer: EXIT/ENTER signs + dashed connection lines toll→exit→entry
+ *  - Toll click: dims everything except that toll's exit/entry/bypass
  */
 
 const map = L.map('map', {
@@ -23,61 +25,37 @@ L.tileLayer(
   }
 ).addTo(map);
 
-// ── Highway route polylines (fetched from OSRM at load) ───
+// ── Highway route polylines (OSRM) ────────────────────────
 const HIGHWAY_WAYPOINTS = {
   "A1": [
-    [23.8184657, 38.1067470],
-    [23.2868636, 38.3708752],
-    [23.1434298, 38.6174740],
-    [22.6025569, 38.8087016],
-    [22.3487648, 38.9148821],
-    [22.5028431, 39.8044068],
-    [22.5698233, 40.0357339],
-    [22.8384533, 40.6528427],
+    [23.8184657, 38.1067470],[23.2868636, 38.3708752],[23.1434298, 38.6174740],
+    [22.6025569, 38.8087016],[22.3487648, 38.9148821],[22.5028431, 39.8044068],
+    [22.5698233, 40.0357339],[22.8384533, 40.6528427],
   ],
   "A2": [
-    [20.2618948, 39.4861509],
-    [20.9475803, 39.6188630],
-    [21.2854099, 39.7855212],
-    [21.5810286, 40.2378869],
-    [22.0602089, 40.3671958],
-    [22.9162091, 40.6956111],
-    [25.0802422, 41.1203415],
-    [25.5332019, 41.0135240],
-    [26.308717,  40.9452663],
+    [20.2618948, 39.4861509],[20.9475803, 39.6188630],[21.2854099, 39.7855212],
+    [21.5810286, 40.2378869],[22.0602089, 40.3671958],[22.9162091, 40.6956111],
+    [25.0802422, 41.1203415],[25.5332019, 41.0135240],[26.308717, 40.9452663],
   ],
   "A5": [
-    [21.6565418, 38.3592412],
-    [21.2723798, 38.5494744],
-    [21.1709225, 38.9898946],
-    [20.9053087, 39.4252460],
+    [21.6565418, 38.3592412],[21.2723798, 38.5494744],
+    [21.1709225, 38.9898946],[20.9053087, 39.4252460],
   ],
   "A8": [
-    [23.5039038, 38.0499433],
-    [23.0325365, 37.9249719],
-    [22.8096664, 37.9222552],
-    [22.1392536, 38.2057293],
-    [21.6191570, 38.1449493],
-    [21.3913023, 37.7120702],
+    [23.5039038, 38.0499433],[23.0325365, 37.9249719],[22.8096664, 37.9222552],
+    [22.1392536, 38.2057293],[21.6191570, 38.1449493],[21.3913023, 37.7120702],
   ],
   "E65": [
-    [22.3487648, 38.9148821],
-    [22.0831633, 39.2566317],
-    [21.8322372, 39.5204295],
+    [22.3487648, 38.9148821],[22.0831633, 39.2566317],[21.8322372, 39.5204295],
   ],
   "A7": [
-    [22.9066924, 37.9142092],
-    [22.4464524, 37.6007682],
-    [22.1253947, 37.0463151],
+    [22.9066924, 37.9142092],[22.4464524, 37.6007682],[22.1253947, 37.0463151],
   ],
   "A6": [
-    [23.4958076, 38.0422442],
-    [23.7495232, 38.0620135],
-    [23.9350000, 37.9410000],
+    [23.4958076, 38.0422442],[23.7495232, 38.0620135],[23.9350000, 37.9410000],
   ],
   "BRIDGE": [
-    [21.7200000, 38.3190000],
-    [21.7660189, 38.3337794],
+    [21.7200000, 38.3190000],[21.7660189, 38.3337794],
   ],
 };
 
@@ -115,7 +93,6 @@ window.setActiveRouteLayer = function(coords) {
     color: '#1a4a8a', weight: 4, opacity: 0.75,
   }).addTo(map);
 };
-
 window.clearActiveRouteLayer = function() {
   if (window._activeRouteHighlight) {
     map.removeLayer(window._activeRouteHighlight);
@@ -186,10 +163,35 @@ function positionTooltip(e) {
   tooltipEl.style.left = x + 'px';
   tooltipEl.style.top  = y + 'px';
 }
-
 document.addEventListener('mousemove', e => {
   if (tooltipEl.style.display === 'block') positionTooltip(e);
 });
+
+// ── Dim / restore helpers ─────────────────────────────────
+function dimAll() {
+  allMarkers.forEach(({ marker }) => marker.setOpacity(0.07));
+  Object.values(highwayRouteLayers).forEach(l => l.setStyle({ opacity: 0.04 }));
+  // Also dim ramp markers if visible
+  rampMarkers.forEach(({ exitM, entryM, connLine }) => {
+    if (exitM)    exitM.setOpacity(0.07);
+    if (entryM)   entryM.setOpacity(0.07);
+    if (connLine) connLine.setStyle({ opacity: 0.04 });
+  });
+}
+
+function restoreAll() {
+  allMarkers.forEach(({ marker }) => marker.setOpacity(1));
+  Object.entries(highwayRouteLayers).forEach(([hwy, l]) => {
+    // Respect active legend filter
+    const isDimmedByFilter = activeFilter && activeFilter !== hwy;
+    l.setStyle({ opacity: isDimmedByFilter ? 0.03 : 0.3 });
+  });
+  rampMarkers.forEach(({ exitM, entryM, connLine }) => {
+    if (exitM)    exitM.setOpacity(rampsVisible ? 1 : 0);
+    if (entryM)   entryM.setOpacity(rampsVisible ? 1 : 0);
+    if (connLine) connLine.setStyle({ opacity: rampsVisible ? 0.5 : 0 });
+  });
+}
 
 // ── Side panel ────────────────────────────────────────────
 let inspectLayers = [];
@@ -205,69 +207,109 @@ function closeSidePanel() {
   document.getElementById('toll-side-panel')?.classList.remove('open');
   legendEl.classList.remove('pushed');
   clearInspectLayers();
+  restoreAll();
   sidePanelOpen = false;
+}
+
+// EXIT sign icon
+function makeExitIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div style="background:#1a4a8a;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">EXIT</div>`,
+    iconSize: [36, 16], iconAnchor: [18, 8],
+  });
+}
+
+// ENTER sign icon
+function makeEntryIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div style="background:#1a8a3c;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">ENTER</div>`,
+    iconSize: [42, 16], iconAnchor: [21, 8],
+  });
 }
 
 function openSidePanel(toll) {
   clearInspectLayers();
   sidePanelOpen = true;
   legendEl.classList.add('pushed');
+
+  // Dim everything first
+  dimAll();
+
+  // Restore just this toll's marker
+  const myMarker = allMarkers.find(m => m.toll.id === toll.id);
+  if (myMarker) myMarker.marker.setOpacity(1);
+
+  // Restore this highway's route line
+  const hwyLayer = highwayRouteLayers[toll.highway];
+  if (hwyLayer) hwyLayer.setStyle({ opacity: 0.35 });
+
   map.setView([toll.lat, toll.lng], Math.max(map.getZoom(), 11), { animate: true });
 
   const bd    = toll.bypass_directions;
   const color = HIGHWAY_COLORS[toll.highway] || '#888';
 
   if (bd) {
-    const dirColors = ['#2d7a3a', '#1a7a5a'];
-    Object.entries(bd).forEach(([key, dir], i) => {
+    Object.entries(bd).forEach(([key, dir]) => {
       if (!dir.via) return;
-      const dc = dirColors[i % dirColors.length];
 
+      // Green bypass line
       const line = L.polyline(dir.via.map(p => [p.lat, p.lng]), {
-        color: dc, weight: 4, opacity: 0.9, lineCap: 'round', lineJoin: 'round',
+        color: '#2d7a3a', weight: 4, opacity: 0.9, lineCap: 'round', lineJoin: 'round',
       }).addTo(map);
       line.bindTooltip(`🟢 ${dir.label} (+${dir.minutes} min)`, {
         sticky: true, className: 'bypass-tooltip',
       });
       inspectLayers.push(line);
 
+      // EXIT sign marker
       if (dir.exit) {
-        const ei = L.divIcon({
-          className: '',
-          html: `<div style="width:14px;height:14px;background:#b33a22;border:2px solid white;border-radius:50%;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:8px;color:white;font-weight:700;font-family:sans-serif;">↙</div>`,
-          iconSize: [14,14], iconAnchor: [7,7],
+        const em = L.marker([dir.exit.lat, dir.exit.lng], {
+          icon: makeExitIcon(), zIndexOffset: 600,
         });
-        const em = L.marker([dir.exit.lat, dir.exit.lng], { icon: ei, zIndexOffset: 500 });
-        em.bindTooltip(`Exit: ${dir.exit_name}`, { className: 'bypass-tooltip' });
+        em.bindTooltip(`Exit: ${dir.exit_name}<br><small>${dir.label}</small>`, {
+          className: 'ramp-tooltip',
+        });
         em.addTo(map);
         inspectLayers.push(em);
       }
 
+      // ENTER sign marker
       if (dir.entry) {
-        const ni = L.divIcon({
-          className: '',
-          html: `<div style="width:14px;height:14px;background:#2d7a3a;border:2px solid white;border-radius:50%;box-shadow:0 1px 5px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:8px;color:white;font-weight:700;font-family:sans-serif;">↗</div>`,
-          iconSize: [14,14], iconAnchor: [7,7],
+        const nm = L.marker([dir.entry.lat, dir.entry.lng], {
+          icon: makeEntryIcon(), zIndexOffset: 600,
         });
-        const nm = L.marker([dir.entry.lat, dir.entry.lng], { icon: ni, zIndexOffset: 500 });
-        nm.bindTooltip(`Re-enter: ${dir.entry_name}`, { className: 'bypass-tooltip' });
+        nm.bindTooltip(`Re-enter: ${dir.entry_name}<br><small>${dir.label}</small>`, {
+          className: 'ramp-tooltip',
+        });
         nm.addTo(map);
         inspectLayers.push(nm);
       }
-    });
 
-    const firstDir = Object.values(bd)[0];
-    const lastDir  = Object.values(bd)[Object.values(bd).length - 1];
-    if (firstDir?.exit && lastDir?.entry) {
-      const seg = L.polyline(
-        [[firstDir.exit.lat,firstDir.exit.lng],[toll.lat,toll.lng],[lastDir.entry.lat,lastDir.entry.lng]],
-        { color: '#c87020', weight: 5, opacity: 0.7, dashArray: '10 6', lineCap: 'round' }
-      ).addTo(map);
-      seg.bindTooltip('🟠 Toll section on motorway', { sticky: true, className: 'bypass-tooltip' });
-      inspectLayers.push(seg);
-    }
+      // Dashed connection: exit → toll → entry
+      if (dir.exit && dir.entry) {
+        const connCoords = [
+          [dir.exit.lat,  dir.exit.lng],
+          [toll.lat,       toll.lng],
+          [dir.entry.lat, dir.entry.lng],
+        ];
+        const conn = L.polyline(connCoords, {
+          color: '#c87020',
+          weight: 2,
+          opacity: 0.8,
+          dashArray: '6 5',
+          lineCap: 'round',
+        }).addTo(map);
+        conn.bindTooltip(`${dir.exit_name} → toll → ${dir.entry_name}`, {
+          sticky: true, className: 'bypass-tooltip',
+        });
+        inspectLayers.push(conn);
+      }
+    });
   }
 
+  // Build side panel HTML
   let bypassHTML = '';
   if (!bd) {
     bypassHTML = `<div class="sp-no-bypass">⛔ No practical bypass available for this toll.</div>`;
@@ -312,7 +354,7 @@ function openSidePanel(toll) {
   document.getElementById('toll-side-panel').classList.add('open');
 }
 
-// ── Markers ───────────────────────────────────────────────
+// ── Toll markers ──────────────────────────────────────────
 const markersByHighway = {};
 const allMarkers       = [];
 
@@ -345,11 +387,12 @@ TOLL_DATA.forEach(toll => {
   markersByHighway[toll.highway].push(marker);
 });
 
-map.on('click', () => { closeSidePanel(); });
+map.on('click', () => { if (sidePanelOpen) closeSidePanel(); });
 document.getElementById('sp-close').addEventListener('click', closeSidePanel);
 
-// ── Ramp markers (exit/entry layer, off by default) ───────
-const rampMarkers = [];
+// ── Ramp markers layer (off by default) ──────────────────
+// Each entry: { tollId, exitM, entryM, connLine }
+const rampMarkers  = [];
 let   rampsVisible = false;
 
 function buildRampMarkers() {
@@ -358,35 +401,41 @@ function buildRampMarkers() {
     if (!bd) return;
 
     Object.entries(bd).forEach(([dirKey, dir]) => {
-      // Exit ramp marker
+      let exitM = null, entryM = null, connLine = null;
+
       if (dir.exit) {
-        const ei = L.divIcon({
-          className: '',
-          html: `<div class="ramp-marker ramp-exit-marker">↙</div>`,
-          iconSize: [18,18], iconAnchor: [9,9],
+        exitM = L.marker([dir.exit.lat, dir.exit.lng], {
+          icon: makeExitIcon(), zIndexOffset: 50, opacity: 0,
         });
-        const em = L.marker([dir.exit.lat, dir.exit.lng], { icon: ei, zIndexOffset: 50 });
-        em.bindTooltip(
-          `<strong>Exit:</strong> ${dir.exit_name}<br><small>Avoid ${toll.name_en}</small>`,
+        exitM.bindTooltip(
+          `<strong>EXIT:</strong> ${dir.exit_name}<br><small>Avoid ${toll.name_en}</small>`,
           { className: 'ramp-tooltip' }
         );
-        rampMarkers.push(em);
       }
 
-      // Entry ramp marker
       if (dir.entry) {
-        const ni = L.divIcon({
-          className: '',
-          html: `<div class="ramp-marker ramp-entry-marker">↗</div>`,
-          iconSize: [18,18], iconAnchor: [9,9],
+        entryM = L.marker([dir.entry.lat, dir.entry.lng], {
+          icon: makeEntryIcon(), zIndexOffset: 50, opacity: 0,
         });
-        const nm = L.marker([dir.entry.lat, dir.entry.lng], { icon: ni, zIndexOffset: 50 });
-        nm.bindTooltip(
-          `<strong>Re-enter:</strong> ${dir.entry_name}<br><small>Avoid ${toll.name_en}</small>`,
+        entryM.bindTooltip(
+          `<strong>ENTER:</strong> ${dir.entry_name}<br><small>Avoid ${toll.name_en}</small>`,
           { className: 'ramp-tooltip' }
         );
-        rampMarkers.push(nm);
       }
+
+      // Dashed connection line: exit → toll → entry
+      if (dir.exit && dir.entry) {
+        connLine = L.polyline(
+          [[dir.exit.lat, dir.exit.lng],[toll.lat, toll.lng],[dir.entry.lat, dir.entry.lng]],
+          { color: '#c87020', weight: 1.5, opacity: 0, dashArray: '5 4', lineCap: 'round' }
+        );
+        connLine.bindTooltip(
+          `${dir.exit_name} → ${toll.name_en} → ${dir.entry_name}`,
+          { sticky: true, className: 'bypass-tooltip' }
+        );
+      }
+
+      rampMarkers.push({ tollId: toll.id, exitM, entryM, connLine });
     });
   });
 }
@@ -395,9 +444,16 @@ buildRampMarkers();
 
 document.getElementById('ramps-toggle').addEventListener('change', function() {
   rampsVisible = this.checked;
-  rampMarkers.forEach(m => {
-    if (rampsVisible) m.addTo(map);
-    else map.removeLayer(m);
+  rampMarkers.forEach(({ exitM, entryM, connLine }) => {
+    if (rampsVisible) {
+      if (exitM)    { exitM.addTo(map);    exitM.setOpacity(1); }
+      if (entryM)   { entryM.addTo(map);   entryM.setOpacity(1); }
+      if (connLine) { connLine.addTo(map); connLine.setStyle({ opacity: 0.5 }); }
+    } else {
+      if (exitM)    map.removeLayer(exitM);
+      if (entryM)   map.removeLayer(entryM);
+      if (connLine) map.removeLayer(connLine);
+    }
   });
 });
 
