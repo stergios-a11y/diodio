@@ -325,6 +325,70 @@ function openSidePanel(toll) {
     });
   }
 
+  // Translate direction labels from data (e.g. "Both directions", "Northbound (towards Thessaloniki)")
+  function translateDirectionLabel(label) {
+    if (!label) return '';
+    // Map known patterns to translation keys
+    const patterns = [
+      { re: /^Both directions$/i,                          key: 'dir.both' },
+      { re: /^Northbound \(towards (.+)\)$/i,              key: 'dir.north.to' },
+      { re: /^Southbound \(towards (.+)\)$/i,              key: 'dir.south.to' },
+      { re: /^Eastbound \(towards (.+)\)$/i,               key: 'dir.east.to' },
+      { re: /^Westbound \(towards (.+)\)$/i,               key: 'dir.west.to' },
+      { re: /^Northbound$/i,                               key: 'dir.north' },
+      { re: /^Southbound$/i,                               key: 'dir.south' },
+      { re: /^Eastbound$/i,                                key: 'dir.east' },
+      { re: /^Westbound$/i,                                key: 'dir.west' },
+      { re: /^Westbound only\. Eastbound is FREE\.$/i,     key: 'dir.west.free' },
+      { re: /^Southbound \(entering Greece from (.+)\)$/i, key: 'dir.south.border' },
+      { re: /^Westbound \(entering Greece from (.+)\)$/i,  key: 'dir.west.border' },
+      { re: /^Exit — towards (.+)$/i,                      key: 'dir.exit.to' },
+      { re: /^Pay once on entry — covers full traverse$/i, key: 'dir.entry.once' },
+    ];
+    for (const { re, key } of patterns) {
+      const m = label.match(re);
+      if (m) return t(key, { dest: translateCity(m[1] || '') });
+    }
+    return label; // fallback: show original
+  }
+  // Translate common destination/city names inline
+  function translateCity(name) {
+    if (!name) return '';
+    const cityMap = {
+      'Thessaloniki':    { el: 'Θεσσαλονίκη' },
+      'Athens':          { el: 'Αθήνα' },
+      'Ioannina':        { el: 'Ιωάννινα' },
+      'Igoumenitsa':     { el: 'Ηγουμενίτσα' },
+      'Patras':          { el: 'Πάτρα' },
+      'Antirrio':        { el: 'Αντίρριο' },
+      'Kavala':          { el: 'Καβάλα' },
+      'Kavala/Drama':    { el: 'Καβάλα/Δράμα' },
+      'Drama':           { el: 'Δράμα' },
+      'Arta':            { el: 'Άρτα' },
+      'Aigio':           { el: 'Αίγιο' },
+      'Trikala':         { el: 'Τρίκαλα' },
+      'Trikala city':    { el: 'Τρίκαλα' },
+      'Karditsa':        { el: 'Καρδίτσα' },
+      'Lamia':           { el: 'Λαμία' },
+      'Peloponnese':     { el: 'Πελοπόννησος' },
+      'Kozani':          { el: 'Κοζάνη' },
+      'Veroia':          { el: 'Βέροια' },
+      'Komotini':        { el: 'Κομοτηνή' },
+      'Xanthi':          { el: 'Ξάνθη' },
+      'Alexandroupoli':  { el: 'Αλεξανδρούπολη' },
+      'Rio/Bridge':      { el: 'Ρίο/Γέφυρα' },
+      'Bulgaria':        { el: 'Βουλγαρία' },
+      'N. Macedonia':    { el: 'Β. Μακεδονία' },
+      'Sparta / Mystras':{ el: 'Σπάρτη / Μυστράς' },
+      'Pyrgos / Ancient Olympia':   { el: 'Πύργος / Αρχαία Ολυμπία' },
+      'Volos / Larissa east':       { el: 'Βόλος / Λάρισα Α.' },
+      'Aeginio / Pieria coast':     { el: 'Αιγίνιο / Παραλία Πιερίας' },
+    };
+    const lang = getCurrentLang();
+    if (lang === 'el' && cityMap[name]) return cityMap[name].el;
+    return name;
+  }
+
   // Build side panel HTML
   let bypassHTML = '';
   if (!bd) {
@@ -334,7 +398,7 @@ function openSidePanel(toll) {
     Object.entries(bd).forEach(([key, dir]) => {
       bypassHTML += `
         <div class="sp-dir">
-          <div class="sp-dir-label">${dir.label}</div>
+          <div class="sp-dir-label">${translateDirectionLabel(dir.label)}</div>
           <div class="sp-dir-time">${t('sp.detour', {n: dir.minutes})}</div>
           <div class="sp-dir-exits">
             <span class="sp-exit-tag">${t('sp.exit.tag')}${dir.exit_name}</span>
@@ -344,26 +408,33 @@ function openSidePanel(toll) {
     });
   }
 
-  const notesHTML = toll.notes ? `<div class="sp-notes">${toll.notes}</div>` : '';
+  // Name: show Greek first in Greek mode, English first in English mode
+  const primaryName   = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
+  const secondaryName = getCurrentLang() === 'el' ? toll.name_en : toll.name_gr;
+
+  // Notes are English-only in data; only show when in English mode
+  const notesHTML = (toll.notes && getCurrentLang() === 'en')
+    ? `<div class="sp-notes">${toll.notes}</div>`
+    : '';
 
   document.getElementById('sp-content').innerHTML = `
     <div class="sp-header-inner">
       <div class="sp-hwy-badge" style="background:${color}">${toll.highway}</div>
-      <div class="sp-name">${toll.name_en}</div>
-      <div class="sp-name-gr">${toll.name_gr}</div>
+      <div class="sp-name">${primaryName}</div>
+      <div class="sp-name-gr">${secondaryName}</div>
       <div class="sp-operator">${toll.operator} · ${t('hwy.' + toll.highway)}</div>
     </div>
-    <div class="sp-section-title">Toll prices</div>
+    <div class="sp-section-title">${t('sp.prices')}</div>
     <div class="sp-prices">
       <div class="sp-price-row"><span>${t('sp.motorcycle')}</span><strong>€${toll.cat1.toFixed(2)}</strong></div>
       <div class="sp-price-row"><span>${t('sp.car')}</span><strong>€${toll.cat2.toFixed(2)}</strong></div>
       <div class="sp-price-row"><span>${t('sp.van')}</span><strong>€${toll.cat3.toFixed(2)}</strong></div>
       <div class="sp-price-row"><span>${t('sp.truck')}</span><strong>€${toll.cat4.toFixed(2)}</strong></div>
     </div>
-    <div class="sp-section-title">Direction</div>
-    <div class="sp-direction">${toll.direction_label}</div>
+    <div class="sp-section-title">${t('sp.direction')}</div>
+    <div class="sp-direction">${translateDirectionLabel(toll.direction_label)}</div>
     ${notesHTML}
-    <div class="sp-section-title">Bypass</div>
+    <div class="sp-section-title">${t('sp.bypass')}</div>
     ${bypassHTML}
   `;
 
@@ -458,8 +529,9 @@ function buildRampMarkers() {
 
 buildRampMarkers();
 
-document.getElementById('ramps-toggle').addEventListener('change', function() {
-  rampsVisible = this.checked;
+document.getElementById('ramps-btn').addEventListener('click', function() {
+  rampsVisible = !rampsVisible;
+  this.classList.toggle('active', rampsVisible);
   rampMarkers.forEach(({ exitM, entryM, connLine }) => {
     if (rampsVisible) {
       if (exitM)    { exitM.addTo(map);    exitM.setOpacity(1); }
@@ -503,8 +575,9 @@ function updateTollNameLabels() {
   });
 }
 
-document.getElementById('tollnames-toggle').addEventListener('change', function() {
-  tollNamesVisible = this.checked;
+document.getElementById('tollnames-btn').addEventListener('click', function() {
+  tollNamesVisible = !tollNamesVisible;
+  this.classList.toggle('active', tollNamesVisible);
   if (tollNamesVisible) {
     updateTollNameLabels();
     tollNameMarkers.forEach(({ marker }) => marker.addTo(map));

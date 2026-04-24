@@ -36,34 +36,22 @@
   <aside id="legend">
     <div class="legend-title" data-i18n="legend.title">Αυτοκινητόδρομοι · κλικ για φίλτρο</div>
     <div id="legend-list"></div>
-    <div class="legend-section-sep"></div>
-    <div class="legend-title legend-title-sub">
-      <span data-i18n="legend.ramps.title">Κόμβοι εξόδου & εισόδου</span>
-      <label class="legend-toggle-switch">
-        <input type="checkbox" id="ramps-toggle" />
-        <span class="legend-toggle-track"></span>
-      </label>
-    </div>
-    <div id="ramps-key" class="ramps-key">
-      <div class="ramps-key-row">
-        <span class="ramp-icon ramp-exit">EX</span>
-        <span class="ramps-key-label" data-i18n="legend.ramps.exit">Κόμβος εξόδου</span>
-      </div>
-      <div class="ramps-key-row">
-        <span class="ramp-icon ramp-entry">EN</span>
-        <span class="ramps-key-label" data-i18n="legend.ramps.entry">Κόμβος εισόδου</span>
-      </div>
-    </div>
-
-    <div class="legend-section-sep"></div>
-    <div class="legend-title legend-title-sub">
-      <span data-i18n="legend.tollnames.title">Ονόματα διοδίων</span>
-      <label class="legend-toggle-switch">
-        <input type="checkbox" id="tollnames-toggle" />
-        <span class="legend-toggle-track"></span>
-      </label>
-    </div>
   </aside>
+
+  <!-- Map layer toggles — always visible on map -->
+  <div id="map-controls">
+    <button class="map-control-btn" id="ramps-btn" title="">
+      <span class="mc-icon mc-icon-ramp">
+        <span class="mc-badge mc-badge-exit">EX</span>
+        <span class="mc-badge mc-badge-entry">EN</span>
+      </span>
+      <span class="mc-label" data-i18n="control.ramps">Ράμπες εξόδου/εισόδου</span>
+    </button>
+    <button class="map-control-btn" id="tollnames-btn" title="">
+      <span class="mc-icon mc-icon-text">ΑΒ</span>
+      <span class="mc-label" data-i18n="control.tollnames">Ονόματα διοδίων</span>
+    </button>
+  </div>
 
   <div id="help-modal">
     <div class="help-box">

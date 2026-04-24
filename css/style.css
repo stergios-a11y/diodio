@@ -195,6 +195,93 @@ body {
 }
 
 /* ══════════════════════════════════════
+   MAP CONTROLS — persistent toggles (bottom-left of map)
+   ══════════════════════════════════════ */
+#map-controls {
+  position: fixed;
+  left: 10px;
+  bottom: calc(var(--bar-h) + 10px);
+  z-index: 450;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.map-control-btn {
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 7px 12px 7px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+  min-width: 145px;
+}
+.map-control-btn:hover {
+  border-color: var(--aegean);
+  background: var(--paper);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+.map-control-btn.active {
+  background: var(--aegean-lt);
+  border-color: var(--aegean);
+  color: var(--aegean-dark);
+}
+.map-control-btn.active .mc-label { font-weight: 600; }
+
+.mc-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.mc-icon-ramp {
+  gap: 2px;
+}
+.mc-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 14px;
+  font-family: 'Arial Black', sans-serif;
+  font-size: 7px;
+  font-weight: 900;
+  color: white;
+  letter-spacing: 0.5px;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(26,31,46,0.2);
+}
+.mc-badge-exit  { background: var(--aegean); }
+.mc-badge-entry { background: var(--go); }
+
+.mc-icon-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 16px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.62rem;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.map-control-btn.active .mc-icon-text {
+  background: var(--paper);
+  border-color: var(--aegean);
+  color: var(--aegean);
+}
+
+/* ══════════════════════════════════════
    HOVER TOOLTIP
    ══════════════════════════════════════ */
 .toll-tooltip {
@@ -1269,6 +1356,23 @@ input[type="range"]::-moz-range-thumb {
   #results-panel { bottom: 116px; max-height: 60vh; }
   #copyright { bottom: 124px; right: 6px; font-size: 0.62rem; }
   #feedback-btn { bottom: 150px; right: 6px; }
+
+  /* Map controls on mobile: icon-only, horizontal strip */
+  #map-controls {
+    left: 6px;
+    bottom: calc(var(--bar-h) + 120px);
+    flex-direction: column;
+    gap: 5px;
+  }
+  .map-control-btn {
+    min-width: auto;
+    padding: 6px 9px 6px 7px;
+    font-size: 0.72rem;
+  }
+  .map-control-btn .mc-label {
+    /* Keep text — labels are short and helpful */
+    font-size: 0.7rem;
+  }
 
   .toll-tooltip { min-width: 210px; max-width: calc(100vw - 20px); }
 }
