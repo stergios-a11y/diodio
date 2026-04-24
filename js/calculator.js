@@ -34,7 +34,7 @@ document.getElementById('rp-close').addEventListener('click', () => {
 function setLoading(on) {
   analyseBtn.disabled = on;
   analyseBtn.classList.toggle('loading', on);
-  btnText.textContent = on ? 'Αναλύω…' : 'Ανάλυση';
+  btnText.textContent = t(on ? 'bar.analysing' : 'bar.analyse');
 }
 
 function showError(msg) {
@@ -117,13 +117,13 @@ function detectDirection(fromCoord, toCoord) {
 function calcVerdict(toll, catKey, timeValue, travelDirection) {
   const bd = toll.bypass_directions;
   if (!bd) {
-    return { verdict: 'PAY', dir: null, reasoning: 'Δεν υπάρχει παράκαμψη.' };
+    return { verdict: 'PAY', dir: null, reasoning: t('verdict.no.bypass') };
   }
 
   // Find matching direction entry
   const dir = bd[travelDirection] || Object.values(bd)[0];
   if (!dir) {
-    return { verdict: 'PAY', dir: null, reasoning: 'Δεν υπάρχει παράκαμψη.' };
+    return { verdict: 'PAY', dir: null, reasoning: t('verdict.no.bypass') };
   }
 
   const cost      = toll[catKey];
@@ -139,12 +139,12 @@ function calcVerdict(toll, catKey, timeValue, travelDirection) {
   } else if (extra <= threshold + margin) {
     return {
       verdict: 'MARGINAL', dir,
-      reasoning: `Έξοδος ${dir.exit_name}. +${extra} λεπτά, οριακή περίπτωση.`,
+      reasoning: t('verdict.marginal.reason', {exit: dir.exit_name, min: extra}),
     };
   } else {
     return {
       verdict: 'PAY', dir,
-      reasoning: `Η παράκαμψη προσθέτει ${extra} λεπτά — δεν αξίζει. Πλήρωσε το διόδιο.`,
+      reasoning: t('verdict.pay.reason', {min: extra}),
     };
   }
 }
@@ -191,7 +191,7 @@ function drawBypassLine(dir, label) {
       iconSize: [13,13], iconAnchor: [6.5,6.5],
     });
     const nm = L.marker([dir.entry.lat, dir.entry.lng], { icon: ni, zIndexOffset: 600 });
-    nm.bindTooltip(`Επανείσοδος: ${dir.entry_name}`, { className: 'bypass-tooltip' });
+    nm.bindTooltip(t('ramp.entry.tooltip', {name: dir.entry_name}), { className: 'bypass-tooltip' });
     nm.addTo(map);
     bypassLayers.push(nm);
   }
@@ -210,10 +210,10 @@ function fetchAISummary(origin, dest, results, catKeyLabel, savings, extraMin) {
       max_tokens: 200,
       messages: [{
         role: 'user',
-        content: `Ελληνική διαδρομή με διόδια ${origin} → ${dest} for a ${catKeyLabel}.
-Διόδια για ΠΑΡΑΚΑΜΨΗ: ${avoidList}. Διόδια για ΠΛΗΡΩΜΗ: ${payList}.
+        content: `Route ${origin} → ${dest} for a ${catKeyLabel}. Language: ${getCurrentLang() === 'el' ? 'Greek' : 'English'}.
+Tolls to AVOID: ${avoidList}. Tolls to PAY: ${payList}.
 Saving €${savings.toFixed(2)} at cost of ${extraMin} extra minutes.
-Γράψε 1-2 προτάσεις πρακτικών συμβουλών για τον οδηγό στα ελληνικά. Να είσαι συνοπτικός.`,
+Write 1-2 concise sentences of practical advice in the specified language.`,
       }],
     }),
   })
@@ -235,7 +235,7 @@ async function analyze() {
   const vehicle   = document.getElementById('vehicle').value;
   const timeValue = parseInt(slider.value);
 
-  if (!origin || !dest) { showError('Εισάγετε αφετηρία και προορισμό'); return; }
+  if (!origin || !dest) { showError(t('err.missing')); return; }
 
   clearError();
   clearRoute();
@@ -251,7 +251,7 @@ async function analyze() {
 
     // 3. Main motorway route
     const routeCoords = await fetchOSRM([fromCoord, toCoord]);
-    if (!routeCoords) throw new Error('Δεν ήταν δυνατός ο υπολογισμός διαδρομής');
+    if (!routeCoords) throw new Error(t('err.route'));
 
     // 4. Draw blue main route
     routeLayer = L.polyline(routeCoords, {
@@ -264,7 +264,7 @@ async function analyze() {
     // 5. Snap tolls to route
     const matchedTolls = tollsOnRoute(routeCoords);
     if (matchedTolls.length === 0) {
-      showError('Δεν βρέθηκαν διόδια σε αυτή τη διαδρομή');
+      showError(t('err.no.tolls'));
       setLoading(false);
       return;
     }
@@ -314,15 +314,15 @@ async function analyze() {
     // 10. Render results panel
     rpTitle.textContent = `${origin} → ${dest}`;
     rpStats.innerHTML = `
-      <span class="rp-stat">Total <strong>€${totalCost.toFixed(2)}</strong></span>
-      <span class="rp-stat green">Save <strong>€${savings.toFixed(2)}</strong></span>
-      <span class="rp-stat red">+<strong>${extraMin} min</strong></span>`;
+      <span class="rp-stat">${t('rp.total')} <strong>€${totalCost.toFixed(2)}</strong></span>
+      <span class="rp-stat green">${t('rp.save')} <strong>€${savings.toFixed(2)}</strong></span>
+      <span class="rp-stat red">+<strong>${extraMin} ${t('bar.time.label2')}</strong></span>`;
 
     let html = '';
     results.forEach(r => {
       const bypassInfo = r.dir
-        ? `Έξοδος ${r.dir.exit_name} · Είσοδος ${r.dir.entry_name} · +${r.dir.minutes} λεπτά`
-        : 'Χωρίς παράκαμψη';
+        ? `${t('sp.exit.tag').replace('↙ ', '')}${r.dir.exit_name} · ${t('sp.entry.tag').replace('↗ ', '')}${r.dir.entry_name} · +${r.dir.minutes} ${t('bar.time.label2')}`
+        : t('verdict.no.bypass.short');
       html += `
         <div class="toll-chip verdict-${r.verdict}"
           onclick="const el=this.querySelector('.chip-reason');el.style.display=el.style.display==='block'?'none':'block'">
@@ -333,12 +333,12 @@ async function analyze() {
         </div>`;
     });
 
-    html += `<div class="rp-advice" id="rp-advice-el">💡 Υπολογισμός συμβουλής διαδρομής…</div>`;
+    html += `<div class="rp-advice" id="rp-advice-el">${t('rp.advice.loading')}</div>`;
     rpBody.innerHTML = html;
     resultsPanel.classList.add('open');
 
     // 11. AI summary (async, non-blocking)
-    const catKeyLabel = { cat1:'μοτοσικλέτα', cat2:'αυτοκίνητο', cat3:'ελαφρύ φορτηγό', cat4:'βαρύ φορτηγό' }[catKey];
+    const catKeyLabel = { cat1: t('bar.moto').replace('🏍 ','').trim(), cat2: t('bar.car').replace('🚗 ','').trim(), cat3: t('bar.van').replace('🚐 ','').trim(), cat4: t('bar.truck').replace('🚛 ','').trim() }[catKey];
     fetchAISummary(origin, dest, results, catKeyLabel, savings, extraMin);
 
   } catch (err) {

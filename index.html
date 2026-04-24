@@ -15,8 +15,9 @@
   <header id="topbar">
     <div class="logo">DIO<em>DIO</em></div>
     <div class="topbar-sep"></div>
-    <div class="topbar-tagline">Χάρτης διοδίων &amp; σύμβουλος διαδρομής</div>
+    <div class="topbar-tagline" data-i18n="tagline">Χάρτης διοδίων & σύμβουλος διαδρομής</div>
     <div class="topbar-right">
+      <button class="btn-ghost btn-lang" id="lang-toggle" data-i18n="lang.toggle" title="Switch language">EN</button>
       <button class="btn-ghost" id="legend-toggle">Απόκρυψη</button>
       <button class="btn-ghost btn-help" id="help-btn">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -24,7 +25,7 @@
           <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
           <line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
-        Οδηγίες χρήσης
+        <span data-i18n="btn.help">Οδηγίες χρήσης</span>
       </button>
     </div>
   </header>
@@ -32,11 +33,11 @@
   <div id="map-container"><div id="map"></div></div>
 
   <aside id="legend">
-    <div class="legend-title">Αυτοκινητόδρομοι · κλικ για φίλτρο</div>
+    <div class="legend-title" data-i18n="legend.title">Αυτοκινητόδρομοι · κλικ για φίλτρο</div>
     <div id="legend-list"></div>
     <div class="legend-section-sep"></div>
     <div class="legend-title legend-title-sub">
-      Κόμβοι εξόδου &amp; εισόδου
+      <span data-i18n="legend.ramps.title">Κόμβοι εξόδου & εισόδου</span>
       <label class="legend-toggle-switch">
         <input type="checkbox" id="ramps-toggle" />
         <span class="legend-toggle-track"></span>
@@ -44,12 +45,12 @@
     </div>
     <div id="ramps-key" class="ramps-key">
       <div class="ramps-key-row">
-        <span class="ramp-icon ramp-exit">↙</span>
-        <span class="ramps-key-label">Κόμβος εξόδου</span>
+        <span class="ramp-icon ramp-exit">EX</span>
+        <span class="ramps-key-label" data-i18n="legend.ramps.exit">Κόμβος εξόδου</span>
       </div>
       <div class="ramps-key-row">
-        <span class="ramp-icon ramp-entry">↗</span>
-        <span class="ramps-key-label">Κόμβος εισόδου</span>
+        <span class="ramp-icon ramp-entry">EN</span>
+        <span class="ramps-key-label" data-i18n="legend.ramps.entry">Κόμβος εισόδου</span>
       </div>
     </div>
   </aside>
@@ -58,21 +59,21 @@
     <div class="help-box">
       <button class="help-close" id="help-close">✕</button>
       <div class="help-logo">DIO<em>DIO</em></div>
-      <div class="help-subtitle">Οδηγός Διοδίων Ελλάδας</div>
+      <div class="help-subtitle" data-i18n="help.subtitle">Οδηγός Διοδίων Ελλάδας</div>
 
       <div class="help-section">
         <div class="help-section-icon">◆</div>
         <div class="help-section-content">
-          <div class="help-section-title">Εξερεύνηση σταθμού διοδίων</div>
+          <div class="help-section-title" data-i18n="help.section1.title">Εξερεύνηση σταθμού διοδίων</div>
           <div class="help-section-body">
-            Κάθε τετραγωνικό σημείο στον χάρτη είναι σταθμός διοδίων. <strong>Τοποθέτησε</strong> τον κέρσορα για να δεις τιμές. <strong>Κλικ</strong> για να ανοίξεις λεπτομερές παράθυρο με:
+            <span data-i18n-html="help.section1.intro">Κάθε τετραγωνικό σημείο στον χάρτη είναι σταθμός διοδίων.</span>
             <ul>
-              <li>Τιμές για 4 κατηγορίες οχημάτων</li>
-              <li>Σε ποια κατεύθυνση πληρώνεις</li>
-              <li>Επιλογές παράκαμψης — ονόματα κόμβων εξόδου/εισόδου και επιπλέον χρόνος</li>
-              <li>Η διαδρομή παράκαμψης σε πράσινο στον χάρτη</li>
+              <li data-i18n="help.section1.item1">Τιμές για 4 κατηγορίες οχημάτων</li>
+              <li data-i18n="help.section1.item2">Σε ποια κατεύθυνση πληρώνεις</li>
+              <li data-i18n="help.section1.item3">Επιλογές παράκαμψης</li>
+              <li data-i18n="help.section1.item4">Η διαδρομή παράκαμψης σε πράσινο</li>
             </ul>
-            Κλικ οπουδήποτε στον χάρτη για κλείσιμο.
+            <span data-i18n="help.section1.close">Κλικ οπουδήποτε στον χάρτη για κλείσιμο.</span>
           </div>
         </div>
       </div>
@@ -82,34 +83,35 @@
       <div class="help-section">
         <div class="help-section-icon">⊕</div>
         <div class="help-section-content">
-          <div class="help-section-title">Ανάλυση διαδρομής</div>
+          <div class="help-section-title" data-i18n="help.section2.title">Ανάλυση διαδρομής</div>
           <div class="help-section-body">
-            Χρησιμοποίησε τη γραμμή στο κάτω μέρος για εξατομικευμένες συμβουλές:
+            <span data-i18n="help.section2.intro">Χρησιμοποίησε τη γραμμή στο κάτω μέρος.</span>
             <ol>
-              <li>Εισάγαγε <strong>αφετηρία</strong> και <strong>προορισμό</strong></li>
-              <li>Επίλεξε <strong>τύπο οχήματος</strong></li>
-              <li>Ορίσε την <strong>αξία χρόνου</strong> — πόσα λεπτά επιπλέον οδήγησης δέχεσαι για να εξοικονομήσεις €1. Στα 10 λεπτά/€1 ο χρόνος σου αξίζει €6/ώρα.</li>
-              <li>Πάτησε <strong>Ανάλυση</strong></li>
+              <li data-i18n-html="help.section2.item1">Εισάγαγε <strong>αφετηρία</strong> και <strong>προορισμό</strong></li>
+              <li data-i18n-html="help.section2.item2">Επίλεξε <strong>τύπο οχήματος</strong></li>
+              <li data-i18n-html="help.section2.item3">Όρισε την <strong>αξία χρόνου</strong></li>
+              <li data-i18n-html="help.section2.item4">Πάτησε <strong>Ανάλυση</strong></li>
             </ol>
-            Η εφαρμογή σχεδιάζει τη διαδρομή σου, εντοπίζει κάθε διόδιο και σου λέει ποια αξίζει να πληρώσεις και ποια να παρακάμψεις. <span style="color:#2d7a3a;font-weight:600;">Πράσινο = παράκαμψη</span>, <span style="color:#1a4a8a;font-weight:600;">μπλε = πλήρωσε</span>, <span style="color:#b8860b;font-weight:600;">κίτρινο = οριακό</span>.
+            <span data-i18n="help.section2.outro">Η εφαρμογή σχεδιάζει τη διαδρομή σου.</span>
+            <span style="color:#2d7a3a;font-weight:600;" data-i18n="help.legend.avoid">Πράσινο = παράκαμψη</span>,
+            <span style="color:#1a4a8a;font-weight:600;" data-i18n="help.legend.pay">μπλε = πλήρωσε</span>,
+            <span style="color:#b8860b;font-weight:600;" data-i18n="help.legend.marginal">κίτρινο = οριακό</span>.
           </div>
         </div>
       </div>
 
       <div class="help-divider"></div>
 
-      <div class="help-tip">
-        💡 <strong>Συμβουλή:</strong> Οι διαδρομές παράκαμψης βασίζονται στον Οδηγό Αποφυγής Διοδίων 2026. Επιβεβαίωσε πάντα με Google Maps πριν ακολουθήσεις άγνωστη διαδρομή.
-      </div>
+      <div class="help-tip" data-i18n-html="help.tip">💡 <strong>Συμβουλή:</strong> Οι διαδρομές παράκαμψης βασίζονται στον Οδηγό Αποφυγής Διοδίων 2026.</div>
 
-      <button class="help-cta" id="help-close-btn">Εντάξει, δείξε μου τον χάρτη</button>
+      <button class="help-cta" id="help-close-btn" data-i18n="help.cta">Εντάξει, δείξε μου τον χάρτη</button>
     </div>
   </div>
 
   <div id="toll-side-panel">
     <div class="sp-header">
-      <span class="sp-header-title">Στοιχεία διοδίου</span>
-      <button class="sp-close" id="sp-close">✕ Κλείσιμο</button>
+      <span class="sp-header-title" data-i18n="sp.header">Στοιχεία διοδίου</span>
+      <button class="sp-close" id="sp-close" data-i18n="sp.close">✕ Κλείσιμο</button>
     </div>
     <div class="sp-scroll">
       <div id="sp-content"></div>
@@ -118,7 +120,7 @@
 
   <div id="results-panel">
     <div class="rp-head">
-      <div class="rp-title" id="rp-title">Ανάλυση Διαδρομής</div>
+      <div class="rp-title" id="rp-title" data-i18n="rp.title">Ανάλυση Διαδρομής</div>
       <div class="rp-stats" id="rp-stats"></div>
       <button class="rp-close" id="rp-close">✕</button>
     </div>
@@ -126,29 +128,29 @@
   </div>
 
   <div id="bottom-bar">
-    <span class="bar-label">From</span>
+    <span class="bar-label" data-i18n="bar.from">Από</span>
     <input class="bar-input" id="origin" value="Αθήνα" autocomplete="off" style="flex:1;max-width:150px" />
-    <button class="swap-btn" id="swap-btn" title="Αντιστροφή διαδρομής">⇄</button>
-    <span class="bar-label">To</span>
+    <button class="swap-btn" id="swap-btn" data-i18n-title="bar.swap" title="Αντιστροφή διαδρομής">⇄</button>
+    <span class="bar-label" data-i18n="bar.to">Προς</span>
     <input class="bar-input" id="dest" value="Λάρισα" autocomplete="off" style="flex:1;max-width:150px" />
     <div class="bar-sep"></div>
     <select class="bar-select" id="vehicle">
-      <option value="motorcycle">🏍 Μοτο</option>
-      <option value="car" selected>🚗 Αυτοκίνητο</option>
-      <option value="lighttruck">🚐 Βαν</option>
-      <option value="heavytruck">🚛 Φορτηγό</option>
+      <option value="motorcycle" data-i18n="bar.moto">🏍 Μοτο</option>
+      <option value="car" selected data-i18n="bar.car">🚗 Αυτοκίνητο</option>
+      <option value="lighttruck" data-i18n="bar.van">🚐 Βαν</option>
+      <option value="heavytruck" data-i18n="bar.truck">🚛 Φορτηγό</option>
     </select>
     <div class="bar-sep"></div>
     <div class="tv-compact">
-      <span class="lbl">€1 =</span>
+      <span class="lbl" data-i18n="bar.time.label1">€1 =</span>
       <span class="val" id="tv-val">10</span>
-      <span class="lbl">min</span>
+      <span class="lbl" data-i18n="bar.time.label2">λεπ</span>
       <input type="range" id="tv-slider" min="2" max="30" value="10" step="1" />
     </div>
     <div class="bar-sep"></div>
     <button class="analyse-btn" id="analyse-btn" onclick="analyze()">
       <div class="btn-spinner"></div>
-      <span id="btn-text">Ανάλυση</span>
+      <span id="btn-text" data-i18n="bar.analyse">Ανάλυση</span>
     </button>
     <div class="error-pill" id="error-pill"></div>
   </div>
@@ -156,6 +158,7 @@
   <div id="copyright">© 2026 Stergios Gousios · DIODIO</div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="data/tolls.js"></script>
   <script src="js/map.js"></script>
   <script src="js/calculator.js"></script>

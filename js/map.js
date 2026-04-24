@@ -120,6 +120,9 @@ helpModal.addEventListener('click', e => {
   if (e.target === helpModal) helpModal.classList.remove('open');
 });
 
+// ── Language toggle ───────────────────────────────────────
+document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);
+
 // ── Hover tooltip ─────────────────────────────────────────
 const tooltipEl = document.createElement('div');
 tooltipEl.className = 'toll-tooltip';
@@ -134,7 +137,7 @@ function buildHoverTooltip(toll) {
       <div>
         <div class="tt-name">${toll.name_en}</div>
         <div class="tt-name-gr">${toll.name_gr}</div>
-        <div class="tt-sub">${toll.operator} · <em>κλικ για λεπτομέρειες</em></div>
+        <div class="tt-sub">${toll.operator} · <em>${t('hover.click.details')}</em></div>
       </div>
       <div class="tt-badge" style="color:${color};border-color:${color}">${toll.highway}</div>
     </div>
@@ -222,7 +225,7 @@ function closeSidePanel() {
 function makeExitIcon() {
   return L.divIcon({
     className: '',
-    html: `<div style="background:#1a4a8a;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">ΕΞΟΔΟΣ</div>`,
+    html: `<div style="background:#1a4a8a;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">${t('ramp.exit.label')}</div>`,
     iconSize: [36, 16], iconAnchor: [18, 8],
   });
 }
@@ -231,7 +234,7 @@ function makeExitIcon() {
 function makeEntryIcon() {
   return L.divIcon({
     className: '',
-    html: `<div style="background:#1a8a3c;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">ΕΙΣΟΔΟΣ</div>`,
+    html: `<div style="background:#1a8a3c;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">${t('ramp.entry.label')}</div>`,
     iconSize: [42, 16], iconAnchor: [21, 8],
   });
 }
@@ -275,7 +278,7 @@ function openSidePanel(toll) {
         const em = L.marker([dir.exit.lat, dir.exit.lng], {
           icon: makeExitIcon(), zIndexOffset: 600,
         });
-        em.bindTooltip(`Έξοδος: ${dir.exit_name}<br><small>${dir.label}</small>`, {
+        em.bindTooltip(`${t('ramp.exit.tooltip', {name: dir.exit_name})}<br><small>${dir.label}</small>`, {
           className: 'ramp-tooltip',
         });
         em.addTo(map);
@@ -287,7 +290,7 @@ function openSidePanel(toll) {
         const nm = L.marker([dir.entry.lat, dir.entry.lng], {
           icon: makeEntryIcon(), zIndexOffset: 600,
         });
-        nm.bindTooltip(`Επανείσοδος: ${dir.entry_name}<br><small>${dir.label}</small>`, {
+        nm.bindTooltip(`${t('ramp.entry.tooltip', {name: dir.entry_name})}<br><small>${dir.label}</small>`, {
           className: 'ramp-tooltip',
         });
         nm.addTo(map);
@@ -319,17 +322,17 @@ function openSidePanel(toll) {
   // Build side panel HTML
   let bypassHTML = '';
   if (!bd) {
-    bypassHTML = `<div class="sp-no-bypass">⛔ Δεν υπάρχει πρακτική παράκαμψη για αυτό το διόδιο.</div>`;
+    bypassHTML = `<div class="sp-no-bypass">${t('sp.no.bypass')}</div>`;
   } else {
-    bypassHTML = `<div class="sp-bypass-title">🟢 Επιλογές παράκαμψης</div>`;
+    bypassHTML = `<div class="sp-bypass-title">${t('sp.bypass.options')}</div>`;
     Object.entries(bd).forEach(([key, dir]) => {
       bypassHTML += `
         <div class="sp-dir">
           <div class="sp-dir-label">${dir.label}</div>
-          <div class="sp-dir-time">+${dir.minutes} min detour</div>
+          <div class="sp-dir-time">${t('sp.detour', {n: dir.minutes})}</div>
           <div class="sp-dir-exits">
-            <span class="sp-exit-tag">↙ Έξοδος: ${dir.exit_name}</span>
-            <span class="sp-entry-tag">↗ Είσοδος: ${dir.entry_name}</span>
+            <span class="sp-exit-tag">${t('sp.exit.tag')}${dir.exit_name}</span>
+            <span class="sp-entry-tag">${t('sp.entry.tag')}${dir.entry_name}</span>
           </div>
         </div>`;
     });
@@ -346,10 +349,10 @@ function openSidePanel(toll) {
     </div>
     <div class="sp-section-title">Toll prices</div>
     <div class="sp-prices">
-      <div class="sp-price-row"><span>🏍 Μοτοσικλέτα</span><strong>€${toll.cat1.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span>🚗 Αυτοκίνητο</span><strong>€${toll.cat2.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span>🚐 Ελαφρύ φορτηγό / Βαν</span><strong>€${toll.cat3.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span>🚛 Βαρύ φορτηγό</span><strong>€${toll.cat4.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span>${t('sp.motorcycle')}</span><strong>€${toll.cat1.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span>${t('sp.car')}</span><strong>€${toll.cat2.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span>${t('sp.van')}</span><strong>€${toll.cat3.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span>${t('sp.truck')}</span><strong>€${toll.cat4.toFixed(2)}</strong></div>
     </div>
     <div class="sp-section-title">Direction</div>
     <div class="sp-direction">${toll.direction_label}</div>
@@ -415,7 +418,7 @@ function buildRampMarkers() {
           icon: makeExitIcon(), zIndexOffset: 50, opacity: 0,
         });
         exitM.bindTooltip(
-          `<strong>ΕΞΟΔΟΣ:</strong> ${dir.exit_name}<br><small>Παράκαμψη ${toll.name_en}</small>`,
+          `<strong>${t('ramp.exit.label')}:</strong> ${dir.exit_name}<br><small>${t('ramp.avoid', {toll: toll.name_en})}</small>`,
           { className: 'ramp-tooltip' }
         );
       }
@@ -425,7 +428,7 @@ function buildRampMarkers() {
           icon: makeEntryIcon(), zIndexOffset: 50, opacity: 0,
         });
         entryM.bindTooltip(
-          `<strong>ΕΙΣΟΔΟΣ:</strong> ${dir.entry_name}<br><small>Παράκαμψη ${toll.name_en}</small>`,
+          `<strong>${t('ramp.entry.label')}:</strong> ${dir.entry_name}<br><small>${t('ramp.avoid', {toll: toll.name_en})}</small>`,
           { className: 'ramp-tooltip' }
         );
       }
@@ -467,30 +470,23 @@ document.getElementById('ramps-toggle').addEventListener('change', function() {
 // ── Legend ────────────────────────────────────────────────
 const legendBtn = document.getElementById('legend-toggle');
 const isMobile  = window.innerWidth <= 640;
-let   legendVis = !isMobile;
+window.legendVis = !isMobile;
+let   legendVis = window.legendVis;
 
 legendEl.classList.toggle('hidden', !legendVis);
-legendBtn.textContent = legendVis ? 'Απόκρυψη' : 'Υπόμνημα';
+legendBtn.textContent = t(legendVis ? 'btn.legend.hide' : 'btn.legend.show');
 
 legendBtn.addEventListener('click', () => {
   legendVis = !legendVis;
+  window.legendVis = legendVis;
   legendEl.classList.toggle('hidden', !legendVis);
-  legendBtn.textContent = legendVis ? 'Απόκρυψη' : 'Υπόμνημα';
+  legendBtn.textContent = t(legendVis ? 'btn.legend.hide' : 'btn.legend.show');
 });
 
-const LEGEND_GROUPS = [
-  { key: 'A1',     label: 'PATHE (A1)',           sub: 'Αφίδνες → Μάλγαρα' },
-  { key: 'A2',     label: 'Egnatia Odos (A2)',     sub: 'Ηγουμενίτσα → Αρδάνιο' },
-  { key: 'A5',     label: 'Nea Odos (A5)',          sub: 'Κλόκοβα → Τέροβο' },
-  { key: 'A8',     label: 'Olympia Odos (A8)',      sub: 'Ελευσίνα → Πύργος' },
-  { key: 'E65',    label: 'Kentriki Odos (E65)',    sub: 'Λιανοκλάδι → Τρίκαλα' },
-  { key: 'A7',     label: 'Moreas (A7)',            sub: 'Κόρινθος → Καλαμάτα' },
-  { key: 'A6',     label: 'Attiki Odos (A6)',       sub: 'Περιφερειακός Αθηνών' },
-  { key: 'BRIDGE', label: 'Bridges & Tunnels',      sub: 'Ρίο–Αντίρριο · Ακτιο' },
-];
+const LEGEND_GROUPS = ['A1','A2','A5','A8','E65','A7','A6','BRIDGE'];
 
 const highwayCounts = {};
-TOLL_DATA.forEach(t => { highwayCounts[t.highway] = (highwayCounts[t.highway] || 0) + 1; });
+TOLL_DATA.forEach(tollEntry => { highwayCounts[tollEntry.highway] = (highwayCounts[tollEntry.highway] || 0) + 1; });
 
 const legendList   = document.getElementById('legend-list');
 let   activeFilter = null;
@@ -524,21 +520,32 @@ function applyFilter(selectedKey) {
   }
 }
 
-LEGEND_GROUPS.forEach(({ key, label, sub }) => {
-  const color = HIGHWAY_COLORS[key] || '#888';
-  const count = highwayCounts[key] || 0;
+function renderLegendList() {
+  legendList.innerHTML = '';
+  LEGEND_GROUPS.forEach(key => {
+    const color = HIGHWAY_COLORS[key] || '#888';
+    const count = highwayCounts[key] || 0;
 
-  const item = document.createElement('div');
-  item.className   = 'legend-item';
-  item.dataset.hwy = key;
-  item.innerHTML   = `
-    <div class="legend-dot" style="background:${color}"></div>
-    <div class="legend-text">
-      <div class="legend-label">${label}</div>
-      <div class="legend-sub">${sub}</div>
-    </div>
-    <span class="legend-count">${count}</span>`;
+    const item = document.createElement('div');
+    item.className   = 'legend-item';
+    item.dataset.hwy = key;
+    item.innerHTML   = `
+      <div class="legend-dot" style="background:${color}"></div>
+      <div class="legend-text">
+        <div class="legend-label">${t('hwy.' + key)}</div>
+        <div class="legend-sub">${t('hwy.' + key + '.sub')}</div>
+      </div>
+      <span class="legend-count">${count}</span>`;
 
-  item.addEventListener('click', () => applyFilter(key));
-  legendList.appendChild(item);
-});
+    // preserve active filter state
+    if (activeFilter === key) item.classList.add('active-filter');
+    else if (activeFilter)    item.classList.add('dimmed-filter');
+
+    item.addEventListener('click', () => applyFilter(key));
+    legendList.appendChild(item);
+  });
+}
+renderLegendList();
+
+// Re-render when language changes
+window.addEventListener('langchange', renderLegendList);
