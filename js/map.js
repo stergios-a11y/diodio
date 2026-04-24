@@ -633,20 +633,55 @@ function buildRampMarkers() {
 
 buildRampMarkers();
 
+// ── Zoom thresholds for clarity at low zoom levels ────────
+const ZOOM_THRESHOLD_RAMPS     = 10; // show EX/EN signs + connectors only at zoom >= 10
+const ZOOM_THRESHOLD_TOLLNAMES = 9;  // show toll-name labels at zoom >= 9
+
+function updateRampsVisibility() {
+  if (!rampsVisible) return;
+  const zoomedIn = map.getZoom() >= ZOOM_THRESHOLD_RAMPS;
+  rampMarkers.forEach(({ exitM, entryM, connLine }) => {
+    if (zoomedIn) {
+      if (exitM    && !map.hasLayer(exitM))    { exitM.addTo(map);    exitM.setOpacity(1); }
+      if (entryM   && !map.hasLayer(entryM))   { entryM.addTo(map);   entryM.setOpacity(1); }
+      if (connLine && !map.hasLayer(connLine)) { connLine.addTo(map); connLine.setStyle({ opacity: 0.5 }); }
+    } else {
+      if (exitM    && map.hasLayer(exitM))    map.removeLayer(exitM);
+      if (entryM   && map.hasLayer(entryM))   map.removeLayer(entryM);
+      if (connLine && map.hasLayer(connLine)) map.removeLayer(connLine);
+    }
+  });
+}
+
+function updateTollNamesVisibility() {
+  if (!tollNamesVisible) return;
+  const zoomedIn = map.getZoom() >= ZOOM_THRESHOLD_TOLLNAMES;
+  tollNameMarkers.forEach(({ marker }) => {
+    if (zoomedIn) {
+      if (!map.hasLayer(marker)) marker.addTo(map);
+    } else {
+      if (map.hasLayer(marker))  map.removeLayer(marker);
+    }
+  });
+}
+
+map.on('zoomend', () => {
+  updateRampsVisibility();
+  updateTollNamesVisibility();
+});
+
 document.getElementById('ramps-btn').addEventListener('click', function() {
   rampsVisible = !rampsVisible;
   this.classList.toggle('active', rampsVisible);
-  rampMarkers.forEach(({ exitM, entryM, connLine }) => {
-    if (rampsVisible) {
-      if (exitM)    { exitM.addTo(map);    exitM.setOpacity(1); }
-      if (entryM)   { entryM.addTo(map);   entryM.setOpacity(1); }
-      if (connLine) { connLine.addTo(map); connLine.setStyle({ opacity: 0.5 }); }
-    } else {
+  if (rampsVisible) {
+    updateRampsVisibility();
+  } else {
+    rampMarkers.forEach(({ exitM, entryM, connLine }) => {
       if (exitM)    map.removeLayer(exitM);
       if (entryM)   map.removeLayer(entryM);
       if (connLine) map.removeLayer(connLine);
-    }
-  });
+    });
+  }
 });
 
 // ── Toll names layer (labels above each toll marker) ──────
@@ -684,7 +719,7 @@ document.getElementById('tollnames-btn').addEventListener('click', function() {
   this.classList.toggle('active', tollNamesVisible);
   if (tollNamesVisible) {
     updateTollNameLabels();
-    tollNameMarkers.forEach(({ marker }) => marker.addTo(map));
+    updateTollNamesVisibility();
   } else {
     tollNameMarkers.forEach(({ marker }) => map.removeLayer(marker));
   }
@@ -692,7 +727,10 @@ document.getElementById('tollnames-btn').addEventListener('click', function() {
 
 // Re-render labels when language changes
 window.addEventListener('langchange', () => {
-  if (tollNamesVisible) updateTollNameLabels();
+  if (tollNamesVisible) {
+    updateTollNameLabels();
+    updateTollNamesVisibility();
+  }
 });
 
 // ── Legend ────────────────────────────────────────────────
