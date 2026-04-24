@@ -98,8 +98,8 @@ const STRINGS = {
     'bypass.tooltip':          'Παράκαμψη: έξοδος {exit} → είσοδος {entry} (+{min} λεπτά)',
     'toll.section.tooltip':    '🟠 Τμήμα με διόδιο',
     'btn.feedback':            '💬 Feedback',
-    'control.ramps':           'Ράμπες',
-    'control.tollnames':       'Ονόματα',
+    'control.ramps':           'Κόμβοι εξόδου/εισόδου',
+    'control.tollnames':       'Ονόματα διοδίων',
     'lang.toggle':             'EN',
     // Legend group labels
     'hwy.A1':                  'ΠΑΘΕ (A1)',
@@ -213,8 +213,8 @@ const STRINGS = {
     'bypass.tooltip':          'Bypass: exit {exit} → rejoin {entry} (+{min} min)',
     'toll.section.tooltip':    '🟠 Toll section on motorway',
     'btn.feedback':            '💬 Feedback',
-    'control.ramps':           'Ramps',
-    'control.tollnames':       'Names',
+    'control.ramps':           'On & Off Ramps',
+    'control.tollnames':       'Toll Names',
     'lang.toggle':             'EL',
     'hwy.A1':                  'PATHE (A1)',
     'hwy.A1.sub':              'Afidnes → Malgara',
@@ -276,6 +276,14 @@ function applyTranslations() {
   const legendBtn = document.getElementById('legend-toggle');
   if (legendBtn && typeof window.legendVis !== 'undefined') {
     legendBtn.textContent = t(window.legendVis ? 'btn.legend.hide' : 'btn.legend.show');
+  }
+
+  // Language flag button — highlight the ACTIVE language pill
+  const langBtn = document.getElementById('lang-toggle');
+  if (langBtn) {
+    langBtn.querySelectorAll('.flag-option').forEach(el => {
+      el.classList.toggle('active', el.dataset.lang === currentLang);
+    });
   }
 
   // Notify other modules (map.js, calculator.js) that language changed

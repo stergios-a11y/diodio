@@ -18,7 +18,10 @@
     <div class="topbar-sep"></div>
     <div class="topbar-tagline" data-i18n="tagline">Χάρτης διοδίων & σύμβουλος διαδρομής</div>
     <div class="topbar-right">
-      <button class="btn-ghost btn-lang" id="lang-toggle" data-i18n="lang.toggle" title="Switch language">EN</button>
+      <button class="btn-lang-flag" id="lang-toggle" title="Switch language / Αλλαγή γλώσσας">
+        <span class="flag-option flag-el" data-lang="el">🇬🇷 EL</span>
+        <span class="flag-option flag-en" data-lang="en">🇬🇧 EN</span>
+      </button>
       <button class="btn-ghost" id="legend-toggle">Απόκρυψη</button>
       <button class="btn-ghost btn-help" id="help-btn">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -38,17 +41,17 @@
     <div id="legend-list"></div>
   </aside>
 
-  <!-- Map layer toggles — always visible on map -->
+  <!-- Map layer toggles — always visible on right side of map -->
   <div id="map-controls">
     <button class="map-control-btn" id="ramps-btn" title="">
       <span class="mc-icon mc-icon-ramp">
         <span class="mc-badge mc-badge-exit">EX</span>
         <span class="mc-badge mc-badge-entry">EN</span>
       </span>
-      <span class="mc-label" data-i18n="control.ramps">Ράμπες εξόδου/εισόδου</span>
+      <span class="mc-label" data-i18n="control.ramps">Κόμβοι εξόδου/εισόδου</span>
     </button>
     <button class="map-control-btn" id="tollnames-btn" title="">
-      <span class="mc-icon mc-icon-text">ΑΒ</span>
+      <span class="mc-icon mc-icon-text">Αα</span>
       <span class="mc-label" data-i18n="control.tollnames">Ονόματα διοδίων</span>
     </button>
   </div>

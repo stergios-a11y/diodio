@@ -223,6 +223,7 @@ function clearInspectLayers() {
 function closeSidePanel() {
   document.getElementById('toll-side-panel')?.classList.remove('open');
   legendEl.classList.remove('pushed');
+  document.getElementById('map-controls')?.classList.remove('pushed');
   clearInspectLayers();
   restoreAll();
   sidePanelOpen = false;
@@ -250,6 +251,7 @@ function openSidePanel(toll) {
   clearInspectLayers();
   sidePanelOpen = true;
   legendEl.classList.add('pushed');
+  document.getElementById('map-controls')?.classList.add('pushed');
 
   // Dim everything first
   dimAll();
