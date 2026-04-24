@@ -114,41 +114,51 @@ window.clearActiveRouteLayer = function() {
   }
 };
 
-// ── Bypass route fetcher (OSRM, with cache) ───────────────
-// Given exit and entry ramp coords, returns a real driving polyline.
-// Result is [[lat,lng], ...] or null on failure. Cached in localStorage.
-const bypassRouteCache = {};
-window.fetchBypassRoute = async function(exitPt, entryPt) {
-  const key = `${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}`;
+// ── Route fetcher (OSRM, with cache) ──────────────────────
+// Returns { coords: [[lat,lng]...], distanceKm, durationMin } or null.
+// `mode` is 'bypass' (excludes motorway) or 'highway' (default routing).
+const routeCache = {};
+async function fetchRoute(exitPt, entryPt, mode) {
+  const key = `${mode}:${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}`;
 
-  // Check in-memory cache
-  if (bypassRouteCache[key]) return bypassRouteCache[key];
+  if (routeCache[key]) return routeCache[key];
 
-  // Check localStorage cache
   try {
-    const stored = localStorage.getItem(`diodio.bypass.${key}`);
+    const stored = localStorage.getItem(`diodio.route.${key}`);
     if (stored) {
       const parsed = JSON.parse(stored);
-      bypassRouteCache[key] = parsed;
+      routeCache[key] = parsed;
       return parsed;
     }
   } catch (e) { /* ignore */ }
 
-  // Fetch from OSRM. exclude=motorway forces it onto secondary roads.
+  const exclude = mode === 'bypass' ? '&exclude=motorway' : '';
   const coordStr = `${exitPt.lng},${exitPt.lat};${entryPt.lng},${entryPt.lat}`;
-  const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson&exclude=motorway`;
+  const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson${exclude}`;
   try {
     const res = await fetch(url);
     const data = await res.json();
     if (data.code !== 'Ok' || !data.routes?.length) return null;
-    const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-    bypassRouteCache[key] = coords;
-    try { localStorage.setItem(`diodio.bypass.${key}`, JSON.stringify(coords)); } catch (e) {}
-    return coords;
+    const r = data.routes[0];
+    const result = {
+      coords:      r.geometry.coordinates.map(c => [c[1], c[0]]),
+      distanceKm:  r.distance / 1000,
+      durationMin: r.duration / 60,
+    };
+    routeCache[key] = result;
+    try { localStorage.setItem(`diodio.route.${key}`, JSON.stringify(result)); } catch (e) {}
+    return result;
   } catch (e) {
     return null;
   }
 }
+
+// Backward-compat helper used by calculator.js
+window.fetchBypassRoute = async function(exitPt, entryPt) {
+  const r = await fetchRoute(exitPt, entryPt, 'bypass');
+  return r ? r.coords : null;
+};
+window.fetchRoute = fetchRoute;
 
 // ── Help modal ────────────────────────────────────────────
 const helpModal    = document.getElementById('help-modal');
@@ -315,27 +325,44 @@ function openSidePanel(toll) {
 
       const lineColor = dirColors[i % dirColors.length];
 
-      // Placeholder straight line shown immediately (will be replaced by real OSRM route)
+      // ─── Bypass line (local roads, green/teal) ───
       const placeholderCoords = [[dir.exit.lat, dir.exit.lng], [dir.entry.lat, dir.entry.lng]];
-      const line = L.polyline(placeholderCoords, {
-        color: lineColor,
-        weight: 4,
-        opacity: 0.5,
-        dashArray: '8 6',
-        lineCap: 'round',
-        lineJoin: 'round',
+      const bypassLine = L.polyline(placeholderCoords, {
+        color: lineColor, weight: 4, opacity: 0.5, dashArray: '8 6',
+        lineCap: 'round', lineJoin: 'round',
       }).addTo(map);
-      line.bindTooltip(`🟢 ${translateDirectionLabel(dir.label)} (+${dir.minutes} ${t('bar.time.label2')})`, {
-        sticky: true, className: 'bypass-tooltip',
-      });
-      inspectLayers.push(line);
+      bypassLine.bindTooltip(
+        `🟢 ${translateDirectionLabel(dir.label)} — ${t('bypass.via.local')}`,
+        { sticky: true, className: 'bypass-tooltip' }
+      );
+      inspectLayers.push(bypassLine);
 
-      // Fetch real driving route from OSRM and replace placeholder
-      window.fetchBypassRoute(dir.exit, dir.entry).then(routeCoords => {
-        if (routeCoords && routeCoords.length > 1) {
-          line.setLatLngs(routeCoords);
-          line.setStyle({ opacity: 0.9, dashArray: null });
+      // ─── Highway segment line (motorway, dashed Aegean blue) ───
+      const highwayLine = L.polyline(placeholderCoords, {
+        color: '#2a6b9e', weight: 3.5, opacity: 0.4, dashArray: '4 6',
+        lineCap: 'round', lineJoin: 'round',
+      }).addTo(map);
+      highwayLine.bindTooltip(
+        `🔵 ${translateDirectionLabel(dir.label)} — ${t('bypass.via.highway')}`,
+        { sticky: true, className: 'bypass-tooltip' }
+      );
+      inspectLayers.push(highwayLine);
+
+      // Fetch BOTH routes in parallel
+      Promise.all([
+        fetchRoute(dir.exit, dir.entry, 'bypass'),
+        fetchRoute(dir.exit, dir.entry, 'highway'),
+      ]).then(([bypassRes, highwayRes]) => {
+        if (bypassRes && bypassRes.coords.length > 1) {
+          bypassLine.setLatLngs(bypassRes.coords);
+          bypassLine.setStyle({ opacity: 0.9, dashArray: null });
         }
+        if (highwayRes && highwayRes.coords.length > 1) {
+          highwayLine.setLatLngs(highwayRes.coords);
+          highwayLine.setStyle({ opacity: 0.7, dashArray: null });
+        }
+        // Update the comparison stats in the side panel
+        updateDirStats(toll.id, key, bypassRes, highwayRes);
       });
 
       // EXIT sign marker
@@ -424,6 +451,36 @@ function openSidePanel(toll) {
     return name;
   }
 
+  // Update the comparison stats inline in the side panel after OSRM returns
+  function updateDirStats(tollId, dirKey, bypassRes, highwayRes) {
+    const el = document.querySelector(`.sp-dir[data-dir-key="${dirKey}"] [data-stats="${dirKey}"]`);
+    if (!el) return;
+    const fmt = (n, suffix) => n != null ? `${n.toFixed(1)} ${suffix}` : '—';
+
+    const bp = el.querySelector('[data-bypass-vals]');
+    const hw = el.querySelector('[data-highway-vals]');
+    const df = el.querySelector('[data-diff-vals]');
+
+    if (bypassRes && bp) {
+      bp.textContent = `${fmt(bypassRes.distanceKm, 'km')} · ${fmt(bypassRes.durationMin, t('bar.time.label2'))}`;
+    } else if (bp) {
+      bp.textContent = t('compare.unavailable');
+    }
+    if (highwayRes && hw) {
+      hw.textContent = `${fmt(highwayRes.distanceKm, 'km')} · ${fmt(highwayRes.durationMin, t('bar.time.label2'))}`;
+    } else if (hw) {
+      hw.textContent = t('compare.unavailable');
+    }
+
+    if (bypassRes && highwayRes && df) {
+      const distDiff = bypassRes.distanceKm  - highwayRes.distanceKm;
+      const timeDiff = bypassRes.durationMin - highwayRes.durationMin;
+      const distSign = distDiff >= 0 ? '+' : '';
+      const timeSign = timeDiff >= 0 ? '+' : '';
+      df.innerHTML = `${t('compare.diff')}: <strong>${distSign}${distDiff.toFixed(1)} km</strong> · <strong>${timeSign}${Math.round(timeDiff)} ${t('bar.time.label2')}</strong>`;
+    }
+  }
+
   // Build side panel HTML
   let bypassHTML = '';
   if (!bd) {
@@ -432,12 +489,24 @@ function openSidePanel(toll) {
     bypassHTML = `<div class="sp-bypass-title">${t('sp.bypass.options')}</div>`;
     Object.entries(bd).forEach(([key, dir]) => {
       bypassHTML += `
-        <div class="sp-dir">
+        <div class="sp-dir" data-dir-key="${key}">
           <div class="sp-dir-label">${translateDirectionLabel(dir.label)}</div>
-          <div class="sp-dir-time">${t('sp.detour', {n: dir.minutes})}</div>
           <div class="sp-dir-exits">
             <span class="sp-exit-tag">${t('sp.exit.tag')}${dir.exit_name}</span>
             <span class="sp-entry-tag">${t('sp.entry.tag')}${dir.entry_name}</span>
+          </div>
+          <div class="sp-dir-compare" data-stats="${key}">
+            <div class="sp-cmp-row sp-cmp-bypass">
+              <span class="sp-cmp-dot" style="background:#2e7a4a"></span>
+              <span class="sp-cmp-label">${t('compare.bypass')}</span>
+              <span class="sp-cmp-vals" data-bypass-vals>${t('compare.loading')}</span>
+            </div>
+            <div class="sp-cmp-row sp-cmp-highway">
+              <span class="sp-cmp-dot" style="background:#2a6b9e"></span>
+              <span class="sp-cmp-label">${t('compare.highway')}</span>
+              <span class="sp-cmp-vals" data-highway-vals>${t('compare.loading')}</span>
+            </div>
+            <div class="sp-cmp-diff" data-diff-vals>—</div>
           </div>
         </div>`;
     });
