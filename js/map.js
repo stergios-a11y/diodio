@@ -114,6 +114,42 @@ window.clearActiveRouteLayer = function() {
   }
 };
 
+// ── Bypass route fetcher (OSRM, with cache) ───────────────
+// Given exit and entry ramp coords, returns a real driving polyline.
+// Result is [[lat,lng], ...] or null on failure. Cached in localStorage.
+const bypassRouteCache = {};
+window.fetchBypassRoute = async function(exitPt, entryPt) {
+  const key = `${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}`;
+
+  // Check in-memory cache
+  if (bypassRouteCache[key]) return bypassRouteCache[key];
+
+  // Check localStorage cache
+  try {
+    const stored = localStorage.getItem(`diodio.bypass.${key}`);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      bypassRouteCache[key] = parsed;
+      return parsed;
+    }
+  } catch (e) { /* ignore */ }
+
+  // Fetch from OSRM. exclude=motorway forces it onto secondary roads.
+  const coordStr = `${exitPt.lng},${exitPt.lat};${entryPt.lng},${entryPt.lat}`;
+  const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson&exclude=motorway`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.code !== 'Ok' || !data.routes?.length) return null;
+    const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+    bypassRouteCache[key] = coords;
+    try { localStorage.setItem(`diodio.bypass.${key}`, JSON.stringify(coords)); } catch (e) {}
+    return coords;
+  } catch (e) {
+    return null;
+  }
+}
+
 // ── Help modal ────────────────────────────────────────────
 const helpModal    = document.getElementById('help-modal');
 const helpBtn      = document.getElementById('help-btn');
@@ -270,61 +306,57 @@ function openSidePanel(toll) {
   const color = HIGHWAY_COLORS[toll.highway] || '#888';
 
   if (bd) {
-    Object.entries(bd).forEach(([key, dir]) => {
-      if (!dir.via) return;
+    const dirEntries = Object.entries(bd);
+    // Distinct colors for each direction so they don't overlap visually
+    const dirColors = ['#2e7a4a', '#1e5f7a'];
 
-      // Green bypass line
-      const line = L.polyline(dir.via.map(p => [p.lat, p.lng]), {
-        color: '#2e7a4a', weight: 4, opacity: 0.9, lineCap: 'round', lineJoin: 'round',
+    dirEntries.forEach(([key, dir], i) => {
+      if (!dir.exit || !dir.entry) return;
+
+      const lineColor = dirColors[i % dirColors.length];
+
+      // Placeholder straight line shown immediately (will be replaced by real OSRM route)
+      const placeholderCoords = [[dir.exit.lat, dir.exit.lng], [dir.entry.lat, dir.entry.lng]];
+      const line = L.polyline(placeholderCoords, {
+        color: lineColor,
+        weight: 4,
+        opacity: 0.5,
+        dashArray: '8 6',
+        lineCap: 'round',
+        lineJoin: 'round',
       }).addTo(map);
-      line.bindTooltip(`🟢 ${dir.label} (+${dir.minutes} min)`, {
+      line.bindTooltip(`🟢 ${translateDirectionLabel(dir.label)} (+${dir.minutes} ${t('bar.time.label2')})`, {
         sticky: true, className: 'bypass-tooltip',
       });
       inspectLayers.push(line);
 
+      // Fetch real driving route from OSRM and replace placeholder
+      window.fetchBypassRoute(dir.exit, dir.entry).then(routeCoords => {
+        if (routeCoords && routeCoords.length > 1) {
+          line.setLatLngs(routeCoords);
+          line.setStyle({ opacity: 0.9, dashArray: null });
+        }
+      });
+
       // EXIT sign marker
-      if (dir.exit) {
-        const em = L.marker([dir.exit.lat, dir.exit.lng], {
-          icon: makeExitIcon(), zIndexOffset: 600,
-        });
-        em.bindTooltip(`${t('ramp.exit.tooltip', {name: dir.exit_name})}<br><small>${dir.label}</small>`, {
-          className: 'ramp-tooltip',
-        });
-        em.addTo(map);
-        inspectLayers.push(em);
-      }
+      const em = L.marker([dir.exit.lat, dir.exit.lng], {
+        icon: makeExitIcon(), zIndexOffset: 600,
+      });
+      em.bindTooltip(`${t('ramp.exit.tooltip', {name: dir.exit_name})}<br><small>${translateDirectionLabel(dir.label)}</small>`, {
+        className: 'ramp-tooltip',
+      });
+      em.addTo(map);
+      inspectLayers.push(em);
 
       // ENTER sign marker
-      if (dir.entry) {
-        const nm = L.marker([dir.entry.lat, dir.entry.lng], {
-          icon: makeEntryIcon(), zIndexOffset: 600,
-        });
-        nm.bindTooltip(`${t('ramp.entry.tooltip', {name: dir.entry_name})}<br><small>${dir.label}</small>`, {
-          className: 'ramp-tooltip',
-        });
-        nm.addTo(map);
-        inspectLayers.push(nm);
-      }
-
-      // Dashed connection: exit → toll → entry
-      if (dir.exit && dir.entry) {
-        const connCoords = [
-          [dir.exit.lat,  dir.exit.lng],
-          [toll.lat,       toll.lng],
-          [dir.entry.lat, dir.entry.lng],
-        ];
-        const conn = L.polyline(connCoords, {
-          color: '#c4613d',
-          weight: 2,
-          opacity: 0.8,
-          dashArray: '6 5',
-          lineCap: 'round',
-        }).addTo(map);
-        conn.bindTooltip(`${dir.exit_name} → toll → ${dir.entry_name}`, {
-          sticky: true, className: 'bypass-tooltip',
-        });
-        inspectLayers.push(conn);
-      }
+      const nm = L.marker([dir.entry.lat, dir.entry.lng], {
+        icon: makeEntryIcon(), zIndexOffset: 600,
+      });
+      nm.bindTooltip(`${t('ramp.entry.tooltip', {name: dir.entry_name})}<br><small>${translateDirectionLabel(dir.label)}</small>`, {
+        className: 'ramp-tooltip',
+      });
+      nm.addTo(map);
+      inspectLayers.push(nm);
     });
   }
 

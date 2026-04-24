@@ -149,26 +149,47 @@ function calcVerdict(toll, catKey, timeValue, travelDirection) {
   }
 }
 
-// ── Draw pre-computed green bypass line ───────────────────
+// ── Draw bypass line — uses real OSRM route if exit/entry available,
+//    falls back to legacy `via` waypoints for tolls not yet upgraded ──
 function drawBypassLine(dir, label) {
-  if (!dir?.via?.length) return;
+  if (!dir) return;
 
-  const coords = dir.via.map(p => [p.lat, p.lng]);
+  // Use exit/entry if both present; otherwise fall back to via waypoints
+  let initialCoords;
+  if (dir.exit && dir.entry) {
+    // Start with placeholder straight line (will be replaced by real route)
+    initialCoords = [[dir.exit.lat, dir.exit.lng], [dir.entry.lat, dir.entry.lng]];
+  } else if (dir.via?.length) {
+    initialCoords = dir.via.map(p => [p.lat, p.lng]);
+  } else {
+    return;
+  }
 
-  const layer = L.polyline(coords, {
-    color:    '#2e7a4a',
-    weight:   4,
-    opacity:  0.85,
-    lineCap:  'round',
-    lineJoin: 'round',
+  const layer = L.polyline(initialCoords, {
+    color:     '#2e7a4a',
+    weight:    4,
+    opacity:   dir.exit && dir.entry ? 0.5 : 0.85,
+    dashArray: dir.exit && dir.entry ? '8 6' : null,
+    lineCap:   'round',
+    lineJoin:  'round',
   }).addTo(map);
 
   layer.bindTooltip(
-    `🟢 Παράκαμψη: έξοδος ${dir.exit_name} → είσοδος ${dir.entry_name} (+${dir.minutes} λεπτά)`,
+    `🟢 ${t('bypass.tooltip', {exit: dir.exit_name, entry: dir.entry_name, min: dir.minutes})}`,
     { sticky: true, className: 'bypass-tooltip' }
   );
 
   bypassLayers.push(layer);
+
+  // If we have real ramps, fetch the OSRM driving route and replace the placeholder
+  if (dir.exit && dir.entry && typeof window.fetchBypassRoute === 'function') {
+    window.fetchBypassRoute(dir.exit, dir.entry).then(routeCoords => {
+      if (routeCoords && routeCoords.length > 1) {
+        layer.setLatLngs(routeCoords);
+        layer.setStyle({ opacity: 0.9, dashArray: null });
+      }
+    });
+  }
 
   // Exit marker (red)
   if (dir.exit) {
@@ -178,7 +199,7 @@ function drawBypassLine(dir, label) {
       iconSize: [13,13], iconAnchor: [6.5,6.5],
     });
     const em = L.marker([dir.exit.lat, dir.exit.lng], { icon: ei, zIndexOffset: 600 });
-    em.bindTooltip(`Exit: ${dir.exit_name}`, { className: 'bypass-tooltip' });
+    em.bindTooltip(t('ramp.exit.tooltip', {name: dir.exit_name}), { className: 'bypass-tooltip' });
     em.addTo(map);
     bypassLayers.push(em);
   }
