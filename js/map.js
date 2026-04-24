@@ -459,10 +459,11 @@ document.getElementById('ramps-toggle').addEventListener('change', function() {
 
 // ── Legend ────────────────────────────────────────────────
 const legendBtn = document.getElementById('legend-toggle');
-let   legendVis = true;
+const isMobile  = window.innerWidth <= 640;
+let   legendVis = !isMobile;
 
-legendEl.classList.remove('hidden');
-legendBtn.textContent = 'Hide legend';
+legendEl.classList.toggle('hidden', !legendVis);
+legendBtn.textContent = legendVis ? 'Hide legend' : 'Legend';
 
 legendBtn.addEventListener('click', () => {
   legendVis = !legendVis;
