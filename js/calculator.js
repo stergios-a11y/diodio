@@ -156,7 +156,7 @@ function drawBypassLine(dir, label) {
   const coords = dir.via.map(p => [p.lat, p.lng]);
 
   const layer = L.polyline(coords, {
-    color:    '#2d7a3a',
+    color:    '#2e7a4a',
     weight:   4,
     opacity:  0.85,
     lineCap:  'round',
@@ -174,7 +174,7 @@ function drawBypassLine(dir, label) {
   if (dir.exit) {
     const ei = L.divIcon({
       className: '',
-      html: `<div style="width:13px;height:13px;background:#b33a22;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:7px;color:white;font-weight:700;font-family:sans-serif;">↙</div>`,
+      html: `<div style="width:13px;height:13px;background:#b8502d;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:7px;color:white;font-weight:700;font-family:sans-serif;">↙</div>`,
       iconSize: [13,13], iconAnchor: [6.5,6.5],
     });
     const em = L.marker([dir.exit.lat, dir.exit.lng], { icon: ei, zIndexOffset: 600 });
@@ -187,7 +187,7 @@ function drawBypassLine(dir, label) {
   if (dir.entry) {
     const ni = L.divIcon({
       className: '',
-      html: `<div style="width:13px;height:13px;background:#2d7a3a;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:7px;color:white;font-weight:700;font-family:sans-serif;">↗</div>`,
+      html: `<div style="width:13px;height:13px;background:#2e7a4a;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:7px;color:white;font-weight:700;font-family:sans-serif;">↗</div>`,
       iconSize: [13,13], iconAnchor: [6.5,6.5],
     });
     const nm = L.marker([dir.entry.lat, dir.entry.lng], { icon: ni, zIndexOffset: 600 });
@@ -255,7 +255,7 @@ async function analyze() {
 
     // 4. Draw blue main route
     routeLayer = L.polyline(routeCoords, {
-      color: '#1a4a8a', weight: 4, opacity: 0.55,
+      color: '#2a6b9e', weight: 4, opacity: 0.6,
     }).addTo(map);
     if (window.setActiveRouteLayer) window.setActiveRouteLayer(routeCoords);
 
@@ -280,7 +280,7 @@ async function analyze() {
     }));
 
     // 7. Draw verdict markers
-    const verdictColors = { PAY: '#1a4a8a', AVOID: '#2d7a3a', MARGINAL: '#b8860b' };
+    const verdictColors = { PAY: '#b8502d', AVOID: '#2e7a4a', MARGINAL: '#c49320' };
     results.forEach(r => {
       const color = verdictColors[r.verdict] || '#555';
       const icon  = L.divIcon({

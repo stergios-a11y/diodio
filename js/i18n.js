@@ -83,6 +83,7 @@ const STRINGS = {
     'ramp.avoid':              'Παράκαμψη: {toll}',
     'bypass.tooltip':          'Παράκαμψη: έξοδος {exit} → είσοδος {entry} (+{min} λεπτά)',
     'toll.section.tooltip':    '🟠 Τμήμα με διόδιο',
+    'btn.feedback':            '💬 Feedback',
     'lang.toggle':             'EN',
     // Legend group labels
     'hwy.A1':                  'ΠΑΘΕ (A1)',
@@ -181,6 +182,7 @@ const STRINGS = {
     'ramp.avoid':              'Avoid {toll}',
     'bypass.tooltip':          'Bypass: exit {exit} → rejoin {entry} (+{min} min)',
     'toll.section.tooltip':    '🟠 Toll section on motorway',
+    'btn.feedback':            '💬 Feedback',
     'lang.toggle':             'EL',
     'hwy.A1':                  'PATHE (A1)',
     'hwy.A1.sub':              'Afidnes → Malgara',

@@ -103,7 +103,7 @@ Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, wps]) => fetchAndDrawRoute(hwy,
 window.setActiveRouteLayer = function(coords) {
   if (window._activeRouteHighlight) map.removeLayer(window._activeRouteHighlight);
   window._activeRouteHighlight = L.polyline(coords, {
-    color: '#1a4a8a', weight: 4, opacity: 0.75,
+    color: '#2a6b9e', weight: 4, opacity: 0.75,
   }).addTo(map);
 };
 window.clearActiveRouteLayer = function() {
@@ -231,7 +231,7 @@ function closeSidePanel() {
 function makeExitIcon() {
   return L.divIcon({
     className: '',
-    html: `<div style="background:#1a4a8a;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">${t('ramp.exit.label')}</div>`,
+    html: `<div style="background:#2a6b9e;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">${t('ramp.exit.label')}</div>`,
     iconSize: [36, 16], iconAnchor: [18, 8],
   });
 }
@@ -240,7 +240,7 @@ function makeExitIcon() {
 function makeEntryIcon() {
   return L.divIcon({
     className: '',
-    html: `<div style="background:#1a8a3c;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">${t('ramp.entry.label')}</div>`,
+    html: `<div style="background:#2e7a4a;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">${t('ramp.entry.label')}</div>`,
     iconSize: [42, 16], iconAnchor: [21, 8],
   });
 }
@@ -272,7 +272,7 @@ function openSidePanel(toll) {
 
       // Green bypass line
       const line = L.polyline(dir.via.map(p => [p.lat, p.lng]), {
-        color: '#2d7a3a', weight: 4, opacity: 0.9, lineCap: 'round', lineJoin: 'round',
+        color: '#2e7a4a', weight: 4, opacity: 0.9, lineCap: 'round', lineJoin: 'round',
       }).addTo(map);
       line.bindTooltip(`🟢 ${dir.label} (+${dir.minutes} min)`, {
         sticky: true, className: 'bypass-tooltip',
@@ -311,7 +311,7 @@ function openSidePanel(toll) {
           [dir.entry.lat, dir.entry.lng],
         ];
         const conn = L.polyline(connCoords, {
-          color: '#c87020',
+          color: '#c4613d',
           weight: 2,
           opacity: 0.8,
           dashArray: '6 5',
@@ -443,7 +443,7 @@ function buildRampMarkers() {
       if (dir.exit && dir.entry) {
         connLine = L.polyline(
           [[dir.exit.lat, dir.exit.lng],[toll.lat, toll.lng],[dir.entry.lat, dir.entry.lng]],
-          { color: '#c87020', weight: 1.5, opacity: 0, dashArray: '5 4', lineCap: 'round' }
+          { color: '#c4613d', weight: 1.5, opacity: 0, dashArray: '5 4', lineCap: 'round' }
         );
         connLine.bindTooltip(
           `${dir.exit_name} → ${toll.name_en} → ${dir.entry_name}`,
