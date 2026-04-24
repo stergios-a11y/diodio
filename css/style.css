@@ -97,6 +97,23 @@ body {
   box-shadow: 0 0 0 3px rgba(255,255,255,0.6), 0 2px 8px rgba(0,0,0,0.25);
 }
 
+/* ── TOLL NAME LABELS ── */
+.toll-name-label {
+  background: rgba(247,244,239,0.92);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 2px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  pointer-events: none;
+  transform: translateX(-50%);
+  margin-left: 0;
+}
+
 /* ── HOVER TOOLTIP ── */
 .toll-tooltip {
   position: fixed; z-index: 9999; display: none; pointer-events: none;
@@ -367,9 +384,19 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; background: v
   }
   #legend.pushed { right: 6px; top: auto; bottom: calc(var(--bar-h) + 8px); }
 
-  /* Side panel: full width */
-  #toll-side-panel { width: 100%; }
-  #legend.pushed { right: 0; }
+  /* Side panel: bottom sheet on mobile, not full-width */
+  #toll-side-panel {
+    width: 100%;
+    top: auto;
+    bottom: 112px;
+    height: 55vh;
+    max-height: 55vh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+    transform: translateY(100%);
+  }
+  #toll-side-panel.open { transform: translateY(0); }
 
   /* Bottom bar: wrap to two rows */
   #bottom-bar {
@@ -414,7 +441,6 @@ input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; background: v
   /* Map container: account for taller bottom bar */
   #map-container { bottom: 112px; }
   #results-panel { bottom: 112px; }
-  #toll-side-panel { bottom: 112px; }
   #copyright { bottom: 118px; }
 
   /* Results panel: taller on mobile */

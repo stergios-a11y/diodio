@@ -49,8 +49,14 @@ const HIGHWAY_WAYPOINTS = {
     [21.1709225, 38.9898946],[20.9053087, 39.4252460],
   ],
   "A8": [
-    [23.5039038, 38.0499433],[23.0325365, 37.9249719],[22.8096664, 37.9222552],
-    [22.1392536, 38.2057293],[21.6191570, 38.1449493],[21.3913023, 37.7120702],
+    [23.5039038, 38.0499433],  // Elefsina
+    [23.0325365, 37.9249719],  // Isthmos Canal
+    [22.8096664, 37.9222552],  // Zevgolatio
+    [22.4185,    38.1285],     // Derveni (Elaionas exit area)
+    [22.1392536, 38.2057293],  // Elaionas/Aigio toll
+    [21.8300325, 38.3164492],  // Rio
+    [21.6191570, 38.1449493],  // Patras
+    [21.3913023, 37.7120702],  // Pyrgos
   ],
   "E65": [
     [22.3487648, 38.9148821],[22.0831633, 39.2566317],[21.8322372, 39.5204295],
@@ -345,7 +351,7 @@ function openSidePanel(toll) {
       <div class="sp-hwy-badge" style="background:${color}">${toll.highway}</div>
       <div class="sp-name">${toll.name_en}</div>
       <div class="sp-name-gr">${toll.name_gr}</div>
-      <div class="sp-operator">${toll.operator} · ${toll.highway_name}</div>
+      <div class="sp-operator">${toll.operator} · ${t('hwy.' + toll.highway)}</div>
     </div>
     <div class="sp-section-title">Toll prices</div>
     <div class="sp-prices">
@@ -465,6 +471,51 @@ document.getElementById('ramps-toggle').addEventListener('change', function() {
       if (connLine) map.removeLayer(connLine);
     }
   });
+});
+
+// ── Toll names layer (labels above each toll marker) ──────
+const tollNameMarkers = [];
+let   tollNamesVisible = false;
+
+function buildTollNameMarkers() {
+  TOLL_DATA.forEach(toll => {
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="toll-name-label">${toll.name_en}</div>`,
+      iconSize: [null, null], iconAnchor: [0, -8],
+    });
+    const m = L.marker([toll.lat, toll.lng], { icon, zIndexOffset: 30 });
+    tollNameMarkers.push({ marker: m, toll });
+  });
+}
+buildTollNameMarkers();
+
+function updateTollNameLabels() {
+  // Rebuild labels with current-language name where available
+  tollNameMarkers.forEach(({ marker, toll }) => {
+    const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
+    const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
+    marker.setIcon(L.divIcon({
+      className: '',
+      html: `<div class="toll-name-label">${short}</div>`,
+      iconSize: [null, null], iconAnchor: [0, -8],
+    }));
+  });
+}
+
+document.getElementById('tollnames-toggle').addEventListener('change', function() {
+  tollNamesVisible = this.checked;
+  if (tollNamesVisible) {
+    updateTollNameLabels();
+    tollNameMarkers.forEach(({ marker }) => marker.addTo(map));
+  } else {
+    tollNameMarkers.forEach(({ marker }) => map.removeLayer(marker));
+  }
+});
+
+// Re-render labels when language changes
+window.addEventListener('langchange', () => {
+  if (tollNamesVisible) updateTollNameLabels();
 });
 
 // ── Legend ────────────────────────────────────────────────
