@@ -34,7 +34,7 @@ document.getElementById('rp-close').addEventListener('click', () => {
 function setLoading(on) {
   analyseBtn.disabled = on;
   analyseBtn.classList.toggle('loading', on);
-  btnText.textContent = on ? 'Analysing…' : 'Analyse';
+  btnText.textContent = on ? 'Αναλύω…' : 'Ανάλυση';
 }
 
 function showError(msg) {
@@ -117,13 +117,13 @@ function detectDirection(fromCoord, toCoord) {
 function calcVerdict(toll, catKey, timeValue, travelDirection) {
   const bd = toll.bypass_directions;
   if (!bd) {
-    return { verdict: 'PAY', dir: null, reasoning: 'No bypass available.' };
+    return { verdict: 'PAY', dir: null, reasoning: 'Δεν υπάρχει παράκαμψη.' };
   }
 
   // Find matching direction entry
   const dir = bd[travelDirection] || Object.values(bd)[0];
   if (!dir) {
-    return { verdict: 'PAY', dir: null, reasoning: 'No bypass available.' };
+    return { verdict: 'PAY', dir: null, reasoning: 'Δεν υπάρχει παράκαμψη.' };
   }
 
   const cost      = toll[catKey];
@@ -139,12 +139,12 @@ function calcVerdict(toll, catKey, timeValue, travelDirection) {
   } else if (extra <= threshold + margin) {
     return {
       verdict: 'MARGINAL', dir,
-      reasoning: `Exit at ${dir.exit_name}. +${extra} min vs threshold ${threshold.toFixed(0)} min. Close call.`,
+      reasoning: `Έξοδος ${dir.exit_name}. +${extra} λεπτά, οριακή περίπτωση.`,
     };
   } else {
     return {
       verdict: 'PAY', dir,
-      reasoning: `Bypass adds ${extra} min but threshold is ${threshold.toFixed(0)} min. Pay the toll.`,
+      reasoning: `Η παράκαμψη προσθέτει ${extra} λεπτά — δεν αξίζει. Πλήρωσε το διόδιο.`,
     };
   }
 }
@@ -164,7 +164,7 @@ function drawBypassLine(dir, label) {
   }).addTo(map);
 
   layer.bindTooltip(
-    `🟢 Bypass: exit ${dir.exit_name} → rejoin ${dir.entry_name} (+${dir.minutes} min)`,
+    `🟢 Παράκαμψη: έξοδος ${dir.exit_name} → είσοδος ${dir.entry_name} (+${dir.minutes} λεπτά)`,
     { sticky: true, className: 'bypass-tooltip' }
   );
 
@@ -191,7 +191,7 @@ function drawBypassLine(dir, label) {
       iconSize: [13,13], iconAnchor: [6.5,6.5],
     });
     const nm = L.marker([dir.entry.lat, dir.entry.lng], { icon: ni, zIndexOffset: 600 });
-    nm.bindTooltip(`Re-enter: ${dir.entry_name}`, { className: 'bypass-tooltip' });
+    nm.bindTooltip(`Επανείσοδος: ${dir.entry_name}`, { className: 'bypass-tooltip' });
     nm.addTo(map);
     bypassLayers.push(nm);
   }
@@ -210,10 +210,10 @@ function fetchAISummary(origin, dest, results, catKeyLabel, savings, extraMin) {
       max_tokens: 200,
       messages: [{
         role: 'user',
-        content: `Greek toll route ${origin} → ${dest} for a ${catKeyLabel}.
-Tolls to AVOID: ${avoidList}. Tolls to PAY: ${payList}.
+        content: `Ελληνική διαδρομή με διόδια ${origin} → ${dest} for a ${catKeyLabel}.
+Διόδια για ΠΑΡΑΚΑΜΨΗ: ${avoidList}. Διόδια για ΠΛΗΡΩΜΗ: ${payList}.
 Saving €${savings.toFixed(2)} at cost of ${extraMin} extra minutes.
-Write 1-2 sentences of practical advice for the driver. Be concise.`,
+Γράψε 1-2 προτάσεις πρακτικών συμβουλών για τον οδηγό στα ελληνικά. Να είσαι συνοπτικός.`,
       }],
     }),
   })
@@ -235,7 +235,7 @@ async function analyze() {
   const vehicle   = document.getElementById('vehicle').value;
   const timeValue = parseInt(slider.value);
 
-  if (!origin || !dest) { showError('Enter origin and destination'); return; }
+  if (!origin || !dest) { showError('Εισάγετε αφετηρία και προορισμό'); return; }
 
   clearError();
   clearRoute();
@@ -251,7 +251,7 @@ async function analyze() {
 
     // 3. Main motorway route
     const routeCoords = await fetchOSRM([fromCoord, toCoord]);
-    if (!routeCoords) throw new Error('Could not calculate route');
+    if (!routeCoords) throw new Error('Δεν ήταν δυνατός ο υπολογισμός διαδρομής');
 
     // 4. Draw blue main route
     routeLayer = L.polyline(routeCoords, {
@@ -264,7 +264,7 @@ async function analyze() {
     // 5. Snap tolls to route
     const matchedTolls = tollsOnRoute(routeCoords);
     if (matchedTolls.length === 0) {
-      showError('No tolls found on this route');
+      showError('Δεν βρέθηκαν διόδια σε αυτή τη διαδρομή');
       setLoading(false);
       return;
     }
@@ -321,8 +321,8 @@ async function analyze() {
     let html = '';
     results.forEach(r => {
       const bypassInfo = r.dir
-        ? `Exit ${r.dir.exit_name} · Re-enter ${r.dir.entry_name} · +${r.dir.minutes} min`
-        : 'No bypass';
+        ? `Έξοδος ${r.dir.exit_name} · Είσοδος ${r.dir.entry_name} · +${r.dir.minutes} λεπτά`
+        : 'Χωρίς παράκαμψη';
       html += `
         <div class="toll-chip verdict-${r.verdict}"
           onclick="const el=this.querySelector('.chip-reason');el.style.display=el.style.display==='block'?'none':'block'">
@@ -333,12 +333,12 @@ async function analyze() {
         </div>`;
     });
 
-    html += `<div class="rp-advice" id="rp-advice-el">💡 Calculating route advice…</div>`;
+    html += `<div class="rp-advice" id="rp-advice-el">💡 Υπολογισμός συμβουλής διαδρομής…</div>`;
     rpBody.innerHTML = html;
     resultsPanel.classList.add('open');
 
     // 11. AI summary (async, non-blocking)
-    const catKeyLabel = { cat1:'motorcycle', cat2:'car', cat3:'light truck', cat4:'heavy truck' }[catKey];
+    const catKeyLabel = { cat1:'μοτοσικλέτα', cat2:'αυτοκίνητο', cat3:'ελαφρύ φορτηγό', cat4:'βαρύ φορτηγό' }[catKey];
     fetchAISummary(origin, dest, results, catKeyLabel, savings, extraMin);
 
   } catch (err) {

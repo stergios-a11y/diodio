@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="el">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DIODIO — Greece Toll Road Advisor</title>
-  <meta name="description" content="Interactive map of every Greek highway toll booth. Calculate whether each toll is worth paying based on your personal time value." />
+  <title>DIODIO — Οδηγός Διοδίων Ελλάδας</title>
+  <meta name="description" content="Διαδραστικός χάρτης όλων των διοδίων στους ελληνικούς αυτοκινητοδρόμους. Υπολόγισε αν αξίζει να πληρώσεις κάθε διόδιο." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -15,16 +15,16 @@
   <header id="topbar">
     <div class="logo">DIO<em>DIO</em></div>
     <div class="topbar-sep"></div>
-    <div class="topbar-tagline">Greek highway toll map &amp; route advisor</div>
+    <div class="topbar-tagline">Χάρτης διοδίων &amp; σύμβουλος διαδρομής</div>
     <div class="topbar-right">
-      <button class="btn-ghost" id="legend-toggle">Hide legend</button>
+      <button class="btn-ghost" id="legend-toggle">Απόκρυψη</button>
       <button class="btn-ghost btn-help" id="help-btn">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/>
           <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
           <line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
-        How to use
+        Οδηγίες χρήσης
       </button>
     </div>
   </header>
@@ -32,11 +32,11 @@
   <div id="map-container"><div id="map"></div></div>
 
   <aside id="legend">
-    <div class="legend-title">Highways · click to filter</div>
+    <div class="legend-title">Αυτοκινητόδρομοι · κλικ για φίλτρο</div>
     <div id="legend-list"></div>
     <div class="legend-section-sep"></div>
     <div class="legend-title legend-title-sub">
-      Exit &amp; Entry ramps
+      Κόμβοι εξόδου &amp; εισόδου
       <label class="legend-toggle-switch">
         <input type="checkbox" id="ramps-toggle" />
         <span class="legend-toggle-track"></span>
@@ -45,11 +45,11 @@
     <div id="ramps-key" class="ramps-key">
       <div class="ramps-key-row">
         <span class="ramp-icon ramp-exit">↙</span>
-        <span class="ramps-key-label">Exit ramp (leave motorway)</span>
+        <span class="ramps-key-label">Κόμβος εξόδου</span>
       </div>
       <div class="ramps-key-row">
         <span class="ramp-icon ramp-entry">↗</span>
-        <span class="ramps-key-label">Entry ramp (rejoin motorway)</span>
+        <span class="ramps-key-label">Κόμβος εισόδου</span>
       </div>
     </div>
   </aside>
@@ -58,21 +58,21 @@
     <div class="help-box">
       <button class="help-close" id="help-close">✕</button>
       <div class="help-logo">DIO<em>DIO</em></div>
-      <div class="help-subtitle">Greece Toll Road Advisor</div>
+      <div class="help-subtitle">Οδηγός Διοδίων Ελλάδας</div>
 
       <div class="help-section">
         <div class="help-section-icon">◆</div>
         <div class="help-section-content">
-          <div class="help-section-title">Explore any toll booth</div>
+          <div class="help-section-title">Εξερεύνηση σταθμού διοδίων</div>
           <div class="help-section-body">
-            Every diamond marker on the map is a toll station. <strong>Hover</strong> over any marker to see prices for motorcycles, cars and vans. <strong>Click</strong> any marker to open a detailed panel showing:
+            Κάθε τετραγωνικό σημείο στον χάρτη είναι σταθμός διοδίων. <strong>Τοποθέτησε</strong> τον κέρσορα για να δεις τιμές. <strong>Κλικ</strong> για να ανοίξεις λεπτομερές παράθυρο με:
             <ul>
-              <li>Prices for all 4 vehicle categories</li>
-              <li>Which direction(s) you pay</li>
-              <li>Bypass options — the exact exit and entry ramp names, with the extra time per direction</li>
-              <li>The bypass route drawn in green on the map</li>
+              <li>Τιμές για 4 κατηγορίες οχημάτων</li>
+              <li>Σε ποια κατεύθυνση πληρώνεις</li>
+              <li>Επιλογές παράκαμψης — ονόματα κόμβων εξόδου/εισόδου και επιπλέον χρόνος</li>
+              <li>Η διαδρομή παράκαμψης σε πράσινο στον χάρτη</li>
             </ul>
-            Click anywhere on the map to close the panel.
+            Κλικ οπουδήποτε στον χάρτη για κλείσιμο.
           </div>
         </div>
       </div>
@@ -82,16 +82,16 @@
       <div class="help-section">
         <div class="help-section-icon">⊕</div>
         <div class="help-section-content">
-          <div class="help-section-title">Analyse a route</div>
+          <div class="help-section-title">Ανάλυση διαδρομής</div>
           <div class="help-section-body">
-            Use the bar at the bottom for personalised advice on any journey:
+            Χρησιμοποίησε τη γραμμή στο κάτω μέρος για εξατομικευμένες συμβουλές:
             <ol>
-              <li>Enter your <strong>origin</strong> and <strong>destination</strong></li>
-              <li>Select your <strong>vehicle type</strong></li>
-              <li>Set your <strong>time value</strong> — how many minutes of extra driving you'd accept to save €1. At 10 min/€1 your time is worth €6/hr.</li>
-              <li>Press <strong>Analyse</strong></li>
+              <li>Εισάγαγε <strong>αφετηρία</strong> και <strong>προορισμό</strong></li>
+              <li>Επίλεξε <strong>τύπο οχήματος</strong></li>
+              <li>Ορίσε την <strong>αξία χρόνου</strong> — πόσα λεπτά επιπλέον οδήγησης δέχεσαι για να εξοικονομήσεις €1. Στα 10 λεπτά/€1 ο χρόνος σου αξίζει €6/ώρα.</li>
+              <li>Πάτησε <strong>Ανάλυση</strong></li>
             </ol>
-            The app draws your route, finds every toll on it, and tells you which are worth paying and which to bypass. <span style="color:#2d7a3a;font-weight:600;">Green = avoid</span>, <span style="color:#1a4a8a;font-weight:600;">blue = pay</span>, <span style="color:#b8860b;font-weight:600;">yellow = marginal</span>.
+            Η εφαρμογή σχεδιάζει τη διαδρομή σου, εντοπίζει κάθε διόδιο και σου λέει ποια αξίζει να πληρώσεις και ποια να παρακάμψεις. <span style="color:#2d7a3a;font-weight:600;">Πράσινο = παράκαμψη</span>, <span style="color:#1a4a8a;font-weight:600;">μπλε = πλήρωσε</span>, <span style="color:#b8860b;font-weight:600;">κίτρινο = οριακό</span>.
           </div>
         </div>
       </div>
@@ -99,17 +99,17 @@
       <div class="help-divider"></div>
 
       <div class="help-tip">
-        💡 <strong>Tip:</strong> Bypass routes are based on the 2026 Greek toll avoidance guide. Always verify with Google Maps before taking an unfamiliar detour.
+        💡 <strong>Συμβουλή:</strong> Οι διαδρομές παράκαμψης βασίζονται στον Οδηγό Αποφυγής Διοδίων 2026. Επιβεβαίωσε πάντα με Google Maps πριν ακολουθήσεις άγνωστη διαδρομή.
       </div>
 
-      <button class="help-cta" id="help-close-btn">Got it, show me the map</button>
+      <button class="help-cta" id="help-close-btn">Εντάξει, δείξε μου τον χάρτη</button>
     </div>
   </div>
 
   <div id="toll-side-panel">
     <div class="sp-header">
-      <span class="sp-header-title">Toll details</span>
-      <button class="sp-close" id="sp-close">✕ Close</button>
+      <span class="sp-header-title">Στοιχεία διοδίου</span>
+      <button class="sp-close" id="sp-close">✕ Κλείσιμο</button>
     </div>
     <div class="sp-scroll">
       <div id="sp-content"></div>
@@ -118,7 +118,7 @@
 
   <div id="results-panel">
     <div class="rp-head">
-      <div class="rp-title" id="rp-title">Route Analysis</div>
+      <div class="rp-title" id="rp-title">Ανάλυση Διαδρομής</div>
       <div class="rp-stats" id="rp-stats"></div>
       <button class="rp-close" id="rp-close">✕</button>
     </div>
@@ -127,16 +127,16 @@
 
   <div id="bottom-bar">
     <span class="bar-label">From</span>
-    <input class="bar-input" id="origin" value="Athens" autocomplete="off" style="flex:1;max-width:150px" />
-    <button class="swap-btn" id="swap-btn" title="Reverse route">⇄</button>
+    <input class="bar-input" id="origin" value="Αθήνα" autocomplete="off" style="flex:1;max-width:150px" />
+    <button class="swap-btn" id="swap-btn" title="Αντιστροφή διαδρομής">⇄</button>
     <span class="bar-label">To</span>
-    <input class="bar-input" id="dest" value="Larissa" autocomplete="off" style="flex:1;max-width:150px" />
+    <input class="bar-input" id="dest" value="Λάρισα" autocomplete="off" style="flex:1;max-width:150px" />
     <div class="bar-sep"></div>
     <select class="bar-select" id="vehicle">
-      <option value="motorcycle">🏍 Moto</option>
-      <option value="car" selected>🚗 Car</option>
-      <option value="lighttruck">🚐 Van</option>
-      <option value="heavytruck">🚛 Truck</option>
+      <option value="motorcycle">🏍 Μοτο</option>
+      <option value="car" selected>🚗 Αυτοκίνητο</option>
+      <option value="lighttruck">🚐 Βαν</option>
+      <option value="heavytruck">🚛 Φορτηγό</option>
     </select>
     <div class="bar-sep"></div>
     <div class="tv-compact">
@@ -148,7 +148,7 @@
     <div class="bar-sep"></div>
     <button class="analyse-btn" id="analyse-btn" onclick="analyze()">
       <div class="btn-spinner"></div>
-      <span id="btn-text">Analyse</span>
+      <span id="btn-text">Ανάλυση</span>
     </button>
     <div class="error-pill" id="error-pill"></div>
   </div>

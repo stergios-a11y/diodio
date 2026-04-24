@@ -28,9 +28,16 @@ L.tileLayer(
 // ── Highway route polylines (OSRM) ────────────────────────
 const HIGHWAY_WAYPOINTS = {
   "A1": [
-    [23.8184657, 38.1067470],[23.2868636, 38.3708752],[23.1434298, 38.6174740],
-    [22.6025569, 38.8087016],[22.3487648, 38.9148821],[22.5028431, 39.8044068],
-    [22.5698233, 40.0357339],[22.8384533, 40.6528427],
+    [23.8184657, 38.1067470],  // Athens start
+    [23.2868636, 38.3708752],  // Thiva
+    [23.1434298, 38.6174740],  // Traganas
+    [22.6025569, 38.8087016],  // Agios Konstantinos
+    [22.6291966, 38.9238268],  // Mavromantila
+    [22.8462812, 38.9203273],  // Pelasgia
+    [22.5567985, 39.5227965],  // Moschochori
+    [22.5028431, 39.8044068],  // Makrychori/Larissa
+    [22.5698233, 40.0357339],  // Leptokarya/Tempi
+    [22.8384533, 40.6528427],  // Thessaloniki end
   ],
   "A2": [
     [20.2618948, 39.4861509],[20.9475803, 39.6188630],[21.2854099, 39.7855212],
@@ -127,7 +134,7 @@ function buildHoverTooltip(toll) {
       <div>
         <div class="tt-name">${toll.name_en}</div>
         <div class="tt-name-gr">${toll.name_gr}</div>
-        <div class="tt-sub">${toll.operator} · <em>click for details</em></div>
+        <div class="tt-sub">${toll.operator} · <em>κλικ για λεπτομέρειες</em></div>
       </div>
       <div class="tt-badge" style="color:${color};border-color:${color}">${toll.highway}</div>
     </div>
@@ -215,7 +222,7 @@ function closeSidePanel() {
 function makeExitIcon() {
   return L.divIcon({
     className: '',
-    html: `<div style="background:#1a4a8a;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">EXIT</div>`,
+    html: `<div style="background:#1a4a8a;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">ΕΞΟΔΟΣ</div>`,
     iconSize: [36, 16], iconAnchor: [18, 8],
   });
 }
@@ -224,7 +231,7 @@ function makeExitIcon() {
 function makeEntryIcon() {
   return L.divIcon({
     className: '',
-    html: `<div style="background:#1a8a3c;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">ENTER</div>`,
+    html: `<div style="background:#1a8a3c;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">ΕΙΣΟΔΟΣ</div>`,
     iconSize: [42, 16], iconAnchor: [21, 8],
   });
 }
@@ -268,7 +275,7 @@ function openSidePanel(toll) {
         const em = L.marker([dir.exit.lat, dir.exit.lng], {
           icon: makeExitIcon(), zIndexOffset: 600,
         });
-        em.bindTooltip(`Exit: ${dir.exit_name}<br><small>${dir.label}</small>`, {
+        em.bindTooltip(`Έξοδος: ${dir.exit_name}<br><small>${dir.label}</small>`, {
           className: 'ramp-tooltip',
         });
         em.addTo(map);
@@ -280,7 +287,7 @@ function openSidePanel(toll) {
         const nm = L.marker([dir.entry.lat, dir.entry.lng], {
           icon: makeEntryIcon(), zIndexOffset: 600,
         });
-        nm.bindTooltip(`Re-enter: ${dir.entry_name}<br><small>${dir.label}</small>`, {
+        nm.bindTooltip(`Επανείσοδος: ${dir.entry_name}<br><small>${dir.label}</small>`, {
           className: 'ramp-tooltip',
         });
         nm.addTo(map);
@@ -312,17 +319,17 @@ function openSidePanel(toll) {
   // Build side panel HTML
   let bypassHTML = '';
   if (!bd) {
-    bypassHTML = `<div class="sp-no-bypass">⛔ No practical bypass available for this toll.</div>`;
+    bypassHTML = `<div class="sp-no-bypass">⛔ Δεν υπάρχει πρακτική παράκαμψη για αυτό το διόδιο.</div>`;
   } else {
-    bypassHTML = `<div class="sp-bypass-title">🟢 Bypass options</div>`;
+    bypassHTML = `<div class="sp-bypass-title">🟢 Επιλογές παράκαμψης</div>`;
     Object.entries(bd).forEach(([key, dir]) => {
       bypassHTML += `
         <div class="sp-dir">
           <div class="sp-dir-label">${dir.label}</div>
           <div class="sp-dir-time">+${dir.minutes} min detour</div>
           <div class="sp-dir-exits">
-            <span class="sp-exit-tag">↙ Exit: ${dir.exit_name}</span>
-            <span class="sp-entry-tag">↗ Re-enter: ${dir.entry_name}</span>
+            <span class="sp-exit-tag">↙ Έξοδος: ${dir.exit_name}</span>
+            <span class="sp-entry-tag">↗ Είσοδος: ${dir.entry_name}</span>
           </div>
         </div>`;
     });
@@ -339,10 +346,10 @@ function openSidePanel(toll) {
     </div>
     <div class="sp-section-title">Toll prices</div>
     <div class="sp-prices">
-      <div class="sp-price-row"><span>🏍 Motorcycle</span><strong>€${toll.cat1.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span>🚗 Car</span><strong>€${toll.cat2.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span>🚐 Light truck / Van</span><strong>€${toll.cat3.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span>🚛 Heavy truck</span><strong>€${toll.cat4.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span>🏍 Μοτοσικλέτα</span><strong>€${toll.cat1.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span>🚗 Αυτοκίνητο</span><strong>€${toll.cat2.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span>🚐 Ελαφρύ φορτηγό / Βαν</span><strong>€${toll.cat3.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span>🚛 Βαρύ φορτηγό</span><strong>€${toll.cat4.toFixed(2)}</strong></div>
     </div>
     <div class="sp-section-title">Direction</div>
     <div class="sp-direction">${toll.direction_label}</div>
@@ -408,7 +415,7 @@ function buildRampMarkers() {
           icon: makeExitIcon(), zIndexOffset: 50, opacity: 0,
         });
         exitM.bindTooltip(
-          `<strong>EXIT:</strong> ${dir.exit_name}<br><small>Avoid ${toll.name_en}</small>`,
+          `<strong>ΕΞΟΔΟΣ:</strong> ${dir.exit_name}<br><small>Παράκαμψη ${toll.name_en}</small>`,
           { className: 'ramp-tooltip' }
         );
       }
@@ -418,7 +425,7 @@ function buildRampMarkers() {
           icon: makeEntryIcon(), zIndexOffset: 50, opacity: 0,
         });
         entryM.bindTooltip(
-          `<strong>ENTER:</strong> ${dir.entry_name}<br><small>Avoid ${toll.name_en}</small>`,
+          `<strong>ΕΙΣΟΔΟΣ:</strong> ${dir.entry_name}<br><small>Παράκαμψη ${toll.name_en}</small>`,
           { className: 'ramp-tooltip' }
         );
       }
@@ -463,23 +470,23 @@ const isMobile  = window.innerWidth <= 640;
 let   legendVis = !isMobile;
 
 legendEl.classList.toggle('hidden', !legendVis);
-legendBtn.textContent = legendVis ? 'Hide legend' : 'Legend';
+legendBtn.textContent = legendVis ? 'Απόκρυψη' : 'Υπόμνημα';
 
 legendBtn.addEventListener('click', () => {
   legendVis = !legendVis;
   legendEl.classList.toggle('hidden', !legendVis);
-  legendBtn.textContent = legendVis ? 'Hide legend' : 'Legend';
+  legendBtn.textContent = legendVis ? 'Απόκρυψη' : 'Υπόμνημα';
 });
 
 const LEGEND_GROUPS = [
-  { key: 'A1',     label: 'PATHE (A1)',           sub: 'Afidnes → Malgara' },
-  { key: 'A2',     label: 'Egnatia Odos (A2)',     sub: 'Igoumenitsa → Ardanio' },
-  { key: 'A5',     label: 'Nea Odos (A5)',          sub: 'Klokova → Terovos' },
-  { key: 'A8',     label: 'Olympia Odos (A8)',      sub: 'Elefsina → Pyrgos' },
-  { key: 'E65',    label: 'Kentriki Odos (E65)',    sub: 'Lianokladi → Trikala' },
-  { key: 'A7',     label: 'Moreas (A7)',            sub: 'Corinth → Kalamata' },
-  { key: 'A6',     label: 'Attiki Odos (A6)',       sub: 'Athens ring road' },
-  { key: 'BRIDGE', label: 'Bridges & Tunnels',      sub: 'Rio–Antirrio · Aktio' },
+  { key: 'A1',     label: 'PATHE (A1)',           sub: 'Αφίδνες → Μάλγαρα' },
+  { key: 'A2',     label: 'Egnatia Odos (A2)',     sub: 'Ηγουμενίτσα → Αρδάνιο' },
+  { key: 'A5',     label: 'Nea Odos (A5)',          sub: 'Κλόκοβα → Τέροβο' },
+  { key: 'A8',     label: 'Olympia Odos (A8)',      sub: 'Ελευσίνα → Πύργος' },
+  { key: 'E65',    label: 'Kentriki Odos (E65)',    sub: 'Λιανοκλάδι → Τρίκαλα' },
+  { key: 'A7',     label: 'Moreas (A7)',            sub: 'Κόρινθος → Καλαμάτα' },
+  { key: 'A6',     label: 'Attiki Odos (A6)',       sub: 'Περιφερειακός Αθηνών' },
+  { key: 'BRIDGE', label: 'Bridges & Tunnels',      sub: 'Ρίο–Αντίρριο · Ακτιο' },
 ];
 
 const highwayCounts = {};
