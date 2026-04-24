@@ -45,15 +45,20 @@ const HIGHWAY_WAYPOINTS = {
     [25.0802422, 41.1203415],[25.5332019, 41.0135240],[26.308717, 40.9452663],
   ],
   "A5": [
-    [21.6565418, 38.3592412],[21.2723798, 38.5494744],
-    [21.1709225, 38.9898946],[20.9053087, 39.4252460],
+    [21.7770470, 38.3308710],  // Antirrio bridge landing (N end)
+    [21.6565418, 38.3592412],  // Klokova
+    [21.2723798, 38.5494744],  // Aggelokastro
+    [21.1709225, 38.9898946],  // Menidi/Kouvaras
+    [20.9053087, 39.4252460],  // Terovos
   ],
   "A8": [
     [23.5039038, 38.0499433],  // Elefsina
     [23.0325365, 37.9249719],  // Isthmos Canal
     [22.8096664, 37.9222552],  // Zevgolatio
-    [22.4185,    38.1285],     // Derveni (Elaionas exit area)
+    [22.5500000, 38.0600000],  // on A8 motorway, between Zevgolatio and Elaionas (coast)
+    [22.3100000, 38.1800000],  // on A8 just before Elaionas (near Derveni motorway junction)
     [22.1392536, 38.2057293],  // Elaionas/Aigio toll
+    [21.9500000, 38.2900000],  // on A8 between Aigio and Rio
     [21.8300325, 38.3164492],  // Rio
     [21.6191570, 38.1449493],  // Patras
     [21.3913023, 37.7120702],  // Pyrgos
