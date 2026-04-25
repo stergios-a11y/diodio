@@ -239,37 +239,33 @@ body {
    TOLL NAME LABELS — refined
    ══════════════════════════════════════ */
 .toll-name-label {
-  background: rgba(255,253,247,0.95);
-  border: none;
-  color: var(--ink);
+  background: #1f5c2a;
+  border: 1.5px solid rgba(255,255,255,0.92);
+  color: #ffffff;
   font-family: var(--font-display);
-  font-weight: 500;
-  font-style: italic;
-  font-size: 0.74rem;
-  letter-spacing: -0.012em;
-  padding: 1px 9px 2px;
-  border-radius: 999px;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 0.72rem;
+  letter-spacing: 0.005em;
+  padding: 2px 10px 3px;
+  border-radius: 3px;
   white-space: nowrap;
   box-shadow:
-    0 0 0 1px rgba(26,31,46,0.08),
-    0 1px 2px rgba(26,31,46,0.06),
-    0 2px 6px rgba(26,31,46,0.04);
+    0 1px 2px rgba(0,0,0,0.18),
+    0 3px 8px rgba(0,0,0,0.12);
   cursor: pointer;
-  transform: translateX(-50%) translateY(-4px);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  font-variation-settings: "opsz" 144, "SOFT" 80;
+  transform: translateX(-50%) translateY(-6px);
+  font-variation-settings: "opsz" 144;
   text-rendering: optimizeLegibility;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.15);
   transition: all 0.15s var(--ease);
 }
 .toll-name-label:hover {
-  background: var(--paper);
-  color: var(--aegean-dark);
+  background: #18491f;
+  transform: translateX(-50%) translateY(-7px);
   box-shadow:
-    0 0 0 1px var(--aegean),
-    0 2px 8px rgba(42,107,158,0.18),
-    0 4px 14px rgba(26,31,46,0.08);
-  transform: translateX(-50%) translateY(-5px);
+    0 2px 4px rgba(0,0,0,0.22),
+    0 6px 16px rgba(0,0,0,0.2);
 }
 
 /* ══════════════════════════════════════
@@ -645,13 +641,13 @@ body {
 .sp-hwy-badge {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 500;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   letter-spacing: 0.005em;
-  color: var(--ink);
+  color: var(--ink) !important;
   margin-bottom: 14px;
   padding: 0;
   background: none !important;
@@ -660,11 +656,12 @@ body {
 }
 .sp-hwy-badge::before {
   content: '';
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 1px 3px rgba(26,31,46,0.2);
+  /* The inline style sets the var --hwy-color; we use it here for the dot */
+  background: var(--hwy-color, var(--aegean));
+  box-shadow: 0 1px 3px rgba(26,31,46,0.25);
   flex-shrink: 0;
 }
 .sp-name {

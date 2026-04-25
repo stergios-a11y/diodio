@@ -571,7 +571,7 @@ function openSidePanel(toll) {
 
   document.getElementById('sp-content').innerHTML = `
     <div class="sp-header-inner">
-      <div class="sp-hwy-badge" style="color:${color}">${t('hwy.' + toll.highway)}</div>
+      <div class="sp-hwy-badge" style="--hwy-color:${color}">${t('hwy.' + toll.highway)}</div>
       <div class="sp-name">${primaryName}</div>
       <div class="sp-name-gr">${secondaryName}</div>
       <div class="sp-operator">${toll.operator}</div>
