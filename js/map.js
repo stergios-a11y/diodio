@@ -85,22 +85,94 @@ function simplify(coords, n) {
 // Mapbox public token, restricted by URL in account dashboard.
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiYW50YXJhbjIiLCJhIjoiY21vZGxqZ2E2MDQxcjJvcjFwYnl0cW94cCJ9.3XhY5-XiaDcBeEOvFUm_Jw';
 
-async function fetchAndDrawRoute(hwy, waypoints) {
-  // Use Mapbox for highway alignment — OSRM had Greek motorway gaps (Elaionas inland).
+// Highway line drawing — uses Overpass API to fetch the actual motorway geometry
+// directly from OpenStreetMap. This gives us the precise road shape without any
+// routing-engine guesswork. Cached aggressively in localStorage.
+//
+// Greek motorway refs in OSM: "A1", "A2", "A5", "A6", "A7", "A8", "E65" (Kentriki Odos)
+// Bridges and special infrastructure use HIGHWAY_WAYPOINTS fallback.
+const OSM_HIGHWAY_REFS = {
+  "A1":  "A1",
+  "A2":  "A2",
+  "A5":  "A5",
+  "A6":  "A6",
+  "A7":  "A7",
+  "A8":  "A8",
+  "E65": "E65",
+};
+
+async function fetchHighwayFromOSM(hwy) {
+  const ref = OSM_HIGHWAY_REFS[hwy];
+  if (!ref) return null;
+
+  // Check cache
+  const cacheKey = `diodio.highway.osm.v1.${hwy}`;
+  try {
+    const stored = localStorage.getItem(cacheKey);
+    if (stored) return JSON.parse(stored);
+  } catch (e) {}
+
+  // Overpass query: find all motorway ways in Greece with the given ref, return their geometry.
+  const query = `
+    [out:json][timeout:25];
+    area["ISO3166-1"="GR"]->.gr;
+    way["highway"~"motorway|trunk"]["ref"~"^${ref}$|^${ref};|;${ref}$|;${ref};"](area.gr);
+    out geom;
+  `;
+  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.elements?.length) return null;
+
+    // Each element is a way with a geometry array of {lat, lon} nodes.
+    // We return them as separate polylines (one per way) — Leaflet can draw an array of polylines.
+    const segments = data.elements.map(w =>
+      w.geometry.map(n => [n.lat, n.lon])
+    );
+    try { localStorage.setItem(cacheKey, JSON.stringify(segments)); } catch (e) {}
+    return segments;
+  } catch (e) {
+    console.warn('[DIODIO] Overpass highway fetch failed for', hwy, e);
+    return null;
+  }
+}
+
+// Fallback: use Mapbox routing if OSM fetch fails or for non-motorway routes (BRIDGE)
+async function fetchHighwayFromMapbox(hwy, waypoints) {
   const coordStr = waypoints.map(w => `${w[0]},${w[1]}`).join(';');
   const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
   try {
     const res  = await fetch(url);
     const data = await res.json();
-    if (data.code !== 'Ok' || !data.routes?.length) return;
-    const raw    = data.routes[0].geometry.coordinates;
-    const coords = simplify(raw, 4).map(c => [c[1], c[0]]);
-    const color  = HIGHWAY_COLORS[hwy] || '#888';
-    const layer  = L.polyline(coords, {
+    if (data.code !== 'Ok' || !data.routes?.length) return null;
+    return [data.routes[0].geometry.coordinates.map(c => [c[1], c[0]])];
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchAndDrawRoute(hwy, waypoints) {
+  // Try OSM first for known motorway refs
+  let segments = await fetchHighwayFromOSM(hwy);
+  // Fall back to Mapbox routing for BRIDGE or if OSM had no data
+  if (!segments) segments = await fetchHighwayFromMapbox(hwy, waypoints);
+  if (!segments) return;
+
+  const color = HIGHWAY_COLORS[hwy] || '#888';
+  // Multiple segments: draw all as one feature group so we can show/hide together
+  const layers = segments.map(coords =>
+    L.polyline(coords, {
       color, weight: 3, opacity: 0.35, lineCap: 'round', lineJoin: 'round',
-    }).addTo(map);
-    highwayRouteLayers[hwy] = layer;
-  } catch (e) { console.warn('[DIODIO] highway draw failed for', hwy, e); }
+    }).addTo(map)
+  );
+
+  // Treat as a single logical layer (use the first; helpers iterate)
+  highwayRouteLayers[hwy] = {
+    setStyle: (s) => layers.forEach(l => l.setStyle(s)),
+    _segments: layers,
+  };
 }
 
 Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, wps]) => fetchAndDrawRoute(hwy, wps));
