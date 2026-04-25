@@ -569,10 +569,10 @@ function openSidePanel(toll) {
 
   document.getElementById('sp-content').innerHTML = `
     <div class="sp-header-inner">
-      <div class="sp-hwy-badge" style="background:${color}">${toll.highway}</div>
+      <div class="sp-hwy-badge" style="color:${color}">${t('hwy.' + toll.highway)}</div>
       <div class="sp-name">${primaryName}</div>
       <div class="sp-name-gr">${secondaryName}</div>
-      <div class="sp-operator">${toll.operator} · ${t('hwy.' + toll.highway)}</div>
+      <div class="sp-operator">${toll.operator}</div>
     </div>
     <div class="sp-section-title">${t('sp.prices')}</div>
     <div class="sp-prices">
@@ -707,7 +707,6 @@ function updateRampsVisibility() {
 }
 
 function updateTollNamesVisibility() {
-  if (!tollNamesVisible) return;
   const zoomedIn = map.getZoom() >= ZOOM_THRESHOLD_TOLLNAMES;
   tollNameMarkers.forEach(({ marker }) => {
     if (zoomedIn) {
@@ -737,53 +736,42 @@ document.getElementById('ramps-btn').addEventListener('click', function() {
   }
 });
 
-// ── Toll names layer (labels above each toll marker) ──────
+// ── Toll names layer (labels above each toll marker) — always on, zoom-aware ──
 const tollNameMarkers = [];
-let   tollNamesVisible = false;
 
 function buildTollNameMarkers() {
   TOLL_DATA.forEach(toll => {
+    const lang = getCurrentLang();
+    const name = lang === 'el' ? toll.name_gr : toll.name_en;
+    const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
     const icon = L.divIcon({
       className: '',
-      html: `<div class="toll-name-label">${toll.name_en}</div>`,
-      iconSize: [null, null], iconAnchor: [0, -8],
+      html: `<div class="toll-name-label">${short}</div>`,
+      iconSize: [null, null], iconAnchor: [0, -10],
     });
     const m = L.marker([toll.lat, toll.lng], { icon, zIndexOffset: 30 });
     tollNameMarkers.push({ marker: m, toll });
   });
 }
 buildTollNameMarkers();
+updateTollNamesVisibility(); // show immediately if at sufficient zoom
 
 function updateTollNameLabels() {
-  // Rebuild labels with current-language name where available
   tollNameMarkers.forEach(({ marker, toll }) => {
     const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
     const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
     marker.setIcon(L.divIcon({
       className: '',
       html: `<div class="toll-name-label">${short}</div>`,
-      iconSize: [null, null], iconAnchor: [0, -8],
+      iconSize: [null, null], iconAnchor: [0, -10],
     }));
   });
 }
 
-document.getElementById('tollnames-btn').addEventListener('click', function() {
-  tollNamesVisible = !tollNamesVisible;
-  this.classList.toggle('active', tollNamesVisible);
-  if (tollNamesVisible) {
-    updateTollNameLabels();
-    updateTollNamesVisibility();
-  } else {
-    tollNameMarkers.forEach(({ marker }) => map.removeLayer(marker));
-  }
-});
-
 // Re-render labels when language changes
 window.addEventListener('langchange', () => {
-  if (tollNamesVisible) {
-    updateTollNameLabels();
-    updateTollNamesVisibility();
-  }
+  updateTollNameLabels();
+  updateTollNamesVisibility();
 });
 
 // ── Legend ────────────────────────────────────────────────
