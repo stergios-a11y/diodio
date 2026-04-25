@@ -183,7 +183,7 @@ function drawBypassLine(dir, label) {
 
   // If we have real ramps, fetch the OSRM driving route and replace the placeholder
   if (dir.exit && dir.entry && typeof window.fetchBypassRoute === 'function') {
-    window.fetchBypassRoute(dir.exit, dir.entry).then(routeCoords => {
+    window.fetchBypassRoute(dir.exit, dir.entry, dir.bypass_via).then(routeCoords => {
       if (routeCoords && routeCoords.length > 1) {
         layer.setLatLngs(routeCoords);
         layer.setStyle({ opacity: 0.9, dashArray: null });

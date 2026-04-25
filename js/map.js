@@ -114,17 +114,24 @@ window.clearActiveRouteLayer = function() {
   }
 };
 
-// ── Route fetcher (OSRM, with cache) ──────────────────────
-// Returns { coords: [[lat,lng]...], distanceKm, durationMin } or null.
-// `mode` is 'bypass' (excludes motorway) or 'highway' (default routing).
+// ── Route fetcher ─────────────────────────────────────────
+// Uses Mapbox Directions API for bypass (motorway exclusion works there),
+// OSRM for highway comparison. Cached in localStorage.
 const routeCache = {};
-async function fetchRoute(exitPt, entryPt, mode) {
-  const key = `${mode}:${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}`;
+
+// Mapbox public token. Restrict by URL referer in account dashboard.
+const MAPBOX_TOKEN = 'pk.eyJ1IjoiYW50YXJhbjIiLCJhIjoiY21vZGxqZ2E2MDQxcjJvcjFwYnl0cW94cCJ9.3XhY5-XiaDcBeEOvFUm_Jw';
+
+async function fetchRoute(exitPt, entryPt, mode, via) {
+  const viaKey = via?.length
+    ? via.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join('|')
+    : '';
+  const key = `${mode}:${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}${viaKey ? '|' + viaKey : ''}`;
 
   if (routeCache[key]) return routeCache[key];
 
   try {
-    const stored = localStorage.getItem(`diodio.route.${key}`);
+    const stored = localStorage.getItem(`diodio.route.v4.${key}`);
     if (stored) {
       const parsed = JSON.parse(stored);
       routeCache[key] = parsed;
@@ -132,13 +139,27 @@ async function fetchRoute(exitPt, entryPt, mode) {
     }
   } catch (e) { /* ignore */ }
 
-  const exclude = mode === 'bypass' ? '&exclude=motorway' : '';
-  const coordStr = `${exitPt.lng},${exitPt.lat};${entryPt.lng},${entryPt.lat}`;
-  const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson${exclude}`;
+  let url;
+  if (mode === 'bypass') {
+    // Mapbox: exclude=motorway actually works here.
+    // Optional via waypoints can still be provided but usually unnecessary.
+    const allPoints = [exitPt, ...(via || []), entryPt];
+    const coordStr = allPoints.map(p => `${p.lng},${p.lat}`).join(';');
+    url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full&exclude=motorway&access_token=${MAPBOX_TOKEN}`;
+  } else {
+    // Highway comparison: free OSRM, default routing (will pick motorway).
+    const coordStr = `${exitPt.lng},${exitPt.lat};${entryPt.lng},${entryPt.lat}`;
+    url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
+  }
+
   try {
     const res = await fetch(url);
     const data = await res.json();
-    if (data.code !== 'Ok' || !data.routes?.length) return null;
+    // Mapbox returns code='Ok' on success and routes array. OSRM same format.
+    if (data.code !== 'Ok' || !data.routes?.length) {
+      console.warn('[DIODIO] route fetch failed', mode, key, data);
+      return null;
+    }
     const r = data.routes[0];
     const result = {
       coords:      r.geometry.coordinates.map(c => [c[1], c[0]]),
@@ -146,16 +167,17 @@ async function fetchRoute(exitPt, entryPt, mode) {
       durationMin: r.duration / 60,
     };
     routeCache[key] = result;
-    try { localStorage.setItem(`diodio.route.${key}`, JSON.stringify(result)); } catch (e) {}
+    try { localStorage.setItem(`diodio.route.v4.${key}`, JSON.stringify(result)); } catch (e) {}
     return result;
   } catch (e) {
+    console.warn('[DIODIO] route fetch error', mode, key, e);
     return null;
   }
 }
 
 // Backward-compat helper used by calculator.js
-window.fetchBypassRoute = async function(exitPt, entryPt) {
-  const r = await fetchRoute(exitPt, entryPt, 'bypass');
+window.fetchBypassRoute = async function(exitPt, entryPt, via) {
+  const r = await fetchRoute(exitPt, entryPt, 'bypass', via);
   return r ? r.coords : null;
 };
 window.fetchRoute = fetchRoute;
@@ -335,6 +357,7 @@ function openSidePanel(toll) {
         `🟢 ${translateDirectionLabel(dir.label)} — ${t('bypass.via.local')}`,
         { sticky: true, className: 'bypass-tooltip' }
       );
+      bypassLine._dirKey = key;
       inspectLayers.push(bypassLine);
 
       // ─── Highway segment line (motorway, dashed Aegean blue) ───
@@ -346,11 +369,12 @@ function openSidePanel(toll) {
         `🔵 ${translateDirectionLabel(dir.label)} — ${t('bypass.via.highway')}`,
         { sticky: true, className: 'bypass-tooltip' }
       );
+      highwayLine._dirKey = key;
       inspectLayers.push(highwayLine);
 
       // Fetch BOTH routes in parallel
       Promise.all([
-        fetchRoute(dir.exit, dir.entry, 'bypass'),
+        fetchRoute(dir.exit, dir.entry, 'bypass', dir.bypass_via),
         fetchRoute(dir.exit, dir.entry, 'highway'),
       ]).then(([bypassRes, highwayRes]) => {
         if (bypassRes && bypassRes.coords.length > 1) {
@@ -361,7 +385,6 @@ function openSidePanel(toll) {
           highwayLine.setLatLngs(highwayRes.coords);
           highwayLine.setStyle({ opacity: 0.7, dashArray: null });
         }
-        // Update the comparison stats in the side panel
         updateDirStats(toll.id, key, bypassRes, highwayRes);
       });
 
@@ -373,6 +396,7 @@ function openSidePanel(toll) {
         className: 'ramp-tooltip',
       });
       em.addTo(map);
+      em._dirKey = key;
       inspectLayers.push(em);
 
       // ENTER sign marker
@@ -383,6 +407,7 @@ function openSidePanel(toll) {
         className: 'ramp-tooltip',
       });
       nm.addTo(map);
+      nm._dirKey = key;
       inspectLayers.push(nm);
     });
   }
@@ -481,12 +506,51 @@ function openSidePanel(toll) {
     }
   }
 
+  // Show only the selected direction's lines + signs, or both
+  function setDirectionFilter(activeKey /* 'north' | 'south' | 'both' */) {
+    inspectLayers.forEach(layer => {
+      if (!layer._dirKey) return;
+      const visible = activeKey === 'both' || layer._dirKey === activeKey;
+      if (layer.setOpacity) {
+        // Marker
+        layer.setOpacity(visible ? 1 : 0);
+      } else if (layer.setStyle) {
+        // Polyline — restore to original opacity if visible, hide if not
+        const isHighway = layer.options.color === '#2a6b9e';
+        layer.setStyle({ opacity: visible ? (isHighway ? 0.7 : 0.9) : 0 });
+      }
+    });
+    // Highlight active filter pill in side panel
+    document.querySelectorAll('.sp-dir-filter .sp-filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.dirFilter === activeKey);
+    });
+    // Dim the inactive sp-dir block
+    document.querySelectorAll('.sp-dir').forEach(el => {
+      const k = el.dataset.dirKey;
+      el.classList.toggle('dimmed', activeKey !== 'both' && k !== activeKey);
+    });
+  }
+
   // Build side panel HTML
   let bypassHTML = '';
   if (!bd) {
     bypassHTML = `<div class="sp-no-bypass">${t('sp.no.bypass')}</div>`;
   } else {
-    bypassHTML = `<div class="sp-bypass-title">${t('sp.bypass.options')}</div>`;
+    const dirKeys = Object.keys(bd);
+    // Build direction filter pills if there are 2+ directions
+    let filterPillsHTML = '';
+    if (dirKeys.length > 1) {
+      filterPillsHTML = `<div class="sp-dir-filter">
+        <button class="sp-filter-btn active" data-dir-filter="both">${t('filter.both')}</button>`;
+      dirKeys.forEach(k => {
+        const dirLabel = translateDirectionLabel(bd[k].label);
+        // Shorten label: take first word (e.g., "Northbound" → "Northbound", "Βόρεια" → "Βόρεια")
+        const short = dirLabel.split(/\s|\(/)[0];
+        filterPillsHTML += `<button class="sp-filter-btn" data-dir-filter="${k}">${short}</button>`;
+      });
+      filterPillsHTML += `</div>`;
+    }
+    bypassHTML = filterPillsHTML;
     Object.entries(bd).forEach(([key, dir]) => {
       bypassHTML += `
         <div class="sp-dir" data-dir-key="${key}">
@@ -543,6 +607,11 @@ function openSidePanel(toll) {
   `;
 
   document.getElementById('toll-side-panel').classList.add('open');
+
+  // Wire up direction filter pills
+  document.querySelectorAll('.sp-dir-filter .sp-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => setDirectionFilter(btn.dataset.dirFilter));
+  });
 }
 
 // ── Toll markers ──────────────────────────────────────────
