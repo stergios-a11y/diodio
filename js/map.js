@@ -16,12 +16,14 @@ const map = L.map('map', {
   zoomControl: true,
 });
 
+// Use CartoDB Light as the base map — free, reliable, no token needed.
+// Motorways are visible on the base tiles. Mapbox would be richer but the URL-restricted
+// token blocks tile API; we keep Mapbox for routing only (Directions API).
 L.tileLayer(
-  'https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiYW50YXJhbjIiLCJhIjoiY21vZGxqZ2E2MDQxcjJvcjFwYnl0cW94cCJ9.3XhY5-XiaDcBeEOvFUm_Jw',
+  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   {
-    attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
-    tileSize: 512,
-    zoomOffset: -1,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
     maxZoom: 19,
   }
 ).addTo(map);
@@ -581,8 +583,14 @@ function openSidePanel(toll) {
       <div class="sp-price-row"><span>${t('sp.van')}</span><strong>€${toll.cat3.toFixed(2)}</strong></div>
       <div class="sp-price-row"><span>${t('sp.truck')}</span><strong>€${toll.cat4.toFixed(2)}</strong></div>
     </div>
-    <div class="sp-section-title">${t('sp.direction')}</div>
-    <div class="sp-direction">${translateDirectionLabel(toll.direction_label)}</div>
+    ${
+      // Hide Direction section when it's redundant — frontal toll charges both directions
+      // equally so saying "Both directions" adds nothing.
+      (toll.type === 'frontal' && /both directions/i.test(toll.direction_label || ''))
+        ? ''
+        : `<div class="sp-section-title">${t('sp.direction')}</div>
+           <div class="sp-direction">${translateDirectionLabel(toll.direction_label)}</div>`
+    }
     ${notesHTML}
     <div class="sp-section-title">${t('sp.bypass')}</div>
     ${bypassHTML}
@@ -750,6 +758,18 @@ function buildTollNameMarkers() {
       iconSize: [null, null], iconAnchor: [0, -10],
     });
     const m = L.marker([toll.lat, toll.lng], { icon, zIndexOffset: 30 });
+    m.on('click', function(e) {
+      L.DomEvent.stopPropagation(e);
+      tooltipEl.style.display = 'none';
+      openSidePanel(toll);
+    });
+    m.on('mouseover', function(e) {
+      tooltipEl.innerHTML = buildHoverTooltip(toll);
+      tooltipEl.style.display = 'block';
+      positionTooltip(e.originalEvent);
+    });
+    m.on('mousemove', function(e) { positionTooltip(e.originalEvent); });
+    m.on('mouseout',  function()  { tooltipEl.style.display = 'none'; });
     tollNameMarkers.push({ marker: m, toll });
   });
 }
