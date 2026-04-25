@@ -281,6 +281,7 @@ function restoreAll() {
 // ── Side panel ────────────────────────────────────────────
 let inspectLayers = [];
 let sidePanelOpen = false;
+let sidePanelOpenedAt = 0;
 const legendEl    = document.getElementById('legend');
 
 function clearInspectLayers() {
@@ -318,6 +319,7 @@ function makeEntryIcon() {
 function openSidePanel(toll) {
   clearInspectLayers();
   sidePanelOpen = true;
+  sidePanelOpenedAt = Date.now();
   legendEl.classList.add('pushed');
   document.getElementById('map-controls')?.classList.add('pushed');
 
@@ -647,7 +649,9 @@ TOLL_DATA.forEach(toll => {
   markersByHighway[toll.highway].push(marker);
 });
 
-map.on('click', () => { if (sidePanelOpen) closeSidePanel(); });
+map.on('click', () => {
+  if (sidePanelOpen && Date.now() - sidePanelOpenedAt > 800) closeSidePanel();
+});
 document.getElementById('sp-close').addEventListener('click', closeSidePanel);
 
 // ── Ramp markers layer (off by default) ──────────────────
