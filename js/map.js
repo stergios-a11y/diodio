@@ -82,21 +82,25 @@ function simplify(coords, n) {
   return out;
 }
 
+// Mapbox public token, restricted by URL in account dashboard.
+const MAPBOX_TOKEN = 'pk.eyJ1IjoiYW50YXJhbjIiLCJhIjoiY21vZGxqZ2E2MDQxcjJvcjFwYnl0cW94cCJ9.3XhY5-XiaDcBeEOvFUm_Jw';
+
 async function fetchAndDrawRoute(hwy, waypoints) {
+  // Use Mapbox for highway alignment — OSRM had Greek motorway gaps (Elaionas inland).
   const coordStr = waypoints.map(w => `${w[0]},${w[1]}`).join(';');
-  const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
+  const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
   try {
     const res  = await fetch(url);
     const data = await res.json();
-    if (data.code !== 'Ok') return;
+    if (data.code !== 'Ok' || !data.routes?.length) return;
     const raw    = data.routes[0].geometry.coordinates;
     const coords = simplify(raw, 4).map(c => [c[1], c[0]]);
     const color  = HIGHWAY_COLORS[hwy] || '#888';
     const layer  = L.polyline(coords, {
-      color, weight: 3, opacity: 0.3, lineCap: 'round', lineJoin: 'round',
+      color, weight: 3, opacity: 0.35, lineCap: 'round', lineJoin: 'round',
     }).addTo(map);
     highwayRouteLayers[hwy] = layer;
-  } catch (e) { /* fail silently */ }
+  } catch (e) { console.warn('[DIODIO] highway draw failed for', hwy, e); }
 }
 
 Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, wps]) => fetchAndDrawRoute(hwy, wps));
@@ -119,9 +123,6 @@ window.clearActiveRouteLayer = function() {
 // OSRM for highway comparison. Cached in localStorage.
 const routeCache = {};
 
-// Mapbox public token. Restrict by URL referer in account dashboard.
-const MAPBOX_TOKEN = 'pk.eyJ1IjoiYW50YXJhbjIiLCJhIjoiY21vZGxqZ2E2MDQxcjJvcjFwYnl0cW94cCJ9.3XhY5-XiaDcBeEOvFUm_Jw';
-
 async function fetchRoute(exitPt, entryPt, mode, via) {
   const viaKey = via?.length
     ? via.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join('|')
@@ -131,7 +132,7 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
   if (routeCache[key]) return routeCache[key];
 
   try {
-    const stored = localStorage.getItem(`diodio.route.v4.${key}`);
+    const stored = localStorage.getItem(`diodio.route.v5.${key}`);
     if (stored) {
       const parsed = JSON.parse(stored);
       routeCache[key] = parsed;
@@ -140,22 +141,15 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
   } catch (e) { /* ignore */ }
 
   let url;
-  if (mode === 'bypass') {
-    // Mapbox: exclude=motorway actually works here.
-    // Optional via waypoints can still be provided but usually unnecessary.
-    const allPoints = [exitPt, ...(via || []), entryPt];
-    const coordStr = allPoints.map(p => `${p.lng},${p.lat}`).join(';');
-    url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full&exclude=motorway&access_token=${MAPBOX_TOKEN}`;
-  } else {
-    // Highway comparison: free OSRM, default routing (will pick motorway).
-    const coordStr = `${exitPt.lng},${exitPt.lat};${entryPt.lng},${entryPt.lat}`;
-    url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
-  }
+  const coordStr = mode === 'bypass'
+    ? [exitPt, ...(via || []), entryPt].map(p => `${p.lng},${p.lat}`).join(';')
+    : `${exitPt.lng},${exitPt.lat};${entryPt.lng},${entryPt.lat}`;
+  const exclude = mode === 'bypass' ? '&exclude=motorway' : '';
+  url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full${exclude}&access_token=${MAPBOX_TOKEN}`;
 
   try {
     const res = await fetch(url);
     const data = await res.json();
-    // Mapbox returns code='Ok' on success and routes array. OSRM same format.
     if (data.code !== 'Ok' || !data.routes?.length) {
       console.warn('[DIODIO] route fetch failed', mode, key, data);
       return null;
@@ -167,7 +161,7 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
       durationMin: r.duration / 60,
     };
     routeCache[key] = result;
-    try { localStorage.setItem(`diodio.route.v4.${key}`, JSON.stringify(result)); } catch (e) {}
+    try { localStorage.setItem(`diodio.route.v5.${key}`, JSON.stringify(result)); } catch (e) {}
     return result;
   } catch (e) {
     console.warn('[DIODIO] route fetch error', mode, key, e);

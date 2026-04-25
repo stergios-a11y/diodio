@@ -1156,14 +1156,14 @@ const TOLL_DATA = [
 
 // ── Highway colour palette ────────────────────────────────
 const HIGHWAY_COLORS = {
-  "A1":     "#1a6b3c",
-  "A2":     "#1a4fa8",
-  "A5":     "#8b5e1a",
-  "A8":     "#b84c2e",
-  "E65":    "#5e7a1a",
-  "A7":     "#2e7d8b",
-  "A6":     "#c8a84b",
-  "BRIDGE": "#8b2fc9",
+  "A1":     "#2a6b9e",  // Aegean blue — hero highway
+  "A2":     "#5a4fa8",  // muted purple — Egnatia, the long traverse
+  "A5":     "#c4613d",  // terracotta — Nea Odos
+  "A8":     "#1e6b72",  // deep teal — Olympia, west coast
+  "E65":    "#6b8a2e",  // olive — rural Thessaly
+  "A7":     "#1e4f78",  // navy — Moreas / Peloponnese
+  "A6":     "#9a6f1a",  // warm bronze — Attiki Odos
+  "BRIDGE": "#b8502d",  // rust — bridges & tunnels
 };
 
 const TYPE_SHAPES = {
