@@ -51,13 +51,13 @@ const HIGHWAY_WAYPOINTS = {
     [20.9053087, 39.4252460],  // Terovos
   ],
   "A8": [
-    [23.5039038, 38.0499433],  // Elefsina
-    [23.0325365, 37.9249719],  // Isthmos Canal
-    [22.8096664, 37.9222552],  // Zevgolatio
-    [22.1392536, 38.2057293],  // Elaionas/Aigio toll
-    [21.8300325, 38.3164492],  // Rio
-    [21.6191570, 38.1449493],  // Patras
-    [21.3913023, 37.7120702],  // Pyrgos
+    [23.5039038, 38.0499433],  // Elefsina toll
+    [23.0325365, 37.9249719],  // Isthmos Canal toll
+    [22.8096664, 37.9222552],  // Zevgolatio toll
+    [22.1392536, 38.2057293],  // Aigio/Elaionas toll
+    [21.8300325, 38.3164492],  // Rio toll
+    [21.6191570, 38.1449493],  // Patras toll
+    [21.3913023, 37.7120702],  // Pyrgos toll
   ],
   "E65": [
     [22.3487648, 38.9148821],[22.0831633, 39.2566317],[21.8322372, 39.5204295],
@@ -85,97 +85,23 @@ function simplify(coords, n) {
 // Mapbox public token, restricted by URL in account dashboard.
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiYW50YXJhbjIiLCJhIjoiY21vZGxqZ2E2MDQxcjJvcjFwYnl0cW94cCJ9.3XhY5-XiaDcBeEOvFUm_Jw';
 
-// Highway line drawing — uses Overpass API to fetch the actual motorway geometry
-// directly from OpenStreetMap. This gives us the precise road shape without any
-// routing-engine guesswork. Cached aggressively in localStorage.
-//
-// Greek motorway refs in OSM: "A1", "A2", "A5", "A6", "A7", "A8", "E65" (Kentriki Odos)
-// Bridges and special infrastructure use HIGHWAY_WAYPOINTS fallback.
-const OSM_HIGHWAY_REFS = {
-  "A1":  "A1",
-  "A2":  "A2",
-  "A5":  "A5",
-  "A6":  "A6",
-  "A7":  "A7",
-  "A8":  "A8",
-  "E65": "E65",
-};
-
-async function fetchHighwayFromOSM(hwy) {
-  const ref = OSM_HIGHWAY_REFS[hwy];
-  if (!ref) return null;
-
-  // Check cache
-  const cacheKey = `diodio.highway.osm.v1.${hwy}`;
-  try {
-    const stored = localStorage.getItem(cacheKey);
-    if (stored) return JSON.parse(stored);
-  } catch (e) {}
-
-  // Overpass query: find all motorway ways in Greece with the given ref, return their geometry.
-  const query = `
-    [out:json][timeout:25];
-    area["ISO3166-1"="GR"]->.gr;
-    way["highway"~"motorway|trunk"]["ref"~"^${ref}$|^${ref};|;${ref}$|;${ref};"](area.gr);
-    out geom;
-  `;
-  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    if (!data.elements?.length) return null;
-
-    // Each element is a way with a geometry array of {lat, lon} nodes.
-    // We return them as separate polylines (one per way) — Leaflet can draw an array of polylines.
-    const segments = data.elements.map(w =>
-      w.geometry.map(n => [n.lat, n.lon])
-    );
-    try { localStorage.setItem(cacheKey, JSON.stringify(segments)); } catch (e) {}
-    return segments;
-  } catch (e) {
-    console.warn('[DIODIO] Overpass highway fetch failed for', hwy, e);
-    return null;
-  }
-}
-
-// Fallback: use Mapbox routing if OSM fetch fails or for non-motorway routes (BRIDGE)
-async function fetchHighwayFromMapbox(hwy, waypoints) {
-  const coordStr = waypoints.map(w => `${w[0]},${w[1]}`).join(';');
-  const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
-  try {
-    const res  = await fetch(url);
-    const data = await res.json();
-    if (data.code !== 'Ok' || !data.routes?.length) return null;
-    return [data.routes[0].geometry.coordinates.map(c => [c[1], c[0]])];
-  } catch (e) {
-    return null;
-  }
-}
-
-async function fetchAndDrawRoute(hwy, waypoints) {
-  // Try OSM first for known motorway refs
-  let segments = await fetchHighwayFromOSM(hwy);
-  // Fall back to Mapbox routing for BRIDGE or if OSM had no data
-  if (!segments) segments = await fetchHighwayFromMapbox(hwy, waypoints);
-  if (!segments) return;
-
+// Highway line drawing — draws polylines directly from HIGHWAY_WAYPOINTS without
+// any API call. Waypoints are real motorway anchor points (toll booths and route ends).
+// This means lines render instantly, never depend on third-party APIs, and never
+// detour inland because we're not asking any algorithm to "find a route" — we just
+// connect known motorway positions with straight segments.
+function drawHighwayLine(hwy, waypoints) {
   const color = HIGHWAY_COLORS[hwy] || '#888';
-  // Multiple segments: draw all as one feature group so we can show/hide together
-  const layers = segments.map(coords =>
-    L.polyline(coords, {
-      color, weight: 3, opacity: 0.35, lineCap: 'round', lineJoin: 'round',
-    }).addTo(map)
-  );
-
-  // Treat as a single logical layer (use the first; helpers iterate)
-  highwayRouteLayers[hwy] = {
-    setStyle: (s) => layers.forEach(l => l.setStyle(s)),
-    _segments: layers,
-  };
+  // HIGHWAY_WAYPOINTS uses [lng, lat] order; Leaflet wants [lat, lng]
+  const coords = waypoints.map(([lng, lat]) => [lat, lng]);
+  const layer = L.polyline(coords, {
+    color, weight: 3, opacity: 0.35, lineCap: 'round', lineJoin: 'round',
+    smoothFactor: 1.5,
+  }).addTo(map);
+  highwayRouteLayers[hwy] = layer;
 }
 
-Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, wps]) => fetchAndDrawRoute(hwy, wps));
+Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, wps]) => drawHighwayLine(hwy, wps));
 
 window.setActiveRouteLayer = function(coords) {
   if (window._activeRouteHighlight) map.removeLayer(window._activeRouteHighlight);
