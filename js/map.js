@@ -17,10 +17,11 @@ const map = L.map('map', {
 });
 
 L.tileLayer(
-  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  'https://api.mapbox.com/styles/v1/mapbox/light-v11/tiles/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiYW50YXJhbjIiLCJhIjoiY21vZGxqZ2E2MDQxcjJvcjFwYnl0cW94cCJ9.3XhY5-XiaDcBeEOvFUm_Jw',
   {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd',
+    attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+    tileSize: 512,
+    zoomOffset: -1,
     maxZoom: 19,
   }
 ).addTo(map);
@@ -85,23 +86,10 @@ function simplify(coords, n) {
 // Mapbox public token, restricted by URL in account dashboard.
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiYW50YXJhbjIiLCJhIjoiY21vZGxqZ2E2MDQxcjJvcjFwYnl0cW94cCJ9.3XhY5-XiaDcBeEOvFUm_Jw';
 
-// Highway line drawing — draws polylines directly from HIGHWAY_WAYPOINTS without
-// any API call. Waypoints are real motorway anchor points (toll booths and route ends).
-// This means lines render instantly, never depend on third-party APIs, and never
-// detour inland because we're not asking any algorithm to "find a route" — we just
-// connect known motorway positions with straight segments.
-function drawHighwayLine(hwy, waypoints) {
-  const color = HIGHWAY_COLORS[hwy] || '#888';
-  // HIGHWAY_WAYPOINTS uses [lng, lat] order; Leaflet wants [lat, lng]
-  const coords = waypoints.map(([lng, lat]) => [lat, lng]);
-  const layer = L.polyline(coords, {
-    color, weight: 3, opacity: 0.35, lineCap: 'round', lineJoin: 'round',
-    smoothFactor: 1.5,
-  }).addTo(map);
-  highwayRouteLayers[hwy] = layer;
-}
-
-Object.entries(HIGHWAY_WAYPOINTS).forEach(([hwy, wps]) => drawHighwayLine(hwy, wps));
+// Highway lines are no longer drawn as colored polylines.
+// Motorways are visible through the Mapbox base tile layer above.
+// HIGHWAY_COLORS (from tolls.js) is still used for legend dots, toll markers,
+// side panel badges, and verdict chip borders.
 
 window.setActiveRouteLayer = function(coords) {
   if (window._activeRouteHighlight) map.removeLayer(window._activeRouteHighlight);
