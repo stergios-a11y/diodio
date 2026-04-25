@@ -1432,13 +1432,13 @@ input[type="range"]::-moz-range-thumb {
   }
   #legend.pushed { right: 6px; top: auto; bottom: calc(var(--bar-h) + 220px); }
 
-  /* Side panel as bottom sheet */
+  /* Side panel as bottom sheet — leaves clear space for the map above */
   #toll-side-panel {
     width: 100%;
     top: auto;
     bottom: 116px;
-    height: 58vh;
-    max-height: 58vh;
+    height: 48vh;
+    max-height: 48vh;
     border-left: none;
     border-top: 1px solid var(--line-strong);
     box-shadow: 0 -8px 32px rgba(26,31,46,0.14);
@@ -1446,6 +1446,38 @@ input[type="range"]::-moz-range-thumb {
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
   #toll-side-panel.open { transform: translateY(0); }
+
+  /* Tighter side panel content on mobile so more fits in the smaller sheet */
+  .sp-header { padding: 9px 14px; }
+  .sp-header-inner { padding: 14px 16px 12px; }
+  .sp-name { font-size: 1.45rem; margin-bottom: 2px; }
+  .sp-name-gr { font-size: 0.82rem; margin-bottom: 8px; }
+  .sp-operator { padding-top: 8px; font-size: 0.66rem; }
+  .sp-section-title { padding: 10px 16px 5px; font-size: 0.75rem; }
+  .sp-prices { padding: 8px 16px 12px; }
+  .sp-price-row { padding: 5px 0; font-size: 0.82rem; }
+  .sp-price-row strong { font-size: 1rem; }
+  .sp-direction { padding: 9px 16px 12px; font-size: 0.86rem; }
+  .sp-dir { padding: 11px 16px 13px; }
+  .sp-dir-label { font-size: 0.92rem; margin-bottom: 6px; }
+  .sp-dir-compare { padding: 8px 10px; }
+  .sp-dir-filter { padding: 8px 16px 5px; gap: 4px; }
+  .sp-filter-btn { padding: 4px 9px; font-size: 0.7rem; }
+
+  /* Visual handle bar at the top of the sheet for affordance */
+  #toll-side-panel.open::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 38px;
+    height: 4px;
+    background: var(--line-strong);
+    border-radius: 2px;
+    z-index: 10;
+  }
+  .sp-header { padding-top: 14px; }
 
   #bottom-bar {
     height: auto;
