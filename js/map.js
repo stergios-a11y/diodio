@@ -1047,7 +1047,8 @@ const tollNameMarkers = [];
 function buildLabelHtml(toll) {
   const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
   const short = stripTollPrefix(name);
-  return `<div class="toll-name-label">${short}</div>`;
+  const sideClass = toll.type === 'side' ? ' toll-name-label-side' : '';
+  return `<div class="toll-name-label${sideClass}">${short}</div>`;
 }
 
 function buildTollNameMarkers() {
@@ -1093,9 +1094,10 @@ function setActiveTollLabel(activeTollId) {
     const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
     const short = stripTollPrefix(name);
     const isActive = toll.id === activeTollId;
+    const sideClass = toll.type === 'side' ? ' toll-name-label-side' : '';
     marker.setIcon(L.divIcon({
       className: '',
-      html: `<div class="toll-name-label${isActive ? ' active' : ''}">${short}</div>`,
+      html: `<div class="toll-name-label${isActive ? ' active' : ''}${sideClass}">${short}</div>`,
       iconSize: [null, null], iconAnchor: [0, -10],
     }));
   });
