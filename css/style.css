@@ -295,18 +295,19 @@ body {
 /* ══════════════════════════════════════
    RAMP SIGNS (EXIT / ENTER on map)
    Auto-size to content so any language label fits.
+   Two-tone: colored label + lighter place-name section.
    ══════════════════════════════════════ */
 .ramp-icon-wrap {
   width: auto !important;
   height: auto !important;
 }
 .ramp-sign {
-  display: inline-block;
+  display: inline-flex;
+  align-items: stretch;
   color: #ffffff;
   font-family: 'Arial Black', 'Inter', sans-serif;
   font-size: 9px;
   font-weight: 900;
-  padding: 3px 7px 3px;
   border-radius: 3px;
   border: 1.5px solid white;
   white-space: nowrap;
@@ -315,9 +316,22 @@ body {
   line-height: 1.1;
   transform: translateX(-50%);
   pointer-events: auto;
+  overflow: hidden;
+  padding: 3px 7px 3px;
+  gap: 6px;
+}
+.ramp-sign-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding-left: 6px;
+  border-left: 1px solid rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  font-size: 8px;
+  align-self: center;
 }
 .ramp-sign-exit  { background: #2a6b9e; }   /* Aegean blue for EXIT */
-.ramp-sign-entry { background: #2e7a4a; }   /* go green for ENTER */
+.ramp-sign-entry { background: #2e7a4a; }   /* go green for RE-ENTER */
 
 /* ══════════════════════════════════════
    RAMPS TOGGLE INSIDE LEGEND

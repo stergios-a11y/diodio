@@ -292,20 +292,26 @@ function closeSidePanel() {
   setTimeout(() => map.invalidateSize(), 320);
 }
 
-// EXIT sign icon — auto-sized so any language fits
-function makeExitIcon() {
+// EXIT sign icon — auto-sized so any language fits, includes place name
+function makeExitIcon(placeName) {
+  const nameHtml = placeName
+    ? `<span class="ramp-sign-name">${placeName}</span>`
+    : '';
   return L.divIcon({
     className: 'ramp-icon-wrap',
-    html: `<div class="ramp-sign ramp-sign-exit">${t('ramp.exit.label')}</div>`,
+    html: `<div class="ramp-sign ramp-sign-exit">${t('ramp.exit.label')}${nameHtml}</div>`,
     iconSize: [null, null], iconAnchor: [0, 8],
   });
 }
 
-// ENTER sign icon — auto-sized so any language fits
-function makeEntryIcon() {
+// ENTER sign icon — auto-sized so any language fits, includes place name
+function makeEntryIcon(placeName) {
+  const nameHtml = placeName
+    ? `<span class="ramp-sign-name">${placeName}</span>`
+    : '';
   return L.divIcon({
     className: 'ramp-icon-wrap',
-    html: `<div class="ramp-sign ramp-sign-entry">${t('ramp.entry.label')}</div>`,
+    html: `<div class="ramp-sign ramp-sign-entry">${t('ramp.entry.label')}${nameHtml}</div>`,
     iconSize: [null, null], iconAnchor: [0, 8],
   });
 }
@@ -756,8 +762,10 @@ function buildRampMarkers() {
 
       if (dir.exit) {
         exitM = L.marker([dir.exit.lat, dir.exit.lng], {
-          icon: makeExitIcon(), zIndexOffset: 50, opacity: 0,
+          icon: makeExitIcon(dir.exit_name), zIndexOffset: 50, opacity: 0,
         });
+        exitM._placeName = dir.exit_name;
+        exitM._kind = 'exit';
         exitM.bindTooltip(
           `<strong>${t('ramp.exit.label')}:</strong> ${dir.exit_name}<br><small>${t('ramp.avoid', {toll: toll.name_en})}</small>`,
           { className: 'ramp-tooltip' }
@@ -766,8 +774,10 @@ function buildRampMarkers() {
 
       if (dir.entry) {
         entryM = L.marker([dir.entry.lat, dir.entry.lng], {
-          icon: makeEntryIcon(), zIndexOffset: 50, opacity: 0,
+          icon: makeEntryIcon(dir.entry_name), zIndexOffset: 50, opacity: 0,
         });
+        entryM._placeName = dir.entry_name;
+        entryM._kind = 'entry';
         entryM.bindTooltip(
           `<strong>${t('ramp.entry.label')}:</strong> ${dir.entry_name}<br><small>${t('ramp.avoid', {toll: toll.name_en})}</small>`,
           { className: 'ramp-tooltip' }
@@ -786,7 +796,7 @@ function buildRampMarkers() {
         );
       }
 
-      rampMarkers.push({ tollId: toll.id, exitM, entryM, connLine });
+      rampMarkers.push({ tollId: toll.id, toll, exitM, entryM, connLine });
     });
   });
 }
@@ -924,14 +934,25 @@ window.setActiveTollLabel = setActiveTollLabel;
 window.addEventListener('langchange', () => {
   updateTollNameLabels();
   updateTollNamesVisibility();
-  // Refresh ramp marker icons (their text is baked-in at creation time)
-  rampMarkers.forEach(({ exitM, entryM }) => {
-    if (exitM)  exitM.setIcon(makeExitIcon());
-    if (entryM) entryM.setIcon(makeEntryIcon());
+  // Refresh ramp marker icons + tooltips (their text is baked-in at creation time)
+  rampMarkers.forEach(({ exitM, entryM, toll }) => {
+    if (exitM) {
+      exitM.setIcon(makeExitIcon(exitM._placeName));
+      const tollName = toll ? (getCurrentLang() === 'el' ? toll.name_gr : toll.name_en) : '';
+      exitM.setTooltipContent(`<strong>${t('ramp.exit.label')}:</strong> ${exitM._placeName}<br><small>${t('ramp.avoid', {toll: tollName})}</small>`);
+    }
+    if (entryM) {
+      entryM.setIcon(makeEntryIcon(entryM._placeName));
+      const tollName = toll ? (getCurrentLang() === 'el' ? toll.name_gr : toll.name_en) : '';
+      entryM.setTooltipContent(`<strong>${t('ramp.entry.label')}:</strong> ${entryM._placeName}<br><small>${t('ramp.avoid', {toll: tollName})}</small>`);
+    }
   });
-  // If side panel is open, re-render its content with the new language
+  // If side panel is open, re-render its content with the new language.
+  // Use setTimeout so applyTranslations completes its DOM walk first,
+  // then we cleanly rebuild sp-content from scratch with new language strings.
   if (sidePanelOpen && currentTollOpen) {
-    openSidePanel(currentTollOpen);
+    const tollToReopen = currentTollOpen;
+    setTimeout(() => openSidePanel(tollToReopen), 10);
   }
 });
 
