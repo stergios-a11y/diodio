@@ -12,6 +12,65 @@
     "last_verified": "ISO date when prices were last cross-checked against this source",
     "notes": "Anything quirky about parsing or interpreting their prices"
   },
+  "_classification_rules": {
+    "_intro": "Read this BEFORE adding new tolls or rerunning a price audit. The April 2026 audit had three classes of bug — these rules exist to prevent recurrence.",
+    "every_station_is_one_of_three_types": {
+      "frontal": "Mainline toll. Located on the main carriageway, charged to ALL through traffic in both directions (with rare 'one direction free' exceptions like the old Rio-Antirrio). Field: `type: 'frontal'`. Has `bypass_directions` (the parallel local-road escape route).",
+      "side": "Ramp/lateral toll. Located on a single ramp at an interchange, charged ONLY to traffic that uses that ramp. The traveler pays the side toll OR the frontal of that zone, never both. Field: `type: 'side'`. Each booth at a multi-booth interchange is its OWN entry (one row per booth), each carrying the published station price. `direction` field = direction of TRAVEL ('northbound'/'southbound'/'eastbound'/'westbound'); `role` = 'entry' or 'exit'.",
+      "bridge_or_tunnel": "Special. Single crossing toll. Field: `type: 'bridge'` or `type: 'tunnel'`."
+    },
+    "common_misclassifications_to_watch": [
+      "Egnatia mainline frontals near Thessaloniki (Analipsi, Moustheni, Asprovalta, Malgara, Evzoni) are tagged as A1 in tolls.js but officially A2 Egnatia. Don't 'correct' them naively — many routes reference them and the route-builder treats them as part of the A1 chain. Re-tagging requires updating routes.js too.",
+      "Pelasgia and Moschochori frontals are listed by BOTH Aegean Motorway and Kentriki Odos sources because the Kentriki section ends and Aegean section begins right at this seam. Officially they belong to Aegean Motorway. tolls.js currently tags them as Kentriki Odos — historical artifact, not necessarily wrong, but watch for double-counting if you ever try to dedupe by operator.",
+      "Olympia Odos has TWO physical frontals near Corinth (Isthmos at lat 37.92, and the never-existed mythical 'Zevgolatio frontal' that was deleted Apr 2026). Don't recreate it. Zevgolatio is a ramp toll with two booths (eastbound entry + eastbound exit, both at lat ~37.93). Westbound traffic at Zevgolatio is FREE.",
+      "Some operators publish prices for stations they don't operate. Cross-reference: a station's `operator` is determined by who issues the receipt, not who owns the road. When in doubt: the operator listed in the official price PDF/page IS the operator."
+    ],
+    "operator_to_highway_canonical_map": {
+      "_note": "This is what the data SHOULD look like for full normalization. tolls.js currently has known deviations (see notes above). Use this when adding NEW entries.",
+      "Nea Odos":          ["A1 (Metamorfosi to Skarfia)", "A5 (Antirrio to Ioannina)"],
+      "Kentriki Odos":     ["A1 (Skarfia to Raches)", "E65 (Lamia to Kalambaka)"],
+      "Aegean Motorway":   ["A1 (Raches to Kleidi)"],
+      "Egnatia Odos (Nea Egnatia)": ["A2 (Igoumenitsa to Kipi)"],
+      "Olympia Odos":      ["A8 (Elefsina to Patras)", "A8 (Patras to Pyrgos branch)"],
+      "Moreas":            ["A7 (Corinth to Kalamata + Lefktro-Sparta branch)"],
+      "Gefyra SA":         ["BRIDGE (Rio-Antirrio)"],
+      "Aktio-Preveza":     ["BRIDGE (Aktio-Preveza Tunnel)"],
+      "Attikes Diadromes (Nea Attiki Odos)": ["A6 (Attiki Odos ring road)"]
+    },
+    "fuzzy_name_matcher_pitfalls": {
+      "_intro": "The April 2026 audit's matcher silently dropped 4+ side tolls because their names share roots with frontals. NEVER use containment-based fuzzy matching for the audit. Use exact-match against a manual alias table instead.",
+      "examples_of_bad_matches": {
+        "Makrychori (side) [€1.30 cat2]": "Was matched to a1_makrychori frontal [€3.00 cat2] because both contained 'Makrychori'. Result: side toll silently dropped from MISSING list, never made it into spreadsheet.",
+        "Leptokarya (side) [€2.10 cat2]": "Was matched to a1_leptokarya frontal [€3.80 cat2] for the same reason.",
+        "Kileler (side) [€2.80 cat2]": "Was matched to a1_moschochori frontal because the frontal's name_en is 'Moschochori / Kileler'.",
+        "M. Monastiriou (side) [€2.20 cat2]": "Was matched to olympia_rio frontal because both contained 'rio' as a substring."
+      },
+      "rule": "When auditing a new price page against tolls.js, treat side and frontal as DIFFERENT namespaces. A side toll named 'Makrychori (side)' should match ONLY against side toll IDs containing 'makrychori', never against the frontal at the same interchange. Maintain an explicit alias table for ambiguous cases."
+    },
+    "side_toll_completeness_protocol": {
+      "_intro": "When pulling a new price update, do this BEFORE assuming the spreadsheet is complete:",
+      "step1": "Open each operator's price page. Look for sections labeled 'Πλευρικός' / 'side' / 'rampa' / 'lateral' / 'παράπλευρος'.",
+      "step2": "Count: how many side toll stations does the operator list?",
+      "step3": "Count: how many side toll entries (grouped by station name, not booth) exist in tolls.js for this operator?",
+      "step4": "These numbers should match. If they don't, the missing ones need adding.",
+      "current_known_gaps": {
+        "Aegean Motorway side tolls": "M. Monastiriou €2.20, Kileler €2.80, Pyrgetos €2.00, Platamonas €0.80, Makrychori (Θ) €1.30, Leptokarya (πλευρ.) €2.10 — all listed on the Aegean Motorway price page, none in tolls.js as of 2026-04-27. Need coords first.",
+        "Nea Odos side tolls": "6+ lateral stations listed (Kapandriti, Malakasa, Oinofyta on A1; Gavrolimni, Messolonghi, Gorgomylos on A5) — coords needed.",
+        "Egnatia ramp tolls": "10+ ramp stations (Panagia, Kalamia, Lagkada, Profitis, Vagiochori, Galipsos/Orfani, Eleftheroupoli, Ag. Andreas, Aspra Chomata, Vafeika) — coords needed.",
+        "Olympia Odos ramp tolls": "11 ramp stations (Nea Peramos, Pachi, Ag. Theodori, Kiato-ramp, Derveni, Akrata, Kalavryta, Drepano, Kato Achaia, Amaliada — currently only Zevgolatio booths added.",
+        "Kentriki Odos side tolls": "6 lateral stations (Molos, Mpralos, Stylida, Anavra, Proastio, Kalampaka) — coords needed.",
+        "Moreas side tolls": "3 lateral stations (Paradisia, Arfara, Thouria) — coords needed."
+      }
+    },
+    "checklist_for_next_yearly_refresh": [
+      "1. Visit each operator URL listed in `sources` and copy their FULL 2026 price tables (frontal AND side/ramp).",
+      "2. For each frontal in tolls.js, verify cat1-4 prices match. Update via the apply-price-updates.py script pattern (regex on cat lines).",
+      "3. Cross-check the side toll count per operator (see side_toll_completeness_protocol above). Add any missing ones.",
+      "4. Bump `last_verified` and `_last_refreshed` at the top.",
+      "5. Update homepage stat strings in index.html (Athens-Thessaloniki, Athens-Patras, Athens-Ioannina) — these are hardcoded, not dynamic.",
+      "6. Bump cache-busting query strings in index.html for any changed JS/CSS files."
+    ]
+  },
   "sources": [
     {
       "operator": "Aegean Motorway",
