@@ -1,0 +1,847 @@
+{
+  "generated": "2026-04-26T17:08:12.172Z",
+  "counts": {
+    "ok": 32,
+    "warning": 4,
+    "critical": 24,
+    "total": 60
+  },
+  "issues": [
+    {
+      "severity": "critical",
+      "tollId": "a1_thiva",
+      "name": "Thiva (Thebes)",
+      "dirKey": "north",
+      "dirLabel": "Northbound (towards Thessaloniki)",
+      "problems": [
+        "exit \"Ριτσώνας\" is 1.0km on the WRONG side of the toll (expected south of toll for north-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.3708752,
+          "lng": 23.2868636
+        },
+        "exit": {
+          "lat": 38.380147,
+          "lng": 23.491339
+        },
+        "entry": {
+          "lat": 38.365434,
+          "lng": 23.325831
+        },
+        "exitName": "Ριτσώνας",
+        "entryName": "Θήβας",
+        "exitWrongOffsetKm": 1,
+        "entryWrongOffsetKm": 0.6,
+        "actualBearing": "264",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_thiva",
+      "name": "Thiva (Thebes)",
+      "dirKey": "south",
+      "dirLabel": "Southbound (towards Athens)",
+      "problems": [
+        "entry \"Ριτσώνας\" is 1.0km on the WRONG side of the toll (expected south of toll for south-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.3708752,
+          "lng": 23.2868636
+        },
+        "exit": {
+          "lat": 38.365434,
+          "lng": 23.325831
+        },
+        "entry": {
+          "lat": 38.380147,
+          "lng": 23.491339
+        },
+        "exitName": "Θήβας",
+        "entryName": "Ριτσώνας",
+        "exitWrongOffsetKm": 0.6,
+        "entryWrongOffsetKm": 1,
+        "actualBearing": "83",
+        "expectedBearing": 180
+      }
+    },
+    {
+      "severity": "warning",
+      "tollId": "a1_agios_konstantinos",
+      "name": "Agios Konstantinos (Agia Triada)",
+      "dirKey": "north",
+      "dirLabel": "Northbound (towards Thessaloniki)",
+      "problems": [
+        "exit→entry bearing is 272°, expected ~0° for north-bound (off by 88°)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.8087016,
+          "lng": 22.6025569
+        },
+        "exit": {
+          "lat": 38.802371,
+          "lng": 22.643456
+        },
+        "entry": {
+          "lat": 38.804485,
+          "lng": 22.568722
+        },
+        "exitName": "Μώλου",
+        "entryName": "Θερμοπυλών",
+        "actualBearing": "272",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "warning",
+      "tollId": "a1_agios_konstantinos",
+      "name": "Agios Konstantinos (Agia Triada)",
+      "dirKey": "south",
+      "dirLabel": "Southbound (towards Athens)",
+      "problems": [
+        "exit→entry bearing is 92°, expected ~180° for south-bound (off by 88°)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.8087016,
+          "lng": 22.6025569
+        },
+        "exit": {
+          "lat": 38.804485,
+          "lng": 22.568722
+        },
+        "entry": {
+          "lat": 38.802371,
+          "lng": 22.643456
+        },
+        "exitName": "Θερμοπυλών",
+        "entryName": "Μώλου",
+        "actualBearing": "92",
+        "expectedBearing": 180
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_mavromantila",
+      "name": "Mavromantila",
+      "dirKey": "north",
+      "dirLabel": "Northbound (towards Thessaloniki)",
+      "problems": [
+        "entry \"Αγ. Μαρίνας\" is 3.1km on the WRONG side of the toll (expected north of toll for north-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.9238268,
+          "lng": 22.6291966
+        },
+        "exit": {
+          "lat": 38.872725,
+          "lng": 22.456369
+        },
+        "entry": {
+          "lat": 38.89555,
+          "lng": 22.58435
+        },
+        "exitName": "Λαμίας",
+        "entryName": "Αγ. Μαρίνας",
+        "exitWrongOffsetKm": -5.7,
+        "entryWrongOffsetKm": 3.1,
+        "actualBearing": "77",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_mavromantila",
+      "name": "Mavromantila",
+      "dirKey": "south",
+      "dirLabel": "Southbound (towards Athens)",
+      "problems": [
+        "exit \"Αγ. Μαρίνας\" is 3.1km on the WRONG side of the toll (expected north of toll for south-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.9238268,
+          "lng": 22.6291966
+        },
+        "exit": {
+          "lat": 38.89555,
+          "lng": 22.58435
+        },
+        "entry": {
+          "lat": 38.872725,
+          "lng": 22.456369
+        },
+        "exitName": "Αγ. Μαρίνας",
+        "entryName": "Λαμίας",
+        "exitWrongOffsetKm": 3.1,
+        "entryWrongOffsetKm": -5.7,
+        "actualBearing": "257",
+        "expectedBearing": 180
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_pelasgia",
+      "name": "Pelasgia",
+      "dirKey": "north",
+      "dirLabel": "Northbound (towards Thessaloniki)",
+      "problems": [
+        "exit \"Γλύφας\" is 3.1km on the WRONG side of the toll (expected south of toll for north-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.9203273,
+          "lng": 22.8462812
+        },
+        "exit": {
+          "lat": 38.94825,
+          "lng": 22.95555
+        },
+        "entry": {
+          "lat": 39.15855,
+          "lng": 22.7562
+        },
+        "exitName": "Γλύφας",
+        "entryName": "Αλμυρού",
+        "exitWrongOffsetKm": 3.1,
+        "entryWrongOffsetKm": -26.4,
+        "actualBearing": "324",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_pelasgia",
+      "name": "Pelasgia",
+      "dirKey": "south",
+      "dirLabel": "Southbound (towards Athens)",
+      "problems": [
+        "entry \"Γλύφας\" is 3.1km on the WRONG side of the toll (expected south of toll for south-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.9203273,
+          "lng": 22.8462812
+        },
+        "exit": {
+          "lat": 39.15855,
+          "lng": 22.7562
+        },
+        "entry": {
+          "lat": 38.94825,
+          "lng": 22.95555
+        },
+        "exitName": "Αλμυρού",
+        "entryName": "Γλύφας",
+        "exitWrongOffsetKm": -26.4,
+        "entryWrongOffsetKm": 3.1,
+        "actualBearing": "144",
+        "expectedBearing": 180
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_makrychori",
+      "name": "Makrychori / Larissa",
+      "dirKey": "north",
+      "dirLabel": "Northbound (towards Thessaloniki)",
+      "problems": [
+        "exit \"Ευαγγελισμού\" is 4.6km on the WRONG side of the toll (expected south of toll for north-bound traffic)",
+        "entry \"Γυρτώνης\" is 6.9km on the WRONG side of the toll (expected north of toll for north-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 39.8044068,
+          "lng": 22.5028431
+        },
+        "exit": {
+          "lat": 39.84565,
+          "lng": 22.52135
+        },
+        "entry": {
+          "lat": 39.74235,
+          "lng": 22.47655
+        },
+        "exitName": "Ευαγγελισμού",
+        "entryName": "Γυρτώνης",
+        "exitWrongOffsetKm": 4.6,
+        "entryWrongOffsetKm": 6.9,
+        "actualBearing": "198",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_makrychori",
+      "name": "Makrychori / Larissa",
+      "dirKey": "south",
+      "dirLabel": "Southbound (towards Athens)",
+      "problems": [
+        "exit \"Γυρτώνης\" is 6.9km on the WRONG side of the toll (expected north of toll for south-bound traffic)",
+        "entry \"Ευαγγελισμού\" is 4.6km on the WRONG side of the toll (expected south of toll for south-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 39.8044068,
+          "lng": 22.5028431
+        },
+        "exit": {
+          "lat": 39.74235,
+          "lng": 22.47655
+        },
+        "entry": {
+          "lat": 39.84565,
+          "lng": 22.52135
+        },
+        "exitName": "Γυρτώνης",
+        "entryName": "Ευαγγελισμού",
+        "exitWrongOffsetKm": 6.9,
+        "entryWrongOffsetKm": 4.6,
+        "actualBearing": "18",
+        "expectedBearing": 180
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_kleidi",
+      "name": "Kleidi / Aeginio",
+      "dirKey": "north",
+      "dirLabel": "Northbound",
+      "problems": [
+        "entry \"Κολινδρού\" is 4.6km on the WRONG side of the toll (expected north of toll for north-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 40.5195819,
+          "lng": 22.5726664
+        },
+        "exit": {
+          "lat": 40.51316,
+          "lng": 22.570133
+        },
+        "entry": {
+          "lat": 40.47855,
+          "lng": 22.58745
+        },
+        "exitName": "Αιγινίου",
+        "entryName": "Κολινδρού",
+        "exitWrongOffsetKm": -0.7,
+        "entryWrongOffsetKm": 4.6,
+        "actualBearing": "159",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_kleidi",
+      "name": "Kleidi / Aeginio",
+      "dirKey": "south",
+      "dirLabel": "Southbound",
+      "problems": [
+        "exit \"Κολινδρού\" is 4.6km on the WRONG side of the toll (expected north of toll for south-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 40.5195819,
+          "lng": 22.5726664
+        },
+        "exit": {
+          "lat": 40.47855,
+          "lng": 22.58745
+        },
+        "entry": {
+          "lat": 40.51316,
+          "lng": 22.570133
+        },
+        "exitName": "Κολινδρού",
+        "entryName": "Αιγινίου",
+        "exitWrongOffsetKm": 4.6,
+        "entryWrongOffsetKm": -0.7,
+        "actualBearing": "339",
+        "expectedBearing": 180
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_malgara",
+      "name": "Malgara",
+      "dirKey": "north",
+      "dirLabel": "Northbound (towards Thessaloniki)",
+      "problems": [
+        "exit \"Χαλάστρας\" is 2.3km on the WRONG side of the toll (expected south of toll for north-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 40.6024027,
+          "lng": 22.6982903
+        },
+        "exit": {
+          "lat": 40.62345,
+          "lng": 22.72155
+        },
+        "entry": {
+          "lat": 40.600191,
+          "lng": 22.681942
+        },
+        "exitName": "Χαλάστρας",
+        "entryName": "Μαλγάρων",
+        "exitWrongOffsetKm": 2.3,
+        "entryWrongOffsetKm": 0.2,
+        "actualBearing": "232",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "a1_malgara",
+      "name": "Malgara",
+      "dirKey": "south",
+      "dirLabel": "Southbound (towards Athens)",
+      "problems": [
+        "entry \"Χαλάστρας\" is 2.3km on the WRONG side of the toll (expected south of toll for south-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 40.6024027,
+          "lng": 22.6982903
+        },
+        "exit": {
+          "lat": 40.600191,
+          "lng": 22.681942
+        },
+        "entry": {
+          "lat": 40.62345,
+          "lng": 22.72155
+        },
+        "exitName": "Μαλγάρων",
+        "entryName": "Χαλάστρας",
+        "exitWrongOffsetKm": 0.2,
+        "entryWrongOffsetKm": 2.3,
+        "actualBearing": "52",
+        "expectedBearing": 180
+      }
+    },
+    {
+      "severity": "warning",
+      "tollId": "a1_analipsi",
+      "name": "Analipsi",
+      "dirKey": "north",
+      "dirLabel": "Northbound (towards Kavala)",
+      "problems": [
+        "exit→entry bearing is 287°, expected ~0° for north-bound (off by 73°)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 40.7068438,
+          "lng": 23.1914413
+        },
+        "exit": {
+          "lat": 40.684178,
+          "lng": 23.257014
+        },
+        "entry": {
+          "lat": 40.739312,
+          "lng": 23.018035
+        },
+        "exitName": "Προφήτη",
+        "entryName": "Λαγκαδά",
+        "actualBearing": "287",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "warning",
+      "tollId": "a1_analipsi",
+      "name": "Analipsi",
+      "dirKey": "south",
+      "dirLabel": "Southbound (towards Thessaloniki)",
+      "problems": [
+        "exit→entry bearing is 107°, expected ~180° for south-bound (off by 73°)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 40.7068438,
+          "lng": 23.1914413
+        },
+        "exit": {
+          "lat": 40.739312,
+          "lng": 23.018035
+        },
+        "entry": {
+          "lat": 40.684178,
+          "lng": 23.257014
+        },
+        "exitName": "Λαγκαδά",
+        "entryName": "Προφήτη",
+        "actualBearing": "107",
+        "expectedBearing": 180
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "egnatia_igoumenitsa",
+      "name": "Tyria / Igoumenitsa",
+      "dirKey": "east",
+      "dirLabel": "Eastbound (towards Ioannina)",
+      "problems": [
+        "exit \"Δωδώνης\" is 9.5km on the WRONG side of the toll (expected west of toll for east-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 39.5403268,
+          "lng": 20.6743276
+        },
+        "exit": {
+          "lat": 39.5482,
+          "lng": 20.7854
+        },
+        "entry": {
+          "lat": 39.53672,
+          "lng": 20.69171
+        },
+        "exitName": "Δωδώνης",
+        "entryName": "Σελλών",
+        "exitWrongOffsetKm": 9.5,
+        "entryWrongOffsetKm": -1.5,
+        "actualBearing": "261",
+        "expectedBearing": 90
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "egnatia_igoumenitsa",
+      "name": "Tyria / Igoumenitsa",
+      "dirKey": "west",
+      "dirLabel": "Westbound (towards Igoumenitsa)",
+      "problems": [
+        "entry \"Δωδώνης\" is 9.5km on the WRONG side of the toll (expected west of toll for west-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 39.5403268,
+          "lng": 20.6743276
+        },
+        "exit": {
+          "lat": 39.53672,
+          "lng": 20.69171
+        },
+        "entry": {
+          "lat": 39.5482,
+          "lng": 20.7854
+        },
+        "exitName": "Σελλών",
+        "entryName": "Δωδώνης",
+        "exitWrongOffsetKm": -1.5,
+        "entryWrongOffsetKm": 9.5,
+        "actualBearing": "81",
+        "expectedBearing": 270
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "egnatia_ioannina",
+      "name": "Pamvotida / Ioannina",
+      "dirKey": "east",
+      "dirLabel": "Eastbound (towards Thessaloniki)",
+      "problems": [
+        "exit \"Αράχθου\" is 3.2km on the WRONG side of the toll (expected west of toll for east-bound traffic)",
+        "entry \"Ιωαννίνων\" is 8.0km on the WRONG side of the toll (expected east of toll for east-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 39.618863,
+          "lng": 20.9475803
+        },
+        "exit": {
+          "lat": 39.6125,
+          "lng": 20.9854
+        },
+        "entry": {
+          "lat": 39.6584,
+          "lng": 20.8542
+        },
+        "exitName": "Αράχθου",
+        "entryName": "Ιωαννίνων",
+        "exitWrongOffsetKm": 3.2,
+        "entryWrongOffsetKm": 8,
+        "actualBearing": "294",
+        "expectedBearing": 90
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "egnatia_ioannina",
+      "name": "Pamvotida / Ioannina",
+      "dirKey": "west",
+      "dirLabel": "Westbound (towards Igoumenitsa)",
+      "problems": [
+        "exit \"Ιωαννίνων\" is 8.0km on the WRONG side of the toll (expected east of toll for west-bound traffic)",
+        "entry \"Αράχθου\" is 3.2km on the WRONG side of the toll (expected west of toll for west-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 39.618863,
+          "lng": 20.9475803
+        },
+        "exit": {
+          "lat": 39.6584,
+          "lng": 20.8542
+        },
+        "entry": {
+          "lat": 39.6125,
+          "lng": 20.9854
+        },
+        "exitName": "Ιωαννίνων",
+        "entryName": "Αράχθου",
+        "exitWrongOffsetKm": 8,
+        "entryWrongOffsetKm": 3.2,
+        "actualBearing": "114",
+        "expectedBearing": 270
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "egnatia_veroia",
+      "name": "Polymylo / Veroia",
+      "dirKey": "east",
+      "dirLabel": "Eastbound (towards Thessaloniki)",
+      "problems": [
+        "exit \"Βέροιας\" is 10.6km on the WRONG side of the toll (expected west of toll for east-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 40.3671958,
+          "lng": 22.0602089
+        },
+        "exit": {
+          "lat": 40.5284,
+          "lng": 22.1854
+        },
+        "entry": {
+          "lat": 40.368681,
+          "lng": 22.053816
+        },
+        "exitName": "Βέροιας",
+        "entryName": "Πολυμύλου",
+        "exitWrongOffsetKm": 10.6,
+        "entryWrongOffsetKm": 0.5,
+        "actualBearing": "212",
+        "expectedBearing": 90
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "egnatia_veroia",
+      "name": "Polymylo / Veroia",
+      "dirKey": "west",
+      "dirLabel": "Westbound (towards Kozani)",
+      "problems": [
+        "entry \"Βέροιας\" is 10.6km on the WRONG side of the toll (expected west of toll for west-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 40.3671958,
+          "lng": 22.0602089
+        },
+        "exit": {
+          "lat": 40.368681,
+          "lng": 22.053816
+        },
+        "entry": {
+          "lat": 40.5284,
+          "lng": 22.1854
+        },
+        "exitName": "Πολυμύλου",
+        "entryName": "Βέροιας",
+        "exitWrongOffsetKm": 0.5,
+        "entryWrongOffsetKm": 10.6,
+        "actualBearing": "32",
+        "expectedBearing": 270
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "egnatia_xanthi",
+      "name": "Iasmos / Xanthi",
+      "dirKey": "east",
+      "dirLabel": "Eastbound (towards Komotini)",
+      "problems": [
+        "exit \"ΒΙΠΕ Κομοτηνής\" is 20.5km on the WRONG side of the toll (expected west of toll for east-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 41.1203415,
+          "lng": 25.0802422
+        },
+        "exit": {
+          "lat": 41.1254,
+          "lng": 25.3254
+        },
+        "entry": {
+          "lat": 41.116579,
+          "lng": 25.178272
+        },
+        "exitName": "ΒΙΠΕ Κομοτηνής",
+        "entryName": "Ιάσμου",
+        "exitWrongOffsetKm": 20.5,
+        "entryWrongOffsetKm": -8.2,
+        "actualBearing": "265",
+        "expectedBearing": 90
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "egnatia_xanthi",
+      "name": "Iasmos / Xanthi",
+      "dirKey": "west",
+      "dirLabel": "Westbound (towards Kavala)",
+      "problems": [
+        "entry \"ΒΙΠΕ Κομοτηνής\" is 20.5km on the WRONG side of the toll (expected west of toll for west-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 41.1203415,
+          "lng": 25.0802422
+        },
+        "exit": {
+          "lat": 41.116579,
+          "lng": 25.178272
+        },
+        "entry": {
+          "lat": 41.1254,
+          "lng": 25.3254
+        },
+        "exitName": "Ιάσμου",
+        "entryName": "ΒΙΠΕ Κομοτηνής",
+        "exitWrongOffsetKm": -8.2,
+        "entryWrongOffsetKm": 20.5,
+        "actualBearing": "85",
+        "expectedBearing": 270
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "ionia_klokova",
+      "name": "Klokova",
+      "dirKey": "north",
+      "dirLabel": "Northbound (towards Ioannina)",
+      "problems": [
+        "exit \"Γαβρολίμνης\" is 4.0km on the WRONG side of the toll (expected south of toll for north-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.3592412,
+          "lng": 21.6565418
+        },
+        "exit": {
+          "lat": 38.3951,
+          "lng": 21.6582
+        },
+        "entry": {
+          "lat": 38.378905,
+          "lng": 21.501744
+        },
+        "exitName": "Γαβρολίμνης",
+        "entryName": "Μεσολογγίου",
+        "exitWrongOffsetKm": 4,
+        "entryWrongOffsetKm": -2.2,
+        "actualBearing": "263",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "ionia_klokova",
+      "name": "Klokova",
+      "dirKey": "south",
+      "dirLabel": "Southbound (towards Antirrio)",
+      "problems": [
+        "entry \"Γαβρολίμνης\" is 4.0km on the WRONG side of the toll (expected south of toll for south-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.3592412,
+          "lng": 21.6565418
+        },
+        "exit": {
+          "lat": 38.378905,
+          "lng": 21.501744
+        },
+        "entry": {
+          "lat": 38.3951,
+          "lng": 21.6582
+        },
+        "exitName": "Μεσολογγίου",
+        "entryName": "Γαβρολίμνης",
+        "exitWrongOffsetKm": -2.2,
+        "entryWrongOffsetKm": 4,
+        "actualBearing": "82",
+        "expectedBearing": 180
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "ionia_menidi",
+      "name": "Kouvaras / Menidi",
+      "dirKey": "north",
+      "dirLabel": "Northbound (towards Ioannina)",
+      "problems": [
+        "entry \"Αμφιλοχίας\" is 13.8km on the WRONG side of the toll (expected north of toll for north-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.9898946,
+          "lng": 21.1709225
+        },
+        "exit": {
+          "lat": 38.7452,
+          "lng": 21.1542
+        },
+        "entry": {
+          "lat": 38.8654,
+          "lng": 21.1754
+        },
+        "exitName": "Κουβαρά",
+        "entryName": "Αμφιλοχίας",
+        "exitWrongOffsetKm": -27.2,
+        "entryWrongOffsetKm": 13.8,
+        "actualBearing": "8",
+        "expectedBearing": 0
+      }
+    },
+    {
+      "severity": "critical",
+      "tollId": "ionia_menidi",
+      "name": "Kouvaras / Menidi",
+      "dirKey": "south",
+      "dirLabel": "Southbound (towards Arta)",
+      "problems": [
+        "exit \"Αμφιλοχίας\" is 13.8km on the WRONG side of the toll (expected north of toll for south-bound traffic)"
+      ],
+      "details": {
+        "tollPos": {
+          "lat": 38.9898946,
+          "lng": 21.1709225
+        },
+        "exit": {
+          "lat": 38.8654,
+          "lng": 21.1754
+        },
+        "entry": {
+          "lat": 38.7452,
+          "lng": 21.1542
+        },
+        "exitName": "Αμφιλοχίας",
+        "entryName": "Κουβαρά",
+        "exitWrongOffsetKm": 13.8,
+        "entryWrongOffsetKm": -27.2,
+        "actualBearing": "188",
+        "expectedBearing": 180
+      }
+    }
+  ]
+}

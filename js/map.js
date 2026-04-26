@@ -23,6 +23,38 @@ window.openSidePanelById = function(id) {
   if (toll && typeof openSidePanel === 'function') openSidePanel(toll);
 };
 
+// ── Bypass schema normalizer ───────────────────────────────────────────
+//
+// Each direction object should have four ramp-related coords:
+//   - pre_exit   : on the through-motorway, ~1km before the off-ramp split
+//   - off_ramp   : the off-ramp itself (where you leave the motorway)
+//   - on_ramp    : the on-ramp itself (where you rejoin the motorway)
+//   - post_merge : on the through-motorway, ~1km past the on-ramp join
+//
+// Older data files used `exit` (= off_ramp) and `entry` (= on_ramp) only,
+// without pre_exit/post_merge. To keep the runtime simple, we normalize
+// at load time: any missing fields fall back to their semantic neighbors.
+//
+// For data that hasn't been migrated (e.g. tolls flagged as off-route by
+// compute-ramp-anchors.js), pre_exit ends up equal to off_ramp and
+// post_merge equal to on_ramp. Routing then degrades to the previous
+// "start at the ramp" behavior — visually less rich but correct.
+(function normalizeBypassDirections() {
+  if (typeof TOLL_DATA === 'undefined') return;
+  for (const t of TOLL_DATA) {
+    if (!t.bypass_directions) continue;
+    for (const dir of Object.values(t.bypass_directions)) {
+      if (!dir.off_ramp   && dir.exit)  dir.off_ramp   = dir.exit;
+      if (!dir.on_ramp    && dir.entry) dir.on_ramp    = dir.entry;
+      if (!dir.pre_exit)                dir.pre_exit   = dir.off_ramp;
+      if (!dir.post_merge)              dir.post_merge = dir.on_ramp;
+      // Keep the old field names too so any legacy code paths still work
+      if (!dir.exit  && dir.off_ramp) dir.exit  = dir.off_ramp;
+      if (!dir.entry && dir.on_ramp)  dir.entry = dir.on_ramp;
+    }
+  }
+})();
+
 // Use CartoDB Light as the base map — free, reliable, no token needed.
 // Motorways are visible on the base tiles. Mapbox would be richer but the URL-restricted
 // token blocks tile API; we keep Mapbox for routing only (Directions API).
@@ -354,23 +386,34 @@ function openSidePanel(toll) {
     const dirColors = ['#2a6b9e', '#3d83bc'];
 
     dirEntries.forEach(([key, dir], i) => {
-      if (!dir.exit || !dir.entry) return;
+      // Need all four ramp coords. The normalizer ensures we have at least
+      // off_ramp/on_ramp/pre_exit/post_merge for any direction that
+      // originally had exit+entry. If still missing, the data is broken;
+      // skip silently rather than crash.
+      if (!dir.off_ramp || !dir.on_ramp || !dir.pre_exit || !dir.post_merge) return;
 
       const lineColor = dirColors[i % dirColors.length];
 
-      // Initial bearing along straight-line placeholder (exit → entry).
-      // We update both the position and rotation when Mapbox returns real
-      // routes, so the arrow follows the actual road geometry.
-      const placeholderBearing = bearingDeg(dir.exit, dir.entry);
+      // Initial bearing along the route's overall direction (pre_exit →
+      // post_merge). Updated to actual route bearing once Mapbox returns.
+      const placeholderBearing = bearingDeg(dir.pre_exit, dir.post_merge);
       const placeholderMid = [
-        (dir.exit.lat + dir.entry.lat) / 2,
-        (dir.exit.lng + dir.entry.lng) / 2,
+        (dir.pre_exit.lat + dir.post_merge.lat) / 2,
+        (dir.pre_exit.lng + dir.post_merge.lng) / 2,
       ];
 
       // ─── Bypass line (local roads, blue per Greek motorway-sign convention:
-      //     blue = local/free road, green = motorway) ───
-      const placeholderCoords = [[dir.exit.lat, dir.exit.lng], [dir.entry.lat, dir.entry.lng]];
-      const bypassLine = L.polyline(placeholderCoords, {
+      //     blue = local/free road, green = motorway). The bypass is now
+      //     drawn as a single concatenated polyline from pre_exit through
+      //     off_ramp and on_ramp to post_merge — same start/end as the
+      //     highway route, diverging only in the middle. ───
+      const bypassPlaceholder = [
+        [dir.pre_exit.lat,   dir.pre_exit.lng],
+        [dir.off_ramp.lat,   dir.off_ramp.lng],
+        [dir.on_ramp.lat,    dir.on_ramp.lng],
+        [dir.post_merge.lat, dir.post_merge.lng],
+      ];
+      const bypassLine = L.polyline(bypassPlaceholder, {
         color: lineColor, weight: 4, opacity: 0.5, dashArray: '8 6',
         lineCap: 'round', lineJoin: 'round',
       }).addTo(map);
@@ -381,8 +424,6 @@ function openSidePanel(toll) {
       bypassLine._dirKey = key;
       inspectLayers.push(bypassLine);
 
-      // Direction-of-travel arrow on the bypass line (offset slightly so it
-      // doesn't overlap the highway arrow at low zoom)
       const bypassArrow = L.marker(placeholderMid, {
         icon: makeDirectionArrow(placeholderBearing, 'dir-arrow-bypass'),
         zIndexOffset: 500,
@@ -391,8 +432,12 @@ function openSidePanel(toll) {
       bypassArrow._dirKey = key;
       inspectLayers.push(bypassArrow);
 
-      // ─── Highway segment line (motorway, green per Greek convention) ───
-      const highwayLine = L.polyline(placeholderCoords, {
+      // ─── Highway line (motorway through the toll, green) ───
+      const highwayPlaceholder = [
+        [dir.pre_exit.lat,   dir.pre_exit.lng],
+        [dir.post_merge.lat, dir.post_merge.lng],
+      ];
+      const highwayLine = L.polyline(highwayPlaceholder, {
         color: '#2e7a4a', weight: 3.5, opacity: 0.4, dashArray: '4 6',
         lineCap: 'round', lineJoin: 'round',
       }).addTo(map);
@@ -403,7 +448,6 @@ function openSidePanel(toll) {
       highwayLine._dirKey = key;
       inspectLayers.push(highwayLine);
 
-      // Direction-of-travel arrow on the highway line
       const highwayArrow = L.marker(placeholderMid, {
         icon: makeDirectionArrow(placeholderBearing, 'dir-arrow-highway'),
         zIndexOffset: 500,
@@ -412,7 +456,6 @@ function openSidePanel(toll) {
       highwayArrow._dirKey = key;
       inspectLayers.push(highwayArrow);
 
-      // Helper to reposition + rotate an arrow once we have real route geometry
       function updateArrow(arrow, coords, colorClass) {
         const mb = polylineMidpointAndBearing(coords);
         if (!mb) return;
@@ -420,33 +463,54 @@ function openSidePanel(toll) {
         arrow.setIcon(makeDirectionArrow(mb.bearing, colorClass));
       }
 
-      // Fetch BOTH routes in parallel.
-      // For the highway leg, we anchor the route to the toll booth itself
-      // as a via-waypoint. This forces Mapbox to route exit → toll → entry
-      // through the motorway (the only road class that crosses the toll's
-      // exact lat/lng), eliminating cases where Mapbox would otherwise
-      // generate a backtracking path via local roads or a different
-      // interchange. The toll's `lat`/`lng` are the canonical anchor point.
-      const tollWaypoint = { lat: toll.lat, lng: toll.lng };
+      // ─── Fetch the routes ───
+      //
+      // Highway: single Mapbox call from pre_exit to post_merge, no
+      // waypoints. Mapbox naturally takes the through-motorway between two
+      // motorway points.
+      //
+      // Bypass: 3 legs concatenated:
+      //   1. pre_exit → off_ramp  (motorway, no exclusion)
+      //   2. off_ramp → on_ramp   (local roads, exclude=motorway)
+      //   3. on_ramp  → post_merge (motorway, no exclusion)
+      //
+      // Sum the three durations and distances for the comparison stats;
+      // concatenate the three polylines for visualization.
       Promise.all([
-        fetchRoute(dir.exit, dir.entry, 'bypass', dir.bypass_via),
-        fetchRoute(dir.exit, dir.entry, 'highway', [tollWaypoint]),
-      ]).then(([bypassRes, highwayRes]) => {
-        if (bypassRes && bypassRes.coords.length > 1) {
-          bypassLine.setLatLngs(bypassRes.coords);
-          bypassLine.setStyle({ opacity: 0.9, dashArray: null });
-          updateArrow(bypassArrow, bypassRes.coords, 'dir-arrow-bypass');
-        }
+        fetchRoute(dir.pre_exit, dir.post_merge, 'highway'),
+        Promise.all([
+          fetchRoute(dir.pre_exit, dir.off_ramp,   'highway'),
+          fetchRoute(dir.off_ramp, dir.on_ramp,    'bypass', dir.bypass_via),
+          fetchRoute(dir.on_ramp,  dir.post_merge, 'highway'),
+        ]).then(legs => {
+          if (legs.some(l => !l)) return null;
+          const coords = [
+            ...legs[0].coords,
+            ...legs[1].coords.slice(1), // skip duplicate endpoint
+            ...legs[2].coords.slice(1),
+          ];
+          return {
+            coords,
+            distanceKm:  legs.reduce((s, l) => s + l.distanceKm,  0),
+            durationMin: legs.reduce((s, l) => s + l.durationMin, 0),
+          };
+        }),
+      ]).then(([highwayRes, bypassRes]) => {
         if (highwayRes && highwayRes.coords.length > 1) {
           highwayLine.setLatLngs(highwayRes.coords);
           highwayLine.setStyle({ opacity: 0.7, dashArray: null });
           updateArrow(highwayArrow, highwayRes.coords, 'dir-arrow-highway');
         }
+        if (bypassRes && bypassRes.coords.length > 1) {
+          bypassLine.setLatLngs(bypassRes.coords);
+          bypassLine.setStyle({ opacity: 0.9, dashArray: null });
+          updateArrow(bypassArrow, bypassRes.coords, 'dir-arrow-bypass');
+        }
         updateDirStats(toll.id, key, bypassRes, highwayRes);
       });
 
-      // EXIT sign marker
-      const em = L.marker([dir.exit.lat, dir.exit.lng], {
+      // EXIT sign marker — anchored on the off-ramp itself
+      const em = L.marker([dir.off_ramp.lat, dir.off_ramp.lng], {
         icon: makeExitIcon(), zIndexOffset: 600,
       });
       em.bindTooltip(`${t('ramp.exit.tooltip', {name: dir.exit_name})}<br><small>${translateDirectionLabel(dir.label)}</small>`, {
@@ -456,8 +520,8 @@ function openSidePanel(toll) {
       em._dirKey = key;
       inspectLayers.push(em);
 
-      // ENTER sign marker
-      const nm = L.marker([dir.entry.lat, dir.entry.lng], {
+      // ENTER sign marker — anchored on the on-ramp itself
+      const nm = L.marker([dir.on_ramp.lat, dir.on_ramp.lng], {
         icon: makeEntryIcon(), zIndexOffset: 600,
       });
       nm.bindTooltip(`${t('ramp.entry.tooltip', {name: dir.entry_name})}<br><small>${translateDirectionLabel(dir.label)}</small>`, {
@@ -831,8 +895,8 @@ function buildRampMarkers() {
     Object.entries(bd).forEach(([dirKey, dir]) => {
       let exitM = null, entryM = null, connLine = null;
 
-      if (dir.exit) {
-        exitM = L.marker([dir.exit.lat, dir.exit.lng], {
+      if (dir.off_ramp) {
+        exitM = L.marker([dir.off_ramp.lat, dir.off_ramp.lng], {
           icon: makeExitIcon(dir.exit_name), zIndexOffset: 50, opacity: 0,
         });
         exitM._placeName = dir.exit_name;
@@ -843,8 +907,8 @@ function buildRampMarkers() {
         );
       }
 
-      if (dir.entry) {
-        entryM = L.marker([dir.entry.lat, dir.entry.lng], {
+      if (dir.on_ramp) {
+        entryM = L.marker([dir.on_ramp.lat, dir.on_ramp.lng], {
           icon: makeEntryIcon(dir.entry_name), zIndexOffset: 50, opacity: 0,
         });
         entryM._placeName = dir.entry_name;
@@ -855,10 +919,10 @@ function buildRampMarkers() {
         );
       }
 
-      // Dashed connection line: exit → toll → entry
-      if (dir.exit && dir.entry) {
+      // Dashed connection line: off_ramp → toll → on_ramp
+      if (dir.off_ramp && dir.on_ramp) {
         connLine = L.polyline(
-          [[dir.exit.lat, dir.exit.lng],[toll.lat, toll.lng],[dir.entry.lat, dir.entry.lng]],
+          [[dir.off_ramp.lat, dir.off_ramp.lng],[toll.lat, toll.lng],[dir.on_ramp.lat, dir.on_ramp.lng]],
           { color: '#c4613d', weight: 1.5, opacity: 0, dashArray: '5 4', lineCap: 'round' }
         );
         connLine.bindTooltip(

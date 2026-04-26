@@ -1,0 +1,199 @@
+Directional sanity audit — 2026-04-26T17:08:12.157Z
+────────────────────────────────────────────────────────────────────────
+Total directions checked: 60
+  OK:        32  (53%)
+  WARNING:   4  (7%)
+  CRITICAL:  24  (40%)
+
+═══ CRITICAL ISSUES (bypass goes the wrong way) ═══
+
+a1_thiva · Thiva (Thebes)
+  Northbound (towards Thessaloniki) (north-bound):
+    ✗ exit "Ριτσώνας" is 1.0km on the WRONG side of the toll (expected south of toll for north-bound traffic)
+    toll @ (38.37088, 23.28686)
+    exit  "Ριτσώνας"  @ (38.38015, 23.49134)
+    entry "Θήβας" @ (38.36543, 23.32583)
+
+a1_thiva · Thiva (Thebes)
+  Southbound (towards Athens) (south-bound):
+    ✗ entry "Ριτσώνας" is 1.0km on the WRONG side of the toll (expected south of toll for south-bound traffic)
+    toll @ (38.37088, 23.28686)
+    exit  "Θήβας"  @ (38.36543, 23.32583)
+    entry "Ριτσώνας" @ (38.38015, 23.49134)
+
+a1_mavromantila · Mavromantila
+  Northbound (towards Thessaloniki) (north-bound):
+    ✗ entry "Αγ. Μαρίνας" is 3.1km on the WRONG side of the toll (expected north of toll for north-bound traffic)
+    toll @ (38.92383, 22.62920)
+    exit  "Λαμίας"  @ (38.87273, 22.45637)
+    entry "Αγ. Μαρίνας" @ (38.89555, 22.58435)
+
+a1_mavromantila · Mavromantila
+  Southbound (towards Athens) (south-bound):
+    ✗ exit "Αγ. Μαρίνας" is 3.1km on the WRONG side of the toll (expected north of toll for south-bound traffic)
+    toll @ (38.92383, 22.62920)
+    exit  "Αγ. Μαρίνας"  @ (38.89555, 22.58435)
+    entry "Λαμίας" @ (38.87273, 22.45637)
+
+a1_pelasgia · Pelasgia
+  Northbound (towards Thessaloniki) (north-bound):
+    ✗ exit "Γλύφας" is 3.1km on the WRONG side of the toll (expected south of toll for north-bound traffic)
+    toll @ (38.92033, 22.84628)
+    exit  "Γλύφας"  @ (38.94825, 22.95555)
+    entry "Αλμυρού" @ (39.15855, 22.75620)
+
+a1_pelasgia · Pelasgia
+  Southbound (towards Athens) (south-bound):
+    ✗ entry "Γλύφας" is 3.1km on the WRONG side of the toll (expected south of toll for south-bound traffic)
+    toll @ (38.92033, 22.84628)
+    exit  "Αλμυρού"  @ (39.15855, 22.75620)
+    entry "Γλύφας" @ (38.94825, 22.95555)
+
+a1_makrychori · Makrychori / Larissa
+  Northbound (towards Thessaloniki) (north-bound):
+    ✗ exit "Ευαγγελισμού" is 4.6km on the WRONG side of the toll (expected south of toll for north-bound traffic)
+    ✗ entry "Γυρτώνης" is 6.9km on the WRONG side of the toll (expected north of toll for north-bound traffic)
+    toll @ (39.80441, 22.50284)
+    exit  "Ευαγγελισμού"  @ (39.84565, 22.52135)
+    entry "Γυρτώνης" @ (39.74235, 22.47655)
+
+a1_makrychori · Makrychori / Larissa
+  Southbound (towards Athens) (south-bound):
+    ✗ exit "Γυρτώνης" is 6.9km on the WRONG side of the toll (expected north of toll for south-bound traffic)
+    ✗ entry "Ευαγγελισμού" is 4.6km on the WRONG side of the toll (expected south of toll for south-bound traffic)
+    toll @ (39.80441, 22.50284)
+    exit  "Γυρτώνης"  @ (39.74235, 22.47655)
+    entry "Ευαγγελισμού" @ (39.84565, 22.52135)
+
+a1_kleidi · Kleidi / Aeginio
+  Northbound (north-bound):
+    ✗ entry "Κολινδρού" is 4.6km on the WRONG side of the toll (expected north of toll for north-bound traffic)
+    toll @ (40.51958, 22.57267)
+    exit  "Αιγινίου"  @ (40.51316, 22.57013)
+    entry "Κολινδρού" @ (40.47855, 22.58745)
+
+a1_kleidi · Kleidi / Aeginio
+  Southbound (south-bound):
+    ✗ exit "Κολινδρού" is 4.6km on the WRONG side of the toll (expected north of toll for south-bound traffic)
+    toll @ (40.51958, 22.57267)
+    exit  "Κολινδρού"  @ (40.47855, 22.58745)
+    entry "Αιγινίου" @ (40.51316, 22.57013)
+
+a1_malgara · Malgara
+  Northbound (towards Thessaloniki) (north-bound):
+    ✗ exit "Χαλάστρας" is 2.3km on the WRONG side of the toll (expected south of toll for north-bound traffic)
+    toll @ (40.60240, 22.69829)
+    exit  "Χαλάστρας"  @ (40.62345, 22.72155)
+    entry "Μαλγάρων" @ (40.60019, 22.68194)
+
+a1_malgara · Malgara
+  Southbound (towards Athens) (south-bound):
+    ✗ entry "Χαλάστρας" is 2.3km on the WRONG side of the toll (expected south of toll for south-bound traffic)
+    toll @ (40.60240, 22.69829)
+    exit  "Μαλγάρων"  @ (40.60019, 22.68194)
+    entry "Χαλάστρας" @ (40.62345, 22.72155)
+
+egnatia_igoumenitsa · Tyria / Igoumenitsa
+  Eastbound (towards Ioannina) (east-bound):
+    ✗ exit "Δωδώνης" is 9.5km on the WRONG side of the toll (expected west of toll for east-bound traffic)
+    toll @ (39.54033, 20.67433)
+    exit  "Δωδώνης"  @ (39.54820, 20.78540)
+    entry "Σελλών" @ (39.53672, 20.69171)
+
+egnatia_igoumenitsa · Tyria / Igoumenitsa
+  Westbound (towards Igoumenitsa) (west-bound):
+    ✗ entry "Δωδώνης" is 9.5km on the WRONG side of the toll (expected west of toll for west-bound traffic)
+    toll @ (39.54033, 20.67433)
+    exit  "Σελλών"  @ (39.53672, 20.69171)
+    entry "Δωδώνης" @ (39.54820, 20.78540)
+
+egnatia_ioannina · Pamvotida / Ioannina
+  Eastbound (towards Thessaloniki) (east-bound):
+    ✗ exit "Αράχθου" is 3.2km on the WRONG side of the toll (expected west of toll for east-bound traffic)
+    ✗ entry "Ιωαννίνων" is 8.0km on the WRONG side of the toll (expected east of toll for east-bound traffic)
+    toll @ (39.61886, 20.94758)
+    exit  "Αράχθου"  @ (39.61250, 20.98540)
+    entry "Ιωαννίνων" @ (39.65840, 20.85420)
+
+egnatia_ioannina · Pamvotida / Ioannina
+  Westbound (towards Igoumenitsa) (west-bound):
+    ✗ exit "Ιωαννίνων" is 8.0km on the WRONG side of the toll (expected east of toll for west-bound traffic)
+    ✗ entry "Αράχθου" is 3.2km on the WRONG side of the toll (expected west of toll for west-bound traffic)
+    toll @ (39.61886, 20.94758)
+    exit  "Ιωαννίνων"  @ (39.65840, 20.85420)
+    entry "Αράχθου" @ (39.61250, 20.98540)
+
+egnatia_veroia · Polymylo / Veroia
+  Eastbound (towards Thessaloniki) (east-bound):
+    ✗ exit "Βέροιας" is 10.6km on the WRONG side of the toll (expected west of toll for east-bound traffic)
+    toll @ (40.36720, 22.06021)
+    exit  "Βέροιας"  @ (40.52840, 22.18540)
+    entry "Πολυμύλου" @ (40.36868, 22.05382)
+
+egnatia_veroia · Polymylo / Veroia
+  Westbound (towards Kozani) (west-bound):
+    ✗ entry "Βέροιας" is 10.6km on the WRONG side of the toll (expected west of toll for west-bound traffic)
+    toll @ (40.36720, 22.06021)
+    exit  "Πολυμύλου"  @ (40.36868, 22.05382)
+    entry "Βέροιας" @ (40.52840, 22.18540)
+
+egnatia_xanthi · Iasmos / Xanthi
+  Eastbound (towards Komotini) (east-bound):
+    ✗ exit "ΒΙΠΕ Κομοτηνής" is 20.5km on the WRONG side of the toll (expected west of toll for east-bound traffic)
+    toll @ (41.12034, 25.08024)
+    exit  "ΒΙΠΕ Κομοτηνής"  @ (41.12540, 25.32540)
+    entry "Ιάσμου" @ (41.11658, 25.17827)
+
+egnatia_xanthi · Iasmos / Xanthi
+  Westbound (towards Kavala) (west-bound):
+    ✗ entry "ΒΙΠΕ Κομοτηνής" is 20.5km on the WRONG side of the toll (expected west of toll for west-bound traffic)
+    toll @ (41.12034, 25.08024)
+    exit  "Ιάσμου"  @ (41.11658, 25.17827)
+    entry "ΒΙΠΕ Κομοτηνής" @ (41.12540, 25.32540)
+
+ionia_klokova · Klokova
+  Northbound (towards Ioannina) (north-bound):
+    ✗ exit "Γαβρολίμνης" is 4.0km on the WRONG side of the toll (expected south of toll for north-bound traffic)
+    toll @ (38.35924, 21.65654)
+    exit  "Γαβρολίμνης"  @ (38.39510, 21.65820)
+    entry "Μεσολογγίου" @ (38.37891, 21.50174)
+
+ionia_klokova · Klokova
+  Southbound (towards Antirrio) (south-bound):
+    ✗ entry "Γαβρολίμνης" is 4.0km on the WRONG side of the toll (expected south of toll for south-bound traffic)
+    toll @ (38.35924, 21.65654)
+    exit  "Μεσολογγίου"  @ (38.37891, 21.50174)
+    entry "Γαβρολίμνης" @ (38.39510, 21.65820)
+
+ionia_menidi · Kouvaras / Menidi
+  Northbound (towards Ioannina) (north-bound):
+    ✗ entry "Αμφιλοχίας" is 13.8km on the WRONG side of the toll (expected north of toll for north-bound traffic)
+    toll @ (38.98989, 21.17092)
+    exit  "Κουβαρά"  @ (38.74520, 21.15420)
+    entry "Αμφιλοχίας" @ (38.86540, 21.17540)
+
+ionia_menidi · Kouvaras / Menidi
+  Southbound (towards Arta) (south-bound):
+    ✗ exit "Αμφιλοχίας" is 13.8km on the WRONG side of the toll (expected north of toll for south-bound traffic)
+    toll @ (38.98989, 21.17092)
+    exit  "Αμφιλοχίας"  @ (38.86540, 21.17540)
+    entry "Κουβαρά" @ (38.74520, 21.15420)
+
+═══ WARNINGS (bearing off but sides plausible) ═══
+
+a1_agios_konstantinos · Agios Konstantinos (Agia Triada)
+  Northbound (towards Thessaloniki) (north-bound):
+    ⚠ exit→entry bearing is 272°, expected ~0° for north-bound (off by 88°)
+
+a1_agios_konstantinos · Agios Konstantinos (Agia Triada)
+  Southbound (towards Athens) (south-bound):
+    ⚠ exit→entry bearing is 92°, expected ~180° for south-bound (off by 88°)
+
+a1_analipsi · Analipsi
+  Northbound (towards Kavala) (north-bound):
+    ⚠ exit→entry bearing is 287°, expected ~0° for north-bound (off by 73°)
+
+a1_analipsi · Analipsi
+  Southbound (towards Thessaloniki) (south-bound):
+    ⚠ exit→entry bearing is 107°, expected ~180° for south-bound (off by 73°)
+

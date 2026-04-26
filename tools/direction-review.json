@@ -1,0 +1,17 @@
+{
+  "generated": "2026-04-26T17:45:47.906Z",
+  "answers": {
+    "a1_thiva::north": {
+      "answer": "skip",
+      "tollId": "a1_thiva",
+      "dirKey": "north",
+      "reviewedAt": "2026-04-26T17:45:47.413Z"
+    },
+    "a1_thiva::south": {
+      "answer": "skip",
+      "tollId": "a1_thiva",
+      "dirKey": "south",
+      "reviewedAt": "2026-04-26T17:45:47.906Z"
+    }
+  }
+}

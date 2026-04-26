@@ -287,16 +287,17 @@ window.calcTollVerdictsByDirection = function(toll, catKey, timeValue) {
   return out;
 };
 
-// ── Draw bypass line — uses real OSRM route if exit/entry available,
-//    falls back to legacy `via` waypoints for tolls not yet upgraded ──
+// ── Draw bypass line — the local-roads portion of an AVOID toll's bypass.
+//    The motorway portions on either side are already part of the main
+//    route polyline, so we only draw the deviation here. ──
 function drawBypassLine(dir, label) {
   if (!dir) return;
 
-  // Use exit/entry if both present; otherwise fall back to via waypoints
+  // Use off_ramp/on_ramp if both present; otherwise fall back to via waypoints
   let initialCoords;
-  if (dir.exit && dir.entry) {
+  if (dir.off_ramp && dir.on_ramp) {
     // Start with placeholder straight line (will be replaced by real route)
-    initialCoords = [[dir.exit.lat, dir.exit.lng], [dir.entry.lat, dir.entry.lng]];
+    initialCoords = [[dir.off_ramp.lat, dir.off_ramp.lng], [dir.on_ramp.lat, dir.on_ramp.lng]];
   } else if (dir.via?.length) {
     initialCoords = dir.via.map(p => [p.lat, p.lng]);
   } else {
@@ -306,22 +307,22 @@ function drawBypassLine(dir, label) {
   const layer = L.polyline(initialCoords, {
     color:     '#2a6b9e', // blue: bypass = local/free road (Greek convention)
     weight:    4,
-    opacity:   dir.exit && dir.entry ? 0.5 : 0.85,
-    dashArray: dir.exit && dir.entry ? '8 6' : null,
+    opacity:   dir.off_ramp && dir.on_ramp ? 0.5 : 0.85,
+    dashArray: dir.off_ramp && dir.on_ramp ? '8 6' : null,
     lineCap:   'round',
     lineJoin:  'round',
   }).addTo(map);
 
   layer.bindTooltip(
-    `🟢 ${t('bypass.tooltip', {exit: dir.exit_name, entry: dir.entry_name, min: dir.minutes})}`,
+    `🔵 ${t('bypass.tooltip', {exit: dir.exit_name, entry: dir.entry_name, min: dir.minutes})}`,
     { sticky: true, className: 'bypass-tooltip' }
   );
 
   bypassLayers.push(layer);
 
-  // If we have real ramps, fetch the OSRM driving route and replace the placeholder
-  if (dir.exit && dir.entry && typeof window.fetchBypassRoute === 'function') {
-    window.fetchBypassRoute(dir.exit, dir.entry, dir.bypass_via).then(routeCoords => {
+  // If we have real ramps, fetch the bypass driving route and replace the placeholder
+  if (dir.off_ramp && dir.on_ramp && typeof window.fetchBypassRoute === 'function') {
+    window.fetchBypassRoute(dir.off_ramp, dir.on_ramp, dir.bypass_via).then(routeCoords => {
       if (routeCoords && routeCoords.length > 1) {
         layer.setLatLngs(routeCoords);
         layer.setStyle({ opacity: 0.9, dashArray: null });
@@ -329,27 +330,27 @@ function drawBypassLine(dir, label) {
     });
   }
 
-  // Exit marker (red)
-  if (dir.exit) {
+  // Exit marker (red) — anchored on the off-ramp
+  if (dir.off_ramp) {
     const ei = L.divIcon({
       className: '',
       html: `<div style="width:13px;height:13px;background:#b8502d;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:7px;color:white;font-weight:700;font-family:sans-serif;">↙</div>`,
       iconSize: [13,13], iconAnchor: [6.5,6.5],
     });
-    const em = L.marker([dir.exit.lat, dir.exit.lng], { icon: ei, zIndexOffset: 600 });
+    const em = L.marker([dir.off_ramp.lat, dir.off_ramp.lng], { icon: ei, zIndexOffset: 600 });
     em.bindTooltip(t('ramp.exit.tooltip', {name: dir.exit_name}), { className: 'bypass-tooltip' });
     em.addTo(map);
     bypassLayers.push(em);
   }
 
-  // Entry marker (green)
-  if (dir.entry) {
+  // Entry marker (green) — anchored on the on-ramp
+  if (dir.on_ramp) {
     const ni = L.divIcon({
       className: '',
       html: `<div style="width:13px;height:13px;background:#2e7a4a;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:7px;color:white;font-weight:700;font-family:sans-serif;">↗</div>`,
       iconSize: [13,13], iconAnchor: [6.5,6.5],
     });
-    const nm = L.marker([dir.entry.lat, dir.entry.lng], { icon: ni, zIndexOffset: 600 });
+    const nm = L.marker([dir.on_ramp.lat, dir.on_ramp.lng], { icon: ni, zIndexOffset: 600 });
     nm.bindTooltip(t('ramp.entry.tooltip', {name: dir.entry_name}), { className: 'bypass-tooltip' });
     nm.addTo(map);
     bypassLayers.push(nm);
