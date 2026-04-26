@@ -270,6 +270,7 @@ function restoreAll() {
 let inspectLayers = [];
 let sidePanelOpen = false;
 let sidePanelOpenedAt = 0;
+let currentTollOpen = null;
 const legendEl    = document.getElementById('legend');
 
 function clearInspectLayers() {
@@ -285,26 +286,27 @@ function closeSidePanel() {
   clearInspectLayers();
   restoreAll();
   sidePanelOpen = false;
+  currentTollOpen = null;
   if (typeof setActiveTollLabel === 'function') setActiveTollLabel(null);
   // Refresh map size after layout change so it fills new available area
   setTimeout(() => map.invalidateSize(), 320);
 }
 
-// EXIT sign icon
+// EXIT sign icon — auto-sized so any language fits
 function makeExitIcon() {
   return L.divIcon({
-    className: '',
-    html: `<div style="background:#2a6b9e;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">${t('ramp.exit.label')}</div>`,
-    iconSize: [36, 16], iconAnchor: [18, 8],
+    className: 'ramp-icon-wrap',
+    html: `<div class="ramp-sign ramp-sign-exit">${t('ramp.exit.label')}</div>`,
+    iconSize: [null, null], iconAnchor: [0, 8],
   });
 }
 
-// ENTER sign icon
+// ENTER sign icon — auto-sized so any language fits
 function makeEntryIcon() {
   return L.divIcon({
-    className: '',
-    html: `<div style="background:#2e7a4a;color:white;font-family:Arial Black,sans-serif;font-size:8px;font-weight:900;padding:2px 4px;border-radius:3px;border:1.5px solid white;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.3);letter-spacing:1px;">${t('ramp.entry.label')}</div>`,
-    iconSize: [42, 16], iconAnchor: [21, 8],
+    className: 'ramp-icon-wrap',
+    html: `<div class="ramp-sign ramp-sign-entry">${t('ramp.entry.label')}</div>`,
+    iconSize: [null, null], iconAnchor: [0, 8],
   });
 }
 
@@ -312,6 +314,7 @@ function openSidePanel(toll) {
   clearInspectLayers();
   sidePanelOpen = true;
   sidePanelOpenedAt = Date.now();
+  currentTollOpen = toll;
   legendEl.classList.add('pushed');
   document.getElementById('map-controls')?.classList.add('pushed');
   document.body.classList.add('panel-open');
@@ -911,6 +914,15 @@ window.setActiveTollLabel = setActiveTollLabel;
 window.addEventListener('langchange', () => {
   updateTollNameLabels();
   updateTollNamesVisibility();
+  // Refresh ramp marker icons (their text is baked-in at creation time)
+  rampMarkers.forEach(({ exitM, entryM }) => {
+    if (exitM)  exitM.setIcon(makeExitIcon());
+    if (entryM) entryM.setIcon(makeEntryIcon());
+  });
+  // If side panel is open, re-render its content with the new language
+  if (sidePanelOpen && currentTollOpen) {
+    openSidePanel(currentTollOpen);
+  }
 });
 
 // ── Legend ────────────────────────────────────────────────
