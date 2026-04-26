@@ -2,7 +2,14 @@
  * DIODIO — Greek Toll Booth Dataset
  * Coordinates sourced from diodia.com.gr KMZ (49 verified points)
  * Exit/entry ramp coordinates from: Πλήρης Οδηγός Αποφυγής Διοδίων 2026
- * Prices updated January 2026.
+ * Prices updated April 2026 against official 2026 operator price lists.
+ *
+ * ┌─────────────────────────────────────────────────────────────────────┐
+ * │  PRICE SOURCES — see data/toll-sources.json for the full registry  │
+ * │  Refresh annually after Jan 1 increases. Each entry there links    │
+ * │  to the operator's official price page and notes which toll IDs    │
+ * │  are sourced from it.                                               │
+ * └─────────────────────────────────────────────────────────────────────┘
  *
  * bypass_directions structure per direction (north/south/east/west):
  *   label       — human readable direction

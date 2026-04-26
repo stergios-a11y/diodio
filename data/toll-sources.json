@@ -1,0 +1,151 @@
+{
+  "_comment": "Canonical price-data sources for Greek toll roads. Use this list when refreshing prices in tolls.js. Each entry includes the operator's official 2026 prices page; rerun a comparison after each January 1 increase.",
+  "_last_refreshed": "2026-04-27",
+  "_next_review": "2027-01-15",
+  "_schema": {
+    "operator": "Operator name (matches `operator` field in tolls.js entries)",
+    "url": "Official 2026 price-list URL — primary source",
+    "url_alt": "Alternate URL (English version, archive, etc.)",
+    "highways": "Highway codes covered (matches `highway` field)",
+    "tolls_in_data": "Toll IDs in tolls.js belonging to this operator",
+    "structure": "Brief description of how the operator organizes their pricing tables",
+    "last_verified": "ISO date when prices were last cross-checked against this source",
+    "notes": "Anything quirky about parsing or interpreting their prices"
+  },
+  "sources": [
+    {
+      "operator": "Aegean Motorway",
+      "url": "https://www.aegeanmotorway.gr/travel-info/diodia/times-diodiwn-2/",
+      "url_alt": "https://www.aegeanmotorway.gr/en/travel-info/tolls/toll-prices/",
+      "highways": ["A1"],
+      "tolls_in_data": [
+        "a1_pelasgia", "a1_moschochori", "a1_makrychori", "a1_leptokarya", "a1_kleidi",
+        "a1_glyfa_north_entry", "a1_glyfa_south_exit",
+        "a1_velestino_north_exit", "a1_velestino_south_entry_a", "a1_velestino_south_entry_b",
+        "a1_gyrtoni_north_exit", "a1_gyrtoni_south_entry"
+      ],
+      "structure": "Single table with 5 frontal (Μετωπικός) and 10 side (Πλευρικός) stations. Cat 1-4 columns. 24% VAT included. Prices effective 01 January 2026.",
+      "last_verified": "2026-04-27",
+      "notes": "Section: Raches → Larissa → Kleidi Imathias. Pelasgia and Moschochori are tagged as Kentriki Odos in tolls.js but officially are Aegean Motorway."
+    },
+    {
+      "operator": "Egnatia Odos (Nea Egnatia)",
+      "url": "https://neodos.gr/en/stathmoi-diodion/",
+      "url_alt": "https://neodos.gr/stathmoi-diodion/",
+      "highways": ["A2"],
+      "tolls_in_data": [
+        "egnatia_igoumenitsa", "egnatia_ioannina", "egnatia_metsovo", "egnatia_kozani",
+        "egnatia_veroia", "egnatia_ieropigi", "egnatia_thessaloniki_west",
+        "egnatia_strymoniko", "egnatia_kavala", "egnatia_xanthi", "egnatia_komotini",
+        "egnatia_alexandroupoli", "egnatia_promahonas",
+        "a1_analipsi", "a1_moustheni", "a1_asprovalta", "a1_malgara", "a1_evzoni"
+      ],
+      "structure": "18 mainline frontal (14 main + 4 vertical-axis) + 17 ramp stations. Cat 1-4 columns. As of January 2026, operator changed to GEK TERNA-Egis consortium. Prices effective 01 January 2026.",
+      "last_verified": "2026-04-27",
+      "notes": "tolls.js currently mis-tags 5 entries as A1 (Malgara, Analipsi, Moustheni, Asprovalta, Evzoni) — they are A2 Egnatia per official source. Cat 2 height limit is 2.70m (different from other operators' 2.20m). Greek-language URL also works."
+    },
+    {
+      "operator": "Nea Odos",
+      "url": "https://www.neaodos.gr/highways/tolls/?lang=en",
+      "url_alt": "https://www.neaodos.gr/highways/tolls/",
+      "highways": ["A1", "A5"],
+      "tolls_in_data": [
+        "a1_afidnes", "a1_thiva", "a1_traganas", "a1_agios_konstantinos", "a1_mavromantila",
+        "ionia_klokova", "ionia_aggelokastro", "ionia_menidi", "ionia_terovos"
+      ],
+      "structure": "Two tables: A.Th.E. section (3 frontals + 5 lateral) and Ionia Odos (4 frontals + 5 lateral). Cat 1-4 columns. Lateral stations are direction-specific (entry one way / exit the other). Prices effective 01 January 2026.",
+      "last_verified": "2026-04-27",
+      "notes": "Section: Metamorfosi (Athens) → Skarfia, plus Antirrio → Ioannina. agios_konstantinos in tolls.js is named 'Agia Triada' which actually belongs to Kentriki Odos — verify next refresh."
+    },
+    {
+      "operator": "Olympia Odos",
+      "url": "https://www.olympiaodos.gr/en/Diodia-OLYMPIA-PASS/Times-diodion/",
+      "url_alt": "https://www.olympiaodos.gr/Diodia-OLYMPIA-PASS/Times-diodion/",
+      "highways": ["A8"],
+      "tolls_in_data": [
+        "olympia_elefsina", "olympia_isthmos_canal", "olympia_isthmos", "olympia_kiato",
+        "olympia_aigio", "olympia_rio", "olympia_patras", "olympia_pyrgos",
+        "olympia_zevgolatio_east_entry", "olympia_zevgolatio_east_exit"
+      ],
+      "structure": "Two tables: 7 frontal (Μετωπικός) and 11 ramp stations. Ramp tolls labeled (P) = to Patras, (A) = to Athens. Cat 1-4. Prices effective 01 January 2026.",
+      "last_verified": "2026-04-27",
+      "notes": "Section: Elefsina → Corinth → Patras → Pyrgos. olympia_isthmos in tolls.js is misleadingly named 'Zevgolatio' but holds frontal-equivalent data — needs cleanup. No toll collectors at ramp stations; payment via auto machines or e-Pass only."
+    },
+    {
+      "operator": "Kentriki Odos",
+      "url": "https://kentrikiodos.gr/highways/toll-fees/?lang=en",
+      "url_alt": "https://kentrikiodos.gr/highways/toll-fees/",
+      "highways": ["A1", "E65"],
+      "tolls_in_data": [
+        "a1_pelasgia", "a1_moschochori",
+        "e65_lianokladi", "e65_sofades", "e65_trikala"
+      ],
+      "structure": "Two tables: A.Th.E. section (2 frontals + 3 lateral) and E65 (3 frontals + 4 lateral). Cat 1-4. Lateral stations are direction-specific. Prices effective 01 January 2026.",
+      "last_verified": "2026-04-27",
+      "notes": "Section: Skarfia → Raches on A1, plus Lamia → Kalambaka on E65. Same parent group as Nea Odos (GEK TERNA)."
+    },
+    {
+      "operator": "Moreas",
+      "url": "https://www.moreas.com.gr/leitourgia/diodia",
+      "url_alt": "https://www.moreas.com.gr/leitourgia/diodia?lang=en",
+      "highways": ["A7"],
+      "tolls_in_data": [
+        "moreas_corinth", "moreas_nestani", "moreas_petrina",
+        "moreas_veligosti", "moreas_kalamata"
+      ],
+      "structure": "Single table: 6 frontals + 3 side stations (Παραδείσια, Αρφαρών, Θουρίας). All charged in both directions. Cat 1-4.",
+      "last_verified": "2026-04-27",
+      "notes": "Section: Corinth → Tripoli → Kalamata, plus Lefktro → Sparta branch. moreas_corinth in tolls.js is named 'Spathvounio / Corinth' = official 'Spathovouni'."
+    },
+    {
+      "operator": "Gefyra SA",
+      "url": "https://www.gefyra.gr/en/prices/Times-Diodion/",
+      "url_alt": "https://www.gefyra.gr/en/prices/other-products/",
+      "highways": ["BRIDGE"],
+      "tolls_in_data": ["rioantirrio"],
+      "structure": "Single-crossing prices for 9 vehicle classes (motorbikes, cars, cars-with-disability, trucks 2/3/4/5+ axles, buses 3 size tiers). Discount products (Aller-Retour, 30-trip) on a separate page.",
+      "last_verified": "2026-04-27",
+      "notes": "tolls.js maps Gefyra's 9 categories into 4-category schema as: cat1=motorcycles, cat2=cars, cat3=trucks 2-axle (proxy for light commercial), cat4=trucks 4+ axle. Bus tariffs not represented. Domain blocks crawler bots; verify via cross-reference (e.g. en.protothema.gr toll-summary articles in early January each year). 2026 prices announced 01 January 2026."
+    },
+    {
+      "operator": "Egnatia (Aktio-Preveza subsidiary)",
+      "url": "https://www.aktiopreveza.gr/",
+      "url_alt": null,
+      "highways": ["BRIDGE"],
+      "tolls_in_data": ["aktio_preveza"],
+      "structure": "Underwater tunnel between Aktio (Lefkada) and Preveza. Single-direction toll. Pricing not yet verified in this iteration.",
+      "last_verified": null,
+      "notes": "Unverified — need to fetch official site and confirm 2026 prices. Currently using placeholder values in tolls.js."
+    },
+    {
+      "operator": "Attikes Diadromes (Nea Attiki Odos)",
+      "url": "https://www.naodos.gr/",
+      "url_alt": "https://www.aodos.gr/",
+      "highways": ["A6"],
+      "tolls_in_data": ["attiki_main"],
+      "structure": "Single ring road with single-pass entry pricing. 6 vehicle categories (motorcycles €1.25, cars €2.55, vans €2.55, cars-with-trailer €2.55, trucks 2-3 axle €6.30, trucks 4+ €10.10). 2026 marks first index-linked price increase since opening.",
+      "last_verified": "2026-04-27",
+      "notes": "tolls.js maps the 6 official categories into 4: cat1=motorbikes, cat2=cars, cat3=trucks 2-3 axle (€6.30), cat4=trucks 4+ axle (€10.10). 2026 prices: €1.25/€2.55/€6.30/€10.10. Operator changed from Attikes Diadromes to Nea Attiki Odos Paraxorisi A.E. in late 2024."
+    }
+  ],
+  "_secondary_sources": [
+    {
+      "name": "ProtoThema English — annual January toll roundup",
+      "url_template": "https://en.protothema.gr/{year}/01/",
+      "use_case": "When operator websites are slow to update or cloak pricing behind cookie walls. ProtoThema publishes a comprehensive multi-operator price summary every January after the annual increase.",
+      "notes": "Very reliable for cross-checking. Fetch in early-to-mid January each year."
+    },
+    {
+      "name": "HelpPost.gr — Greek toll directory",
+      "url": "https://www.helppost.gr/agenda/diodia-times-xartis-stathmoi/",
+      "use_case": "General reference, updated annually.",
+      "notes": "Aggregator. Not the primary source. Use only as a sanity check."
+    },
+    {
+      "name": "Tolls.eu",
+      "url": "https://www.tolls.eu/greece",
+      "use_case": "EU-wide toll database with calculator.",
+      "notes": "Aggregator, may lag operator pricing by weeks."
+    }
+  ]
+}
