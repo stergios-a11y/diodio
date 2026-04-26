@@ -3,15 +3,159 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DIODIO — Οδηγός Διοδίων Ελλάδας</title>
-  <meta name="description" content="Διαδραστικός χάρτης όλων των διοδίων στους ελληνικούς αυτοκινητοδρόμους. Υπολόγισε αν αξίζει να πληρώσεις κάθε διόδιο." />
+
+  <!-- Primary metadata (Greek-first; English equivalents in alternates below) -->
+  <title>Διόδια Ελλάδας 2026 — Χάρτης, Τιμές & Σύμβουλος Παράκαμψης | DIODIO</title>
+  <meta name="description" content="Διαδραστικός χάρτης για όλα τα διόδια στους ελληνικούς αυτοκινητοδρόμους. Δες τιμές 2026, υπολόγισε το κόστος της διαδρομής σου, και βρες ποια διόδια αξίζει να παρακάμψεις." />
+  <meta name="keywords" content="διόδια, διόδια Ελλάδα, διόδια 2026, τιμές διοδίων, παράκαμψη διοδίων, αυτοκινητόδρομοι, ΠΑΘΕ, Εγνατία, Ολυμπία Οδός, Greece tolls, toll roads Greece" />
+  <meta name="author" content="DIODIO" />
+  <meta name="theme-color" content="#2a6b9e" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+
+  <!-- Canonical & language alternates -->
+  <link rel="canonical" href="https://stergios-a11y.github.io/diodio/" />
+  <link rel="alternate" hreflang="el" href="https://stergios-a11y.github.io/diodio/" />
+  <link rel="alternate" hreflang="en" href="https://stergios-a11y.github.io/diodio/" />
+  <link rel="alternate" hreflang="x-default" href="https://stergios-a11y.github.io/diodio/" />
+
+  <!-- OpenGraph (social previews) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="DIODIO" />
+  <meta property="og:title" content="Διόδια Ελλάδας 2026 — Χάρτης, Τιμές & Σύμβουλος Παράκαμψης" />
+  <meta property="og:description" content="Διαδραστικός χάρτης για όλα τα διόδια στους ελληνικούς αυτοκινητοδρόμους. Δες τιμές 2026 και βρες ποια διόδια αξίζει να παρακάμψεις." />
+  <meta property="og:url" content="https://stergios-a11y.github.io/diodio/" />
+  <meta property="og:locale" content="el_GR" />
+  <meta property="og:locale:alternate" content="en_US" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Διόδια Ελλάδας 2026 — Χάρτης & Σύμβουλος Παράκαμψης" />
+  <meta name="twitter:description" content="Δες τιμές 2026, υπολόγισε το κόστος, και βρες ποια διόδια αξίζει να παρακάμψεις." />
+
+  <!-- Structured data: WebApplication + Dataset.
+       Helps Google show rich snippets and understand this is an interactive
+       tool with a curated dataset behind it. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://stergios-a11y.github.io/diodio/#app",
+        "name": "DIODIO",
+        "alternateName": "DIODIO — Greece Toll Road Advisor",
+        "url": "https://stergios-a11y.github.io/diodio/",
+        "description": "Interactive map and bypass advisor for tolls on Greek motorways. Shows 2026 prices for all four vehicle classes, calculates total route cost, and recommends which tolls to pay vs. bypass based on your time-vs-money preference.",
+        "applicationCategory": "TravelApplication",
+        "operatingSystem": "Any (web-based)",
+        "browserRequirements": "Requires JavaScript",
+        "inLanguage": ["el", "en"],
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR"
+        },
+        "featureList": [
+          "Interactive map of all 50 toll booths",
+          "City-to-city route cost calculator",
+          "Bypass advisor with time-vs-money slider",
+          "Sortable table of all toll prices",
+          "Greek and English UI"
+        ],
+        "areaServed": {
+          "@type": "Country",
+          "name": "Greece"
+        },
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "Drivers planning trips on Greek motorways"
+        }
+      },
+      {
+        "@type": "Dataset",
+        "@id": "https://stergios-a11y.github.io/diodio/#dataset",
+        "name": "Greek Motorway Toll Prices and Bypass Routes 2026",
+        "description": "Curated dataset of all toll booths on Greek motorways (A1/PATHE, A2/Egnatia, A5/Nea Odos, A6/Attiki Odos, A7/Moreas, A8/Olympia Odos, E65/Kentriki Odos, plus Rio-Antirrio bridge). Includes per-booth prices for all four vehicle categories, geographic coordinates, and pre-curated bypass routes with estimated extra travel time.",
+        "url": "https://stergios-a11y.github.io/diodio/",
+        "keywords": ["tolls", "Greece", "motorways", "διόδια", "αυτοκινητόδρομοι"],
+        "spatialCoverage": {
+          "@type": "Place",
+          "name": "Greece",
+          "geo": {
+            "@type": "GeoShape",
+            "box": "34.8 19.4 41.8 28.3"
+          }
+        },
+        "temporalCoverage": "2026/..",
+        "datePublished": "2026-01-01",
+        "dateModified": "2026-04-26",
+        "creator": {
+          "@type": "Person",
+          "name": "DIODIO"
+        },
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "isAccessibleForFree": true
+      }
+    ]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/style.css?v=20260426-1457" />
+  <link rel="stylesheet" href="css/style.css?v=20260426-1505" />
 </head>
 <body>
+
+  <noscript>
+    <div style="max-width:760px;margin:40px auto;padding:24px;font-family:Inter,sans-serif;color:#1a1f2e;line-height:1.6;">
+      <h1 style="font-size:1.8rem;margin:0 0 8px;">DIODIO — Οδηγός Διοδίων Ελλάδας 2026</h1>
+      <p style="font-size:1.05rem;color:#5a6678;margin-top:0;">
+        Διαδραστικός χάρτης για όλα τα διόδια στους ελληνικούς αυτοκινητοδρόμους.
+        Δες τιμές 2026, υπολόγισε το κόστος της διαδρομής σου, και βρες ποια διόδια
+        αξίζει να παρακάμψεις βάσει του χρόνου που είσαι διατεθειμένος να ξοδέψεις.
+      </p>
+      <p><strong>Για να χρησιμοποιήσεις το DIODIO απαιτείται JavaScript.</strong> Παρακαλούμε ενεργοποίησέ το στον περιηγητή σου.</p>
+
+      <h2 style="font-size:1.2rem;margin-top:32px;">Καλυπτόμενοι αυτοκινητόδρομοι</h2>
+      <ul>
+        <li><strong>A1 / ΠΑΘΕ</strong> — Αθήνα → Θεσσαλονίκη (11 σταθμοί)</li>
+        <li><strong>A2 / Εγνατία Οδός</strong> — Ηγουμενίτσα → Αρδάνιο</li>
+        <li><strong>A5 / Νέα Οδός</strong> — Κλόκοβα → Τέροβο</li>
+        <li><strong>A6 / Αττική Οδός</strong> — Περιφερειακός Αθηνών</li>
+        <li><strong>A7 / Μορέας</strong> — Κόρινθος → Καλαμάτα / Σπάρτη</li>
+        <li><strong>A8 / Ολυμπία Οδός</strong> — Ελευσίνα → Πύργος</li>
+        <li><strong>E65 / Κεντρική Οδός</strong> — Λιανοκλάδι → Τρίκαλα</li>
+        <li>Γέφυρα Ρίου–Αντιρρίου, Σήραγγα Ακτίου–Πρέβεζας</li>
+      </ul>
+
+      <h2 style="font-size:1.2rem;margin-top:24px;">Δημοφιλείς διαδρομές</h2>
+      <ul>
+        <li>Αθήνα → Θεσσαλονίκη — €36,15 για ΙΧ (11 σταθμοί διοδίων)</li>
+        <li>Αθήνα → Πάτρα — €13,80 για ΙΧ (6 σταθμοί)</li>
+        <li>Αθήνα → Καλαμάτα — μέσω Μορέα</li>
+        <li>Αθήνα → Ιωάννινα — €44,70 για ΙΧ</li>
+        <li>Θεσσαλονίκη → Λάρισα, Πάτρα → Ιωάννινα, Αθήνα → Κοζάνη</li>
+      </ul>
+
+      <p style="margin-top:24px;font-size:0.9rem;color:#5a6678;">
+        Τιμές διοδίων ενημερωμένες τον Απρίλιο 2026. Πηγή δεδομένων: επίσημες ανακοινώσεις
+        παραχωρησιούχων (Νέα Οδός, Ολυμπία Οδός, Εγνατία, Μορέας, Κεντρική Οδός).
+      </p>
+
+      <hr style="margin:32px 0;border:none;border-top:1px solid #e0e3e8;" />
+
+      <h1 style="font-size:1.4rem;">DIODIO — Greece Toll Road Advisor 2026</h1>
+      <p>
+        Interactive map and bypass advisor for tolls on Greek motorways. See 2026 prices
+        for cars, motorcycles, vans, and trucks; calculate total cost for your route;
+        and discover which tolls are worth bypassing based on local roads.
+      </p>
+      <p><strong>JavaScript required.</strong> Please enable it to use DIODIO.</p>
+    </div>
+  </noscript>
 
   <header id="topbar">
     <a class="logo" href="#map" id="logo-link">DIO<em>DIO</em></a>
@@ -249,11 +393,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260426-1457"></script>
-  <script src="data/tolls.js?v=20260426-1457"></script>
-  <script src="data/routes.js?v=20260426-1457"></script>
-  <script src="js/map.js?v=20260426-1457"></script>
-  <script src="js/calculator.js?v=20260426-1457"></script>
-  <script src="js/pages.js?v=20260426-1457"></script>
+  <script src="js/i18n.js?v=20260426-1505"></script>
+  <script src="data/tolls.js?v=20260426-1505"></script>
+  <script src="data/routes.js?v=20260426-1505"></script>
+  <script src="js/map.js?v=20260426-1505"></script>
+  <script src="js/calculator.js?v=20260426-1505"></script>
+  <script src="js/pages.js?v=20260426-1505"></script>
 </body>
 </html>
