@@ -15,6 +15,12 @@ const map = L.map('map', {
   maxZoom: 16,
   zoomControl: true,
 });
+window._dmap = map;
+
+window.openSidePanelById = function(id) {
+  const toll = TOLL_DATA.find(t => t.id === id);
+  if (toll && typeof openSidePanel === 'function') openSidePanel(toll);
+};
 
 // Use CartoDB Light as the base map — free, reliable, no token needed.
 // Motorways are visible on the base tiles. Mapbox would be richer but the URL-restricted
@@ -496,23 +502,34 @@ function openSidePanel(toll) {
       if (!layer._dirKey) return;
       const visible = activeKey === 'both' || layer._dirKey === activeKey;
       if (layer.setOpacity) {
-        // Marker
         layer.setOpacity(visible ? 1 : 0);
       } else if (layer.setStyle) {
-        // Polyline — restore to original opacity if visible, hide if not
         const isHighway = layer.options.color === '#2a6b9e';
         layer.setStyle({ opacity: visible ? (isHighway ? 0.7 : 0.9) : 0 });
       }
     });
-    // Highlight active filter pill in side panel
+    // Highlight active filter pill
     document.querySelectorAll('.sp-dir-filter .sp-filter-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.dirFilter === activeKey);
     });
-    // Dim the inactive sp-dir block
+    // Highlight active sp-dir block, dim inactive
     document.querySelectorAll('.sp-dir').forEach(el => {
       const k = el.dataset.dirKey;
+      el.classList.toggle('active', activeKey === 'both' || k === activeKey);
       el.classList.toggle('dimmed', activeKey !== 'both' && k !== activeKey);
     });
+    // Update the active-direction headline
+    const headline = document.getElementById('sp-active-dir');
+    if (headline) {
+      const labelEl = headline.querySelector('.sp-active-dir-name');
+      if (labelEl) {
+        if (activeKey === 'both') {
+          labelEl.textContent = t('filter.both');
+        } else if (bd && bd[activeKey]) {
+          labelEl.textContent = translateDirectionLabel(bd[activeKey].label);
+        }
+      }
+    }
   }
 
   // Build side panel HTML
@@ -521,23 +538,38 @@ function openSidePanel(toll) {
     bypassHTML = `<div class="sp-no-bypass">${t('sp.no.bypass')}</div>`;
   } else {
     const dirKeys = Object.keys(bd);
+    const defaultDir = dirKeys[0]; // first direction is initially active
+
     // Build direction filter pills if there are 2+ directions
     let filterPillsHTML = '';
     if (dirKeys.length > 1) {
-      filterPillsHTML = `<div class="sp-dir-filter">
-        <button class="sp-filter-btn active" data-dir-filter="both">${t('filter.both')}</button>`;
+      filterPillsHTML = `<div class="sp-dir-filter">`;
       dirKeys.forEach(k => {
         const dirLabel = translateDirectionLabel(bd[k].label);
-        // Shorten label: take first word (e.g., "Northbound" → "Northbound", "Βόρεια" → "Βόρεια")
+        // Shorten label: take first word (e.g. "Northbound" → "Northbound", "Βόρεια" → "Βόρεια")
         const short = dirLabel.split(/\s|\(/)[0];
-        filterPillsHTML += `<button class="sp-filter-btn" data-dir-filter="${k}">${short}</button>`;
+        const isActive = k === defaultDir;
+        filterPillsHTML += `<button class="sp-filter-btn${isActive ? ' active' : ''}" data-dir-filter="${k}">${short}</button>`;
       });
+      filterPillsHTML += `<button class="sp-filter-btn sp-filter-both" data-dir-filter="both">${t('filter.both')}</button>`;
       filterPillsHTML += `</div>`;
     }
-    bypassHTML = filterPillsHTML;
+
+    // Active direction headline (prominent, above the per-dir blocks)
+    let activeHeadlineHTML = '';
+    if (dirKeys.length > 1) {
+      const activeLabel = translateDirectionLabel(bd[defaultDir].label);
+      activeHeadlineHTML = `<div class="sp-active-dir" id="sp-active-dir">
+        <span class="sp-active-dir-eyebrow">${t('sp.showing')}</span>
+        <span class="sp-active-dir-name">${activeLabel}</span>
+      </div>`;
+    }
+
+    bypassHTML = filterPillsHTML + activeHeadlineHTML;
     Object.entries(bd).forEach(([key, dir]) => {
+      const isActive = key === defaultDir;
       bypassHTML += `
-        <div class="sp-dir" data-dir-key="${key}">
+        <div class="sp-dir${isActive ? ' active' : ''}" data-dir-key="${key}">
           <div class="sp-dir-label">${translateDirectionLabel(dir.label)}</div>
           <div class="sp-dir-exits">
             <span class="sp-exit-tag">${t('sp.exit.tag')}${dir.exit_name}</span>
@@ -602,6 +634,15 @@ function openSidePanel(toll) {
   document.querySelectorAll('.sp-dir-filter .sp-filter-btn').forEach(btn => {
     btn.addEventListener('click', () => setDirectionFilter(btn.dataset.dirFilter));
   });
+
+  // Apply default direction filter on first open (show first direction only by default)
+  if (bd) {
+    const dirKeys = Object.keys(bd);
+    if (dirKeys.length > 1) {
+      // Wait briefly so the layers are added to inspectLayers first, then filter
+      setTimeout(() => setDirectionFilter(dirKeys[0]), 50);
+    }
+  }
 }
 
 // ── Toll markers ──────────────────────────────────────────
