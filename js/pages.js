@@ -146,17 +146,28 @@ document.addEventListener('change', e => {
 });
 
 /* ════════════════════════════════════════════════════════════════
-   TOLLS PAGE — sortable, filterable table
+   TOLLS PAGE — sortable, filterable table with bypass advisor
    ════════════════════════════════════════════════════════════════ */
 let tollsSortColumn = 'name';
 let tollsSortDir    = 'asc';
+
+// Verdict ranking for sort-by-verdict: AVOID first, MARGINAL, then PAY,
+// then "no bypass" tolls last.
+const VERDICT_RANK = { AVOID: 0, MARGINAL: 1, PAY: 2 };
 
 function buildTollsTable() {
   const tbody = document.getElementById('tolls-tbody');
   if (!tbody) return;
   const lang   = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
   const search = (document.getElementById('tolls-search')?.value || '').toLowerCase().trim();
-  const hwyFilter = document.getElementById('tolls-highway-filter')?.value || '';
+  const hwyFilter  = document.getElementById('tolls-highway-filter')?.value || '';
+  const catKey     = document.getElementById('tolls-vehicle')?.value || 'cat2';
+  const timeValue  = parseInt(document.getElementById('tolls-time-slider')?.value || '5', 10);
+  const avoidOnly  = !!document.getElementById('tolls-avoid-only')?.checked;
+
+  // Sync the slider's numeric readout
+  const timeNum = document.getElementById('tolls-time-num');
+  if (timeNum) timeNum.textContent = timeValue;
 
   // Populate highway filter dropdown if empty
   const hwySel = document.getElementById('tolls-highway-filter');
@@ -171,10 +182,34 @@ function buildTollsTable() {
     });
   }
 
-  let rows = TOLL_DATA.slice();
+  // Compute per-direction verdicts. A toll has 1, 2, or 3 directions in
+  // bypass_directions; we evaluate each separately so the table can show
+  // e.g. "AVOID northbound · PAY southbound" instead of collapsing into one.
+  const computeVerdicts = (toll) => {
+    if (typeof window.calcTollVerdictsByDirection !== 'function') return {};
+    return window.calcTollVerdictsByDirection(toll, catKey, timeValue);
+  };
+
+  // Best (lowest-rank) verdict across all directions — used for the
+  // "verdict" column sort and for the avoidOnly filter.
+  const bestVerdict = (verdicts) => {
+    const list = Object.values(verdicts);
+    if (!list.length) return null;
+    return list.reduce((best, v) => {
+      const r = VERDICT_RANK[v.verdict] ?? 99;
+      const br = VERDICT_RANK[best?.verdict] ?? 99;
+      return r < br ? v : best;
+    }, list[0]);
+  };
+
+  let rows = TOLL_DATA.map(toll => {
+    const verdicts = computeVerdicts(toll);
+    return { toll, verdicts, best: bestVerdict(verdicts) };
+  });
+  const totalCount = rows.length;
 
   if (search) {
-    rows = rows.filter(t =>
+    rows = rows.filter(({ toll: t }) =>
       (t.name_gr || '').toLowerCase().includes(search) ||
       (t.name_en || '').toLowerCase().includes(search) ||
       (t.operator || '').toLowerCase().includes(search) ||
@@ -182,19 +217,23 @@ function buildTollsTable() {
     );
   }
   if (hwyFilter) {
-    rows = rows.filter(r => r.highway === hwyFilter);
+    rows = rows.filter(r => r.toll.highway === hwyFilter);
+  }
+  if (avoidOnly) {
+    // Keep tolls where at least ONE direction is worth bypassing.
+    rows = rows.filter(r => Object.values(r.verdicts).some(v => v.verdict === 'AVOID'));
   }
 
   // Sort
   rows.sort((a, b) => {
     let av, bv;
     if (tollsSortColumn === 'name') {
-      av = lang === 'el' ? (a.name_gr || a.name_en || '') : (a.name_en || a.name_gr || '');
-      bv = lang === 'el' ? (b.name_gr || b.name_en || '') : (b.name_en || b.name_gr || '');
+      av = lang === 'el' ? (a.toll.name_gr || a.toll.name_en || '') : (a.toll.name_en || a.toll.name_gr || '');
+      bv = lang === 'el' ? (b.toll.name_gr || b.toll.name_en || '') : (b.toll.name_en || b.toll.name_gr || '');
       return tollsSortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
     }
     if (tollsSortColumn === 'highway') {
-      av = a.highway; bv = b.highway;
+      av = a.toll.highway; bv = b.toll.highway;
       return tollsSortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
     }
     if (tollsSortColumn === 'bypass') {
@@ -204,18 +243,37 @@ function buildTollsTable() {
         const mins = Object.values(bd).map(d => d?.minutes ?? Infinity);
         return mins.length ? Math.min(...mins) : Infinity;
       };
-      av = minOf(a); bv = minOf(b);
+      av = minOf(a.toll); bv = minOf(b.toll);
+      return tollsSortDir === 'asc' ? av - bv : bv - av;
+    }
+    if (tollsSortColumn === 'verdict') {
+      // Sort by the best (lowest-rank) verdict per toll: AVOID first, then
+      // MARGINAL, then PAY, then "no bypass" tolls last.
+      av = VERDICT_RANK[a.best?.verdict] ?? 99;
+      bv = VERDICT_RANK[b.best?.verdict] ?? 99;
       return tollsSortDir === 'asc' ? av - bv : bv - av;
     }
     // Numeric (cat1..cat4)
-    av = a[tollsSortColumn] ?? 0;
-    bv = b[tollsSortColumn] ?? 0;
+    av = a.toll[tollsSortColumn] ?? 0;
+    bv = b.toll[tollsSortColumn] ?? 0;
     return tollsSortDir === 'asc' ? av - bv : bv - av;
   });
 
+  // Update result count
+  const countEl = document.getElementById('tolls-count');
+  if (countEl) {
+    countEl.textContent = t('tolls.advisor.count', { n: rows.length, total: totalCount });
+  }
+
   // Render rows
+  const dirArrow = (key) =>
+    key === 'north' ? '↑' :
+    key === 'south' ? '↓' :
+    key === 'east'  ? '→' :
+    key === 'west'  ? '←' : key;
+
   let html = '';
-  rows.forEach(toll => {
+  rows.forEach(({ toll, verdicts }) => {
     const primary = stripTollPrefix(lang === 'el' ? toll.name_gr : toll.name_en);
     const secondary = stripTollPrefix(lang === 'el' ? toll.name_en : toll.name_gr);
     const hwyColor = HIGHWAY_COLORS[toll.highway] || '#888';
@@ -224,11 +282,30 @@ function buildTollsTable() {
     if (!toll.bypass_directions) {
       bypassHtml = `<span class="tolls-bypass-na">${t('tolls.bypass.none')}</span>`;
     } else {
-      const parts = Object.entries(toll.bypass_directions).map(([key, dir]) => {
-        const dirShort = key === 'north' ? '↑' : key === 'south' ? '↓' : key === 'east' ? '→' : key === 'west' ? '←' : key;
-        return `<span title="${dir.label || ''}">${dirShort} +${dir.minutes ?? '?'}${t('routes.min')}</span>`;
+      const parts = Object.entries(toll.bypass_directions).map(([key, d]) => {
+        return `<span title="${d.label || ''}">${dirArrow(key)} +${d.minutes ?? '?'}${t('routes.min')}</span>`;
       });
       bypassHtml = `<span class="tolls-bypass">${parts.join(' · ')}</span>`;
+    }
+
+    // Verdict cell: one stacked row per direction (e.g. "↑ AVOID +12m" /
+    // "↓ PAY +12m"). For tolls with no bypass we show a single muted pill.
+    let verdictHtml;
+    if (!toll.bypass_directions || Object.keys(verdicts).length === 0) {
+      verdictHtml = `<span class="tolls-verdict tolls-verdict-none">${t('verdict.no.bypass.short')}</span>`;
+    } else {
+      const lines = Object.entries(verdicts).map(([key, { verdict, dir }]) => {
+        const icon  = verdict === 'AVOID' ? '✕' : verdict === 'PAY' ? '€' : '~';
+        const label = t(`verdict.${verdict.toLowerCase()}`);
+        const sub   = dir ? `+${dir.minutes}${t('routes.min')}` : '';
+        return `<span class="tolls-verdict tolls-verdict-${verdict}" title="${dir?.label || ''}">
+          <span class="tv-arrow">${dirArrow(key)}</span>
+          <span class="tv-icon">${icon}</span>
+          <span class="tv-label">${label}</span>
+          ${sub ? `<span class="tv-sub">${sub}</span>` : ''}
+        </span>`;
+      });
+      verdictHtml = `<span class="tolls-verdict-stack">${lines.join('')}</span>`;
     }
 
     html += `<tr>
@@ -237,11 +314,12 @@ function buildTollsTable() {
         <div class="tolls-name-gr">${secondary}</div>
       </td>
       <td><span class="tolls-hwy-chip"><span class="tolls-hwy-dot" style="background:${hwyColor}"></span>${toll.highway}</span></td>
-      <td><span class="tolls-price">€${(toll.cat1 ?? 0).toFixed(2)}</span></td>
-      <td><span class="tolls-price">€${(toll.cat2 ?? 0).toFixed(2)}</span></td>
-      <td><span class="tolls-price">€${(toll.cat3 ?? 0).toFixed(2)}</span></td>
-      <td><span class="tolls-price">€${(toll.cat4 ?? 0).toFixed(2)}</span></td>
+      <td><span class="tolls-price${catKey === 'cat1' ? ' active' : ''}">€${(toll.cat1 ?? 0).toFixed(2)}</span></td>
+      <td><span class="tolls-price${catKey === 'cat2' ? ' active' : ''}">€${(toll.cat2 ?? 0).toFixed(2)}</span></td>
+      <td><span class="tolls-price${catKey === 'cat3' ? ' active' : ''}">€${(toll.cat3 ?? 0).toFixed(2)}</span></td>
+      <td><span class="tolls-price${catKey === 'cat4' ? ' active' : ''}">€${(toll.cat4 ?? 0).toFixed(2)}</span></td>
       <td>${bypassHtml}</td>
+      <td>${verdictHtml}</td>
     </tr>`;
   });
   tbody.innerHTML = html;
@@ -272,12 +350,14 @@ function buildTollsTable() {
   });
 }
 
-// Wire search and filter inputs (event delegation, runs always)
+// Wire all tolls-page inputs through event delegation
 document.addEventListener('input', e => {
-  if (e.target?.id === 'tolls-search') buildTollsTable();
+  const id = e.target?.id;
+  if (id === 'tolls-search' || id === 'tolls-time-slider') buildTollsTable();
 });
 document.addEventListener('change', e => {
-  if (e.target?.id === 'tolls-highway-filter') buildTollsTable();
+  const id = e.target?.id;
+  if (id === 'tolls-highway-filter' || id === 'tolls-vehicle' || id === 'tolls-avoid-only') buildTollsTable();
 });
 document.addEventListener('click', e => {
   const th = e.target.closest('#tolls-table thead th');

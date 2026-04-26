@@ -215,6 +215,55 @@ function calcVerdict(toll, catKey, timeValue, travelDirection) {
   }
 }
 
+// ── Verdict for a single toll, route-agnostic ─────────────
+// Used by the All Tolls page advisor: picks the shortest bypass direction
+// (most generous case — if even the shortest is "PAY," no direction is
+// worth bypassing) and runs the standard verdict math.
+//
+// Exposed on window so pages.js can call it without re-importing.
+window.calcTollVerdict = function(toll, catKey, timeValue) {
+  const bd = toll.bypass_directions;
+  if (!bd) {
+    return { verdict: 'PAY', dir: null, reasoning: t('verdict.no.bypass') };
+  }
+  // Pick the direction with the fewest extra minutes
+  let bestKey = null, bestMin = Infinity;
+  Object.entries(bd).forEach(([key, d]) => {
+    const m = d?.minutes ?? Infinity;
+    if (m < bestMin) { bestMin = m; bestKey = key; }
+  });
+  if (!bestKey) {
+    return { verdict: 'PAY', dir: null, reasoning: t('verdict.no.bypass') };
+  }
+  return calcVerdict(toll, catKey, timeValue, bestKey);
+};
+
+// ── Per-direction verdicts ────────────────────────────────
+// Returns one verdict per direction in the toll's bypass_directions, so the
+// All Tolls page can show e.g. "AVOID northbound · PAY southbound" instead
+// of collapsing both directions into a single recommendation.
+//
+// Returns { directionKey: { verdict, dir } } — empty object for tolls with
+// no bypass data. The dir object includes minutes, exit_name, entry_name etc.
+window.calcTollVerdictsByDirection = function(toll, catKey, timeValue) {
+  const bd = toll.bypass_directions;
+  if (!bd) return {};
+  const cost   = toll[catKey];
+  const out    = {};
+  Object.entries(bd).forEach(([key, d]) => {
+    if (!d) return;
+    const extra     = d.minutes;
+    const threshold = cost * timeValue;
+    const margin    = threshold * 0.20;
+    let verdict;
+    if (extra <= threshold - margin)      verdict = 'AVOID';
+    else if (extra <= threshold + margin) verdict = 'MARGINAL';
+    else                                  verdict = 'PAY';
+    out[key] = { verdict, dir: d };
+  });
+  return out;
+};
+
 // ── Draw bypass line — uses real OSRM route if exit/entry available,
 //    falls back to legacy `via` waypoints for tolls not yet upgraded ──
 function drawBypassLine(dir, label) {
