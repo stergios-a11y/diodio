@@ -42,9 +42,22 @@ const rpTitle      = document.getElementById('rp-title');
 const rpStats      = document.getElementById('rp-stats');
 const rpBody       = document.getElementById('rp-body');
 
+// Cache the inputs from the most recent analyze() so we can re-render the
+// results panel when the language changes (verdict reasoning strings are
+// language-dependent and pre-computed, so they need regeneration).
+let lastAnalysis = null;
+
 document.getElementById('rp-close').addEventListener('click', () => {
   resultsPanel.classList.remove('open');
   clearRoute();
+  lastAnalysis = null;
+});
+
+// Re-render results in the new language whenever the user toggles el ⇄ en.
+window.addEventListener('langchange', () => {
+  if (lastAnalysis && resultsPanel.classList.contains('open')) {
+    renderResults(lastAnalysis);
+  }
 });
 
 function setLoading(on) {
@@ -302,6 +315,102 @@ Write 1-2 concise sentences of practical advice in the specified language.`,
   .catch(() => {});
 }
 
+// ── Render: everything that depends on language goes here ─────
+// Called from analyze() on first run, and from the langchange listener
+// when the user toggles el ⇄ en after results are already on screen.
+function renderResults(a) {
+  // Recompute verdicts so reasoning strings are in the current language.
+  // calcVerdict is pure local math + t() lookups; cheap to re-run.
+  const results = a.matchedTolls.map(toll => ({
+    toll,
+    ...calcVerdict(toll, a.catKey, a.timeValue, a.travelDir),
+  }));
+
+  // Clear and redraw map markers + bypass lines (their popups and tooltips
+  // contain language-dependent strings).
+  routeMarkers.forEach(m => map.removeLayer(m));
+  routeMarkers = [];
+  bypassLayers.forEach(l => map.removeLayer(l));
+  bypassLayers = [];
+
+  const verdictColors = { PAY: '#b8502d', AVOID: '#2e7a4a', MARGINAL: '#c49320' };
+  const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'en';
+  results.forEach(r => {
+    const color = verdictColors[r.verdict] || '#555';
+    const icon  = L.divIcon({
+      className: '',
+      html: `<div style="width:22px;height:22px;background:${color};border:2.5px solid white;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;font-family:Inter,sans-serif;letter-spacing:-0.02em;">${r.verdict==='PAY'?'€':r.verdict==='AVOID'?'✕':'~'}</div>`,
+      iconSize: [20,20], iconAnchor: [10,10],
+    });
+    const m = L.marker([r.toll.lat, r.toll.lng], { icon, zIndexOffset: 1000 });
+    const popupName = lang === 'el' ? r.toll.name_gr : r.toll.name_en;
+    const popupVerdict = t(`verdict.${r.verdict.toLowerCase()}`);
+    m.bindPopup(`
+      <div class="map-popup">
+        <div class="map-popup-name">${popupName}</div>
+        <div class="map-popup-verdict ${r.verdict}">${popupVerdict} · €${r.toll[a.catKey].toFixed(2)}</div>
+        <div class="map-popup-reason">${r.reasoning}</div>
+      </div>`, { maxWidth: 220 });
+    m.addTo(map);
+    routeMarkers.push(m);
+  });
+
+  results.forEach(r => {
+    if (r.verdict === 'AVOID' && r.dir) {
+      drawBypassLine(r.dir, r.toll.name_en);
+    }
+  });
+
+  // Stats
+  const totalCost  = results.reduce((s, r) => s + r.toll[a.catKey], 0);
+  const savings    = results.filter(r => r.verdict === 'AVOID').reduce((s, r) => s + r.toll[a.catKey], 0);
+  const extraMin   = results.filter(r => r.verdict === 'AVOID' && r.dir).reduce((s, r) => s + r.dir.minutes, 0);
+  const avoidCount = results.filter(r => r.verdict === 'AVOID').length;
+  const payCount   = results.filter(r => r.verdict === 'PAY').length;
+
+  rpTitle.textContent = `${a.origin} → ${a.dest}`;
+  rpStats.innerHTML = `
+    <span class="rp-stat"><span class="rp-stat-label">${t('rp.total')}</span><strong>€${totalCost.toFixed(2)}</strong></span>
+    <span class="rp-stat green"><span class="rp-stat-label">${t('rp.save')}</span><strong>€${savings.toFixed(2)}</strong></span>
+    <span class="rp-stat red"><span class="rp-stat-label">${t('rp.extra')}</span><strong>+${extraMin} ${t('bar.time.label2')}</strong></span>
+    <span class="rp-stat-divider"></span>
+    <span class="rp-stat sm"><span class="rp-stat-label">${t('rp.tolls')}</span><strong>${results.length}</strong></span>
+    <span class="rp-stat sm"><span class="rp-stat-label">${t('verdict.avoid')}</span><strong>${avoidCount}</strong></span>
+    <span class="rp-stat sm"><span class="rp-stat-label">${t('verdict.pay')}</span><strong>${payCount}</strong></span>`;
+
+  let html = `<div class="rp-advice" id="rp-advice-el">${t('rp.advice.loading')}</div>`;
+  html += '<div class="rp-chips">';
+  results.forEach(r => {
+    const bypassInfo = r.dir
+      ? `${t('sp.exit.tag').replace('↙ ', '')}${r.dir.exit_name} · ${t('sp.entry.tag').replace('↗ ', '')}${r.dir.entry_name} · +${r.dir.minutes} ${t('bar.time.label2')}`
+      : t('verdict.no.bypass.short');
+    const verdictLabel = t(`verdict.${r.verdict.toLowerCase()}`);
+    const tollName = stripTollPrefix(lang === 'el' ? r.toll.name_gr : r.toll.name_en);
+    html += `
+      <div class="toll-chip verdict-${r.verdict}"
+        onclick="const el=this.querySelector('.chip-reason');el.style.display=el.style.display==='block'?'none':'block'">
+        <span class="chip-name">${tollName}</span>
+        <span class="chip-price">€${r.toll[a.catKey].toFixed(2)}</span>
+        <span class="chip-verdict">${verdictLabel}</span>
+        <span class="chip-reason">${r.reasoning}<br><small style="opacity:0.7">${bypassInfo}</small></span>
+      </div>`;
+  });
+  html += '</div>';
+  rpBody.innerHTML = html;
+  resultsPanel.classList.add('open');
+
+  // Re-fire AI summary in the new language. The previous fetch's then() may
+  // still resolve and overwrite this one, but renderResults() resets the
+  // loading text first, so worst case the user briefly sees the old summary.
+  const catKeyLabel = {
+    cat1: t('bar.moto').replace('🏍 ','').trim(),
+    cat2: t('bar.car').replace('🚗 ','').trim(),
+    cat3: t('bar.van').replace('🚐 ','').trim(),
+    cat4: t('bar.truck').replace('🚛 ','').trim(),
+  }[a.catKey];
+  fetchAISummary(a.origin, a.dest, results, catKeyLabel, savings, extraMin);
+}
+
 // ── Main analyze ──────────────────────────────────────────
 async function analyze() {
   const origin    = document.getElementById('origin').value.trim();
@@ -314,6 +423,7 @@ async function analyze() {
   clearError();
   clearRoute();
   resultsPanel.classList.remove('open');
+  lastAnalysis = null;
   setLoading(true);
 
   try {
@@ -344,91 +454,15 @@ async function analyze() {
       return;
     }
 
-    // 6. Calculate verdicts using pre-computed bypass data
+    // 6. Resolve vehicle category and stash inputs for re-render on lang toggle
     const catKey = {
       motorcycle: 'cat1', car: 'cat2', lighttruck: 'cat3', heavytruck: 'cat4',
     }[vehicle];
 
-    const results = matchedTolls.map(toll => ({
-      toll,
-      ...calcVerdict(toll, catKey, timeValue, travelDir),
-    }));
+    lastAnalysis = { origin, dest, matchedTolls, catKey, timeValue, travelDir };
 
-    // 7. Draw verdict markers
-    const verdictColors = { PAY: '#b8502d', AVOID: '#2e7a4a', MARGINAL: '#c49320' };
-    results.forEach(r => {
-      const color = verdictColors[r.verdict] || '#555';
-      const icon  = L.divIcon({
-        className: '',
-        html: `<div style="width:22px;height:22px;background:${color};border:2.5px solid white;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;font-family:Inter,sans-serif;letter-spacing:-0.02em;">${r.verdict==='PAY'?'€':r.verdict==='AVOID'?'✕':'~'}</div>`,
-        iconSize: [20,20], iconAnchor: [10,10],
-      });
-      const m = L.marker([r.toll.lat, r.toll.lng], { icon, zIndexOffset: 1000 });
-      const popupLang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'en';
-      const popupName = popupLang === 'el' ? r.toll.name_gr : r.toll.name_en;
-      const popupVerdict = t(`verdict.${r.verdict.toLowerCase()}`);
-      m.bindPopup(`
-        <div class="map-popup">
-          <div class="map-popup-name">${popupName}</div>
-          <div class="map-popup-verdict ${r.verdict}">${popupVerdict} · €${r.toll[catKey].toFixed(2)}</div>
-          <div class="map-popup-reason">${r.reasoning}</div>
-        </div>`, { maxWidth: 220 });
-      m.addTo(map);
-      routeMarkers.push(m);
-    });
-
-    // 8. Draw green bypass lines for AVOID tolls
-    results.forEach(r => {
-      if (r.verdict === 'AVOID' && r.dir) {
-        drawBypassLine(r.dir, r.toll.name_en);
-      }
-    });
-
-    // 9. Stats
-    const totalCost = results.reduce((s, r) => s + r.toll[catKey], 0);
-    const savings   = results.filter(r => r.verdict === 'AVOID').reduce((s, r) => s + r.toll[catKey], 0);
-    const extraMin  = results.filter(r => r.verdict === 'AVOID' && r.dir).reduce((s, r) => s + r.dir.minutes, 0);
-
-    // 10. Render results panel
-    rpTitle.textContent = `${origin} → ${dest}`;
-    const avoidCount = results.filter(r => r.verdict === 'AVOID').length;
-    const payCount   = results.filter(r => r.verdict === 'PAY').length;
-    rpStats.innerHTML = `
-      <span class="rp-stat"><span class="rp-stat-label">${t('rp.total')}</span><strong>€${totalCost.toFixed(2)}</strong></span>
-      <span class="rp-stat green"><span class="rp-stat-label">${t('rp.save')}</span><strong>€${savings.toFixed(2)}</strong></span>
-      <span class="rp-stat red"><span class="rp-stat-label">${t('rp.extra')}</span><strong>+${extraMin} ${t('bar.time.label2')}</strong></span>
-      <span class="rp-stat-divider"></span>
-      <span class="rp-stat sm"><span class="rp-stat-label">${t('rp.tolls')}</span><strong>${results.length}</strong></span>
-      <span class="rp-stat sm"><span class="rp-stat-label">${t('verdict.avoid')}</span><strong>${avoidCount}</strong></span>
-      <span class="rp-stat sm"><span class="rp-stat-label">${t('verdict.pay')}</span><strong>${payCount}</strong></span>`;
-
-    // AI advice goes FIRST, then chips
-    let html = `<div class="rp-advice" id="rp-advice-el">${t('rp.advice.loading')}</div>`;
-    html += '<div class="rp-chips">';
-    results.forEach(r => {
-      const bypassInfo = r.dir
-        ? `${t('sp.exit.tag').replace('↙ ', '')}${r.dir.exit_name} · ${t('sp.entry.tag').replace('↗ ', '')}${r.dir.entry_name} · +${r.dir.minutes} ${t('bar.time.label2')}`
-        : t('verdict.no.bypass.short');
-      const verdictKey = `verdict.${r.verdict.toLowerCase()}`;
-      const verdictLabel = t(verdictKey);
-      const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'en';
-      const tollName = stripTollPrefix(lang === 'el' ? r.toll.name_gr : r.toll.name_en);
-      html += `
-        <div class="toll-chip verdict-${r.verdict}"
-          onclick="const el=this.querySelector('.chip-reason');el.style.display=el.style.display==='block'?'none':'block'">
-          <span class="chip-name">${tollName}</span>
-          <span class="chip-price">€${r.toll[catKey].toFixed(2)}</span>
-          <span class="chip-verdict">${verdictLabel}</span>
-          <span class="chip-reason">${r.reasoning}<br><small style="opacity:0.7">${bypassInfo}</small></span>
-        </div>`;
-    });
-    html += '</div>';
-    rpBody.innerHTML = html;
-    resultsPanel.classList.add('open');
-
-    // 11. AI summary (async, non-blocking)
-    const catKeyLabel = { cat1: t('bar.moto').replace('🏍 ','').trim(), cat2: t('bar.car').replace('🚗 ','').trim(), cat3: t('bar.van').replace('🚐 ','').trim(), cat4: t('bar.truck').replace('🚛 ','').trim() }[catKey];
-    fetchAISummary(origin, dest, results, catKeyLabel, savings, extraMin);
+    // 7. Render everything (markers, bypass lines, panel, AI summary)
+    renderResults(lastAnalysis);
 
   } catch (err) {
     showError(err.message);

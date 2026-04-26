@@ -250,12 +250,15 @@ body {
 
 /* ══════════════════════════════════════
    TOLL NAME LABELS — refined
+   Soft mint pill in resting state, deep motorway-sign green when active.
+   Echoes the Greek motorway signage in both states; default is muted so
+   ~50 labels don't dominate the map, active is bold so it pops.
    ══════════════════════════════════════ */
 .toll-name-label {
   display: inline-block;
-  background: rgba(255,253,247,0.97);
-  border: 1px solid rgba(0,0,0,0.1);
-  color: var(--ink);
+  background: rgba(214,233,218,0.95);
+  border: 1px solid rgba(85,140,100,0.35);
+  color: #1f5828;
   font-family: var(--font-body);
   font-weight: 600;
   font-style: normal;
@@ -265,8 +268,8 @@ body {
   border-radius: 999px;
   white-space: nowrap;
   box-shadow:
-    0 1px 2px rgba(0,0,0,0.08),
-    0 3px 8px rgba(0,0,0,0.06);
+    0 1px 2px rgba(31,88,40,0.10),
+    0 3px 8px rgba(31,88,40,0.06);
   cursor: pointer;
   transform: translateX(-50%) translateY(-7px);
   text-rendering: optimizeLegibility;
@@ -278,11 +281,12 @@ body {
 .toll-name-label:hover {
   transform: translateX(-50%) translateY(-9px);
   box-shadow:
-    0 2px 4px rgba(0,0,0,0.12),
-    0 6px 16px rgba(0,0,0,0.12);
-  background: #ffffff;
+    0 2px 4px rgba(31,88,40,0.16),
+    0 6px 16px rgba(31,88,40,0.14);
+  background: rgba(197,224,203,0.98);
+  border-color: rgba(85,140,100,0.55);
 }
-/* Active state: green pill (motorway sign) */
+/* Active state: deep motorway-sign green */
 .toll-name-label.active {
   background: linear-gradient(180deg, #2a6e35 0%, #1f5828 100%);
   border-color: rgba(255,255,255,0.95);
