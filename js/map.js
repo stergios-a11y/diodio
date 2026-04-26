@@ -983,10 +983,12 @@ function updateRampsVisibility() {
 function updateTollNamesVisibility() {
   const zoomedIn = map.getZoom() >= ZOOM_THRESHOLD_TOLLNAMES;
   tollNameMarkers.forEach(({ marker, toll }) => {
-    // Side toll labels follow the same toggle as their dots.
+    // Side tolls never get name labels — the booths cluster too tight at any zoom
+    // (155-365m apart at the same interchange). Hover tooltip and side panel
+    // already convey the name, so labels would only clutter the map.
     const isSide = toll.type === 'side';
-    const allowed = !isSide || sideTollsVisible;
-    if (zoomedIn && allowed) {
+    const allowed = !isSide && zoomedIn;
+    if (allowed) {
       if (!map.hasLayer(marker)) marker.addTo(map);
     } else {
       if (map.hasLayer(marker))  map.removeLayer(marker);
@@ -1038,7 +1040,6 @@ document.getElementById('side-tolls-toggle').addEventListener('click', function(
       map.removeLayer(marker);
     }
   });
-  updateTollNamesVisibility();
 });
 
 // ── Toll names layer (labels above each toll marker) — always on, zoom-aware ──
@@ -1047,12 +1048,15 @@ const tollNameMarkers = [];
 function buildLabelHtml(toll) {
   const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
   const short = stripTollPrefix(name);
-  const sideClass = toll.type === 'side' ? ' toll-name-label-side' : '';
-  return `<div class="toll-name-label${sideClass}">${short}</div>`;
+  return `<div class="toll-name-label">${short}</div>`;
 }
 
 function buildTollNameMarkers() {
   TOLL_DATA.forEach(toll => {
+    // Side tolls never show name labels (clusters too tight). Skip creating
+    // their label markers entirely — the dot's hover tooltip handles naming.
+    if (toll.type === 'side') return;
+
     const icon = L.divIcon({
       className: '',
       html: buildLabelHtml(toll),
@@ -1089,15 +1093,15 @@ function updateTollNameLabels() {
 
 // Mark a toll as active (label = green pill, dot = green) — call when toll is selected
 function setActiveTollLabel(activeTollId) {
-  // Update labels
+  // Update labels (tollNameMarkers contains only frontals — side tolls
+  // were skipped in buildTollNameMarkers).
   tollNameMarkers.forEach(({ marker, toll }) => {
     const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
     const short = stripTollPrefix(name);
     const isActive = toll.id === activeTollId;
-    const sideClass = toll.type === 'side' ? ' toll-name-label-side' : '';
     marker.setIcon(L.divIcon({
       className: '',
-      html: `<div class="toll-name-label${isActive ? ' active' : ''}${sideClass}">${short}</div>`,
+      html: `<div class="toll-name-label${isActive ? ' active' : ''}">${short}</div>`,
       iconSize: [null, null], iconAnchor: [0, -10],
     }));
   });
