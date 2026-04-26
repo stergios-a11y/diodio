@@ -235,6 +235,57 @@ function closeSidePanel() {
   setTimeout(() => map.invalidateSize(), 320);
 }
 
+// ── Direction-of-travel arrow helpers ──────────────────────────────────
+//
+// When the user opens a toll's side panel, we draw two routes (bypass +
+// highway). To make direction unambiguous, we drop a small chevron arrow
+// at the midpoint of each route, rotated to point along the direction of
+// travel (from exit toward entry).
+
+// Compass bearing in degrees (0 = north, 90 = east, 180 = south, 270 = west)
+// from point a to point b. Standard great-circle bearing formula.
+function bearingDeg(a, b) {
+  const toRad = d => d * Math.PI / 180;
+  const toDeg = r => r * 180 / Math.PI;
+  const φ1 = toRad(a.lat), φ2 = toRad(b.lat);
+  const Δλ = toRad(b.lng - a.lng);
+  const y  = Math.sin(Δλ) * Math.cos(φ2);
+  const x  = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
+// Given a polyline (array of [lat, lng] pairs), find the midpoint by
+// array index plus the local bearing at that point. For routes with
+// reasonably even waypoint spacing (Mapbox output) this approximates
+// the cumulative-distance midpoint well enough.
+function polylineMidpointAndBearing(coords) {
+  if (!coords || coords.length < 2) return null;
+  const midIdx = Math.floor(coords.length / 2);
+  const a = { lat: coords[midIdx - 1][0], lng: coords[midIdx - 1][1] };
+  const b = { lat: coords[midIdx][0],     lng: coords[midIdx][1] };
+  // Midpoint as the average of the two surrounding waypoints
+  const mid = [(a.lat + b.lat) / 2, (a.lng + b.lng) / 2];
+  return { latlng: mid, bearing: bearingDeg(a, b) };
+}
+
+// Rotated arrow icon. Rotation is applied via CSS transform.
+// Uses a filled triangle (▲) anchored at center; a chevron `^` reads as
+// ambiguous (could be a peak), but a solid triangle clearly says
+// "this is the direction of travel."
+function makeDirectionArrow(bearing, colorClass) {
+  return L.divIcon({
+    className: `dir-arrow-wrap ${colorClass}`,
+    html: `<div class="dir-arrow" style="transform:rotate(${bearing}deg)">
+      <svg viewBox="0 0 24 24" width="22" height="22">
+        <polygon points="12,3 20,20 12,16 4,20" fill="currentColor" stroke="white" stroke-width="1.2" stroke-linejoin="round" />
+      </svg>
+    </div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  });
+}
+
+
 // EXIT sign icon — auto-sized so any language fits, includes place name
 function makeExitIcon(placeName) {
   const nameHtml = placeName
@@ -297,6 +348,15 @@ function openSidePanel(toll) {
 
       const lineColor = dirColors[i % dirColors.length];
 
+      // Initial bearing along straight-line placeholder (exit → entry).
+      // We update both the position and rotation when Mapbox returns real
+      // routes, so the arrow follows the actual road geometry.
+      const placeholderBearing = bearingDeg(dir.exit, dir.entry);
+      const placeholderMid = [
+        (dir.exit.lat + dir.entry.lat) / 2,
+        (dir.exit.lng + dir.entry.lng) / 2,
+      ];
+
       // ─── Bypass line (local roads, green/teal) ───
       const placeholderCoords = [[dir.exit.lat, dir.exit.lng], [dir.entry.lat, dir.entry.lng]];
       const bypassLine = L.polyline(placeholderCoords, {
@@ -310,6 +370,16 @@ function openSidePanel(toll) {
       bypassLine._dirKey = key;
       inspectLayers.push(bypassLine);
 
+      // Direction-of-travel arrow on the bypass line (offset slightly so it
+      // doesn't overlap the highway arrow at low zoom)
+      const bypassArrow = L.marker(placeholderMid, {
+        icon: makeDirectionArrow(placeholderBearing, 'dir-arrow-bypass'),
+        zIndexOffset: 500,
+        interactive: false,
+      }).addTo(map);
+      bypassArrow._dirKey = key;
+      inspectLayers.push(bypassArrow);
+
       // ─── Highway segment line (motorway, dashed Aegean blue) ───
       const highwayLine = L.polyline(placeholderCoords, {
         color: '#2a6b9e', weight: 3.5, opacity: 0.4, dashArray: '4 6',
@@ -322,6 +392,23 @@ function openSidePanel(toll) {
       highwayLine._dirKey = key;
       inspectLayers.push(highwayLine);
 
+      // Direction-of-travel arrow on the highway line
+      const highwayArrow = L.marker(placeholderMid, {
+        icon: makeDirectionArrow(placeholderBearing, 'dir-arrow-highway'),
+        zIndexOffset: 500,
+        interactive: false,
+      }).addTo(map);
+      highwayArrow._dirKey = key;
+      inspectLayers.push(highwayArrow);
+
+      // Helper to reposition + rotate an arrow once we have real route geometry
+      function updateArrow(arrow, coords, colorClass) {
+        const mb = polylineMidpointAndBearing(coords);
+        if (!mb) return;
+        arrow.setLatLng(mb.latlng);
+        arrow.setIcon(makeDirectionArrow(mb.bearing, colorClass));
+      }
+
       // Fetch BOTH routes in parallel
       Promise.all([
         fetchRoute(dir.exit, dir.entry, 'bypass', dir.bypass_via),
@@ -330,10 +417,12 @@ function openSidePanel(toll) {
         if (bypassRes && bypassRes.coords.length > 1) {
           bypassLine.setLatLngs(bypassRes.coords);
           bypassLine.setStyle({ opacity: 0.9, dashArray: null });
+          updateArrow(bypassArrow, bypassRes.coords, 'dir-arrow-bypass');
         }
         if (highwayRes && highwayRes.coords.length > 1) {
           highwayLine.setLatLngs(highwayRes.coords);
           highwayLine.setStyle({ opacity: 0.7, dashArray: null });
+          updateArrow(highwayArrow, highwayRes.coords, 'dir-arrow-highway');
         }
         updateDirStats(toll.id, key, bypassRes, highwayRes);
       });

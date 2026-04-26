@@ -340,6 +340,30 @@ body {
 .ramp-sign-entry { background: #2e7a4a; }   /* go green for RE-ENTER */
 
 /* ══════════════════════════════════════
+   DIRECTION-OF-TRAVEL ARROWS ON BYPASS / HIGHWAY LINES
+   Dropped at the midpoint of each route line, rotated to match the bearing
+   of travel. Colors match the line they sit on so the user can tell at a
+   glance which arrow belongs to which route.
+   ══════════════════════════════════════ */
+.dir-arrow-wrap {
+  background: transparent;
+  border: none;
+  pointer-events: none;
+}
+.dir-arrow {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+  transform-origin: center center;
+}
+.dir-arrow svg { display: block; }
+.dir-arrow-bypass  { color: #2e7a4a; }   /* match the green bypass line */
+.dir-arrow-highway { color: #2a6b9e; }   /* match the blue highway line */
+
+/* ══════════════════════════════════════
    RAMPS TOGGLE INSIDE LEGEND
    ══════════════════════════════════════ */
 .legend-divider {
