@@ -188,10 +188,12 @@
     </select>
     <div class="bar-sep"></div>
     <div class="tv-compact">
-      <span class="lbl" data-i18n="bar.time.label1">€1 =</span>
-      <span class="val" id="tv-val">10</span>
-      <span class="lbl" data-i18n="bar.time.label2">λεπ</span>
-      <input type="range" id="tv-slider" min="2" max="30" value="10" step="1" />
+      <div class="tv-compact-sentence">
+        <span class="lbl" data-i18n="bar.time.prefix">Θα οδηγούσα</span>
+        <span class="val" id="tv-val">10</span>
+        <span class="lbl lbl-suffix" data-i18n="bar.time.suffix">επιπλέον λεπτά για να γλιτώσω €1 σε διόδια</span>
+      </div>
+      <input type="range" id="tv-slider" min="2" max="15" value="10" step="1" />
     </div>
     <div class="bar-sep"></div>
     <button class="analyse-btn" id="analyse-btn" onclick="analyze()">
