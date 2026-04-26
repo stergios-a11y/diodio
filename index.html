@@ -110,16 +110,9 @@
       <div class="help-section">
         <div class="help-section-icon">◆</div>
         <div class="help-section-content">
-          <div class="help-section-title" data-i18n="help.section1.title">Εξερεύνηση σταθμού διοδίων</div>
+          <div class="help-section-title" data-i18n="help.section1.title">Εξερεύνησε τα διόδια</div>
           <div class="help-section-body">
-            <span data-i18n-html="help.section1.intro">Κάθε τετραγωνικό σημείο στον χάρτη είναι σταθμός διοδίων.</span>
-            <ul>
-              <li data-i18n="help.section1.item1">Τιμές για 4 κατηγορίες οχημάτων</li>
-              <li data-i18n="help.section1.item2">Σε ποια κατεύθυνση πληρώνεις</li>
-              <li data-i18n="help.section1.item3">Επιλογές παράκαμψης</li>
-              <li data-i18n="help.section1.item4">Η διαδρομή παράκαμψης σε πράσινο</li>
-            </ul>
-            <span data-i18n="help.section1.close">Κλικ οπουδήποτε στον χάρτη για κλείσιμο.</span>
+            <span data-i18n="help.section1.intro">Κλικ σε οποιοδήποτε διόδιο στον χάρτη για τιμές και διαδρομή παράκαμψης.</span>
           </div>
         </div>
       </div>
@@ -129,28 +122,22 @@
       <div class="help-section">
         <div class="help-section-icon">⊕</div>
         <div class="help-section-content">
-          <div class="help-section-title" data-i18n="help.section2.title">Ανάλυση διαδρομής</div>
+          <div class="help-section-title" data-i18n="help.section2.title">Ανάλυσε τη διαδρομή σου</div>
           <div class="help-section-body">
-            <span data-i18n="help.section2.intro">Χρησιμοποίησε τη γραμμή στο κάτω μέρος.</span>
-            <ol>
-              <li data-i18n-html="help.section2.item1">Εισάγαγε <strong>αφετηρία</strong> και <strong>προορισμό</strong></li>
-              <li data-i18n-html="help.section2.item2">Επίλεξε <strong>τύπο οχήματος</strong></li>
-              <li data-i18n-html="help.section2.item3">Όρισε την <strong>αξία χρόνου</strong></li>
-              <li data-i18n-html="help.section2.item4">Πάτησε <strong>Ανάλυση</strong></li>
-            </ol>
-            <span data-i18n="help.section2.outro">Η εφαρμογή σχεδιάζει τη διαδρομή σου.</span>
-            <span style="color:#2d7a3a;font-weight:600;" data-i18n="help.legend.avoid">Πράσινο = παράκαμψη</span>,
-            <span style="color:#1a4a8a;font-weight:600;" data-i18n="help.legend.pay">μπλε = πλήρωσε</span>,
-            <span style="color:#b8860b;font-weight:600;" data-i18n="help.legend.marginal">κίτρινο = οριακό</span>.
+            <span data-i18n="help.section2.intro">Στη γραμμή κάτω: όρισε αφετηρία/προορισμό, όχημα, και πόσα λεπτά είσαι διατεθειμένος να οδηγήσεις παραπάνω για να γλιτώσεις €1.</span>
+            <span data-i18n="help.section2.outro">Πατάς Ανάλυση και βλέπεις ποια διόδια αξίζει να πληρώσεις και ποια να παρακάμψεις.</span>
+            <div class="help-legend-row">
+              <span style="color:#2d7a3a;font-weight:600;" data-i18n="help.legend.avoid">Πράσινο = απόφυγε</span>
+              <span style="color:#1a4a8a;font-weight:600;" data-i18n="help.legend.pay">μπλε = πλήρωσε</span>
+              <span style="color:#b8860b;font-weight:600;" data-i18n="help.legend.marginal">κίτρινο = οριακό</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="help-divider"></div>
+      <div class="help-tip" data-i18n="help.tip">💡 Πάντα επιβεβαίωσε στο Google Maps πριν ακολουθήσεις άγνωστη παράκαμψη.</div>
 
-      <div class="help-tip" data-i18n-html="help.tip">💡 <strong>Συμβουλή:</strong> Οι διαδρομές παράκαμψης βασίζονται στον Οδηγό Αποφυγής Διοδίων 2026.</div>
-
-      <button class="help-cta" id="help-close-btn" data-i18n="help.cta">Εντάξει, δείξε μου τον χάρτη</button>
+      <button class="help-cta" id="help-close-btn" data-i18n="help.cta">Εντάξει</button>
     </div>
   </div>
 
@@ -189,9 +176,11 @@
     <div class="bar-sep"></div>
     <div class="tv-compact">
       <div class="tv-compact-sentence">
-        <span class="lbl" data-i18n="bar.time.prefix">Θα οδηγούσα</span>
+        <span class="lbl tv-desktop" data-i18n="bar.time.prefix">Θα οδηγούσα</span>
+        <span class="lbl tv-mobile" data-i18n="bar.time.short.prefix">Δεκτή παράκαμψη:</span>
         <span class="val" id="tv-val">10</span>
-        <span class="lbl lbl-suffix" data-i18n="bar.time.suffix">επιπλέον λεπτά για να γλιτώσω €1 σε διόδια</span>
+        <span class="lbl lbl-suffix tv-desktop" data-i18n="bar.time.suffix">επιπλέον λεπτά για να γλιτώσω €1 σε διόδια</span>
+        <span class="lbl lbl-suffix tv-mobile" data-i18n="bar.time.short.suffix">λεπ. ανά €1</span>
       </div>
       <input type="range" id="tv-slider" min="2" max="15" value="10" step="1" />
     </div>
