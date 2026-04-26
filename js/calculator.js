@@ -8,7 +8,23 @@
 // ── Slider ────────────────────────────────────────────────
 const slider = document.getElementById('tv-slider');
 const tvVal  = document.getElementById('tv-val');
-slider.addEventListener('input', () => { tvVal.textContent = slider.value; });
+const tvTier = document.getElementById('tv-tier');
+
+// Map slider value (2..15) to a semantic tier so users can see the meaning
+// of the number, not just the number itself.
+function sliderTierKey(n) {
+  if (n <= 3)  return 'bar.time.tier.hurry';
+  if (n <= 6)  return 'bar.time.tier.balanced';
+  if (n <= 11) return 'bar.time.tier.thrifty';
+  return 'bar.time.tier.frugal';
+}
+function updateSliderUI() {
+  tvVal.textContent = slider.value;
+  if (tvTier) tvTier.textContent = `· ${t(sliderTierKey(parseInt(slider.value)))}`;
+}
+slider.addEventListener('input', updateSliderUI);
+window.addEventListener('langchange', updateSliderUI);
+updateSliderUI();
 
 // ── Swap button ───────────────────────────────────────────
 document.getElementById('swap-btn').addEventListener('click', () => {
@@ -58,11 +74,55 @@ function clearRoute() {
 }
 
 // ── Geocode via Nominatim ─────────────────────────────────
+// On failure, try to suggest a known city from the CITIES list before
+// surfacing the raw error. Most failures are typos on city names that
+// already appear in the routes matrix.
+function suggestCity(name) {
+  if (typeof CITIES === 'undefined' || !name) return null;
+  const lower = name.toLowerCase().trim();
+  if (!lower) return null;
+
+  // Exact substring match first (handles partial names like "θεσσαλον")
+  for (const c of CITIES) {
+    const gr = (c.name_gr || '').toLowerCase();
+    const en = (c.name_en || '').toLowerCase();
+    if (gr.startsWith(lower) || en.startsWith(lower)) return c;
+    if (gr.includes(lower) || en.includes(lower))   return c;
+  }
+
+  // Single-edit-distance fallback (one wrong, missing, or extra letter)
+  // Cheap and good enough at this dataset size.
+  const within1 = (a, b) => {
+    if (a === b) return true;
+    if (Math.abs(a.length - b.length) > 1) return false;
+    let i = 0, j = 0, edits = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { i++; j++; continue; }
+      if (++edits > 1) return false;
+      if (a.length > b.length) i++;
+      else if (b.length > a.length) j++;
+      else { i++; j++; }
+    }
+    return edits + (a.length - i) + (b.length - j) <= 1;
+  };
+  for (const c of CITIES) {
+    if (within1((c.name_gr || '').toLowerCase(), lower)) return c;
+    if (within1((c.name_en || '').toLowerCase(), lower)) return c;
+  }
+  return null;
+}
+
 async function geocode(name) {
+  const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name + ', Greece')}&format=json&limit=1`;
-  const r = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+  const r = await fetch(url, { headers: { 'Accept-Language': lang === 'el' ? 'el,en' : 'en' } });
   const d = await r.json();
-  if (!d.length) throw new Error(`Could not find "${name}" on the map`);
+  if (!d.length) {
+    // Before giving up, try to map the typed name to a known city.
+    const hit = suggestCity(name);
+    if (hit) return { lat: hit.lat, lng: hit.lng };
+    throw new Error(t('err.geocode', { name }));
+  }
   return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
 }
 

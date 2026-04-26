@@ -1139,6 +1139,15 @@ body {
   flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(42,107,158,0.3);
 }
+.tv-compact .tv-tier {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.74rem;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.005em;
+}
 .tv-compact input[type="range"] {
   width: 110px;
   flex-shrink: 0;
@@ -1995,6 +2004,19 @@ input[type="range"]::-moz-range-thumb {
   .tolls-table { font-size: 0.78rem; }
   .tolls-table thead th, .tolls-table tbody td { padding: 8px 10px; }
 }
+/* Below 640px: collapse the routes matrix to price-only cells.
+   The km/tolls/€-per-km detail makes cells unreadable when forced into a
+   16-wide horizontally scrolling table on phones. Tap a cell to jump to
+   the map view where the full breakdown is shown. */
+@media (max-width: 640px) {
+  .routes-cell { min-width: 64px; padding: 8px 6px; }
+  .routes-cell .rc-meta,
+  .routes-cell .rc-perkm { display: none; }
+  .routes-cell .rc-price { font-size: 0.82rem; }
+  .routes-grid-table th, .routes-grid-table td { padding: 5px 6px; }
+  .routes-grid-table tbody th { font-size: 0.7rem; padding-left: 8px; padding-right: 8px; }
+  .routes-grid-table thead th { font-size: 0.62rem; }
+}
 @media (max-width: 640px) {
   .topbar-tagline { display: none; }
   .topbar-sep     { display: none; }
@@ -2161,6 +2183,7 @@ input[type="range"]::-moz-range-thumb {
 @media (max-width: 400px) {
   .bar-input { font-size: 0.82rem; }
   .bar-select { font-size: 0.77rem; }
+  .tv-compact .tv-tier { display: none; }
 }
 
 /* ══════════════════════════════════════
