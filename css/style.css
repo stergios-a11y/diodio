@@ -1666,7 +1666,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .routes-grid-table th,
 .routes-grid-table td {
-  padding: 8px 12px;
+  padding: 6px 9px;
   text-align: center;
   border-right: 1px solid rgba(0,0,0,0.04);
   border-bottom: 1px solid rgba(0,0,0,0.04);
@@ -1675,15 +1675,15 @@ input[type="range"]::-moz-range-thumb {
 .routes-grid-table thead th {
   position: sticky; top: 0;
   background: var(--paper-2);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 0.76rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.7rem;
   color: var(--ink);
-  letter-spacing: 0.005em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   white-space: nowrap;
   z-index: 5;
-  height: 60px;
+  height: 44px;
 }
 .routes-grid-table thead th.routes-corner {
   background: var(--paper-2);
@@ -1692,13 +1692,12 @@ input[type="range"]::-moz-range-thumb {
 .routes-grid-table tbody th {
   position: sticky; left: 0;
   background: var(--paper-2);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 0.82rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.74rem;
   color: var(--ink);
   text-align: left;
-  padding-left: 16px;
+  padding-left: 12px;
   white-space: nowrap;
   border-right: 1px solid var(--line);
   z-index: 4;
@@ -1706,6 +1705,7 @@ input[type="range"]::-moz-range-thumb {
 .routes-cell {
   cursor: pointer;
   transition: background 0.12s;
+  min-width: 92px;
 }
 .routes-cell:hover { background: var(--aegean-lt); }
 .routes-cell-empty {
@@ -1719,24 +1719,33 @@ input[type="range"]::-moz-range-thumb {
   pointer-events: none;
 }
 .routes-cell .rc-price {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.92rem;
   letter-spacing: -0.02em;
   color: var(--ink);
-  font-variation-settings: "opsz" 144;
+  line-height: 1.1;
 }
 .routes-cell .rc-meta {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
   color: var(--muted);
   margin-top: 2px;
   white-space: nowrap;
+  letter-spacing: 0;
+}
+.routes-cell .rc-perkm {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--aegean);
+  margin-top: 1px;
+  white-space: nowrap;
+  font-weight: 500;
 }
 .routes-cell-na {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-style: italic;
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   color: var(--muted);
 }
 
@@ -1758,20 +1767,53 @@ input[type="range"]::-moz-range-thumb {
   background: var(--paper-2);
   padding: 12px 14px;
   text-align: left;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 0.82rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.7rem;
   color: var(--ink-2);
-  letter-spacing: 0.005em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   border-bottom: 1px solid var(--line);
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
+  position: relative;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
 }
-.tolls-table thead th:hover { color: var(--aegean); }
-.tolls-table thead th.sorted-asc::after  { content: ' ↑'; color: var(--aegean); }
-.tolls-table thead th.sorted-desc::after { content: ' ↓'; color: var(--aegean); }
+.tolls-table thead th[data-sort]::after {
+  content: ' ⇅';
+  font-size: 0.85em;
+  color: var(--ink-3);
+  opacity: 0.45;
+  margin-left: 4px;
+  transition: opacity 0.15s var(--ease), color 0.15s var(--ease);
+  letter-spacing: 0;
+}
+.tolls-table thead th[data-sort]:hover {
+  background: var(--paper);
+  color: var(--aegean-dark);
+}
+.tolls-table thead th[data-sort]:hover::after { opacity: 1; color: var(--aegean); }
+.tolls-table thead th.sorted-asc {
+  color: var(--aegean-dark);
+  background: var(--aegean-lt);
+}
+.tolls-table thead th.sorted-asc::after  {
+  content: ' ↑';
+  color: var(--aegean);
+  opacity: 1;
+  font-weight: 700;
+}
+.tolls-table thead th.sorted-desc {
+  color: var(--aegean-dark);
+  background: var(--aegean-lt);
+}
+.tolls-table thead th.sorted-desc::after {
+  content: ' ↓';
+  color: var(--aegean);
+  opacity: 1;
+  font-weight: 700;
+}
 .tolls-table tbody tr {
   border-bottom: 1px solid rgba(0,0,0,0.05);
   transition: background 0.12s;

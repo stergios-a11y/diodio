@@ -115,12 +115,15 @@ function buildRoutesGrid() {
       } else if (cell.tollCount === 0) {
         html += `<td class="routes-cell" data-from="${fromCity.id}" data-to="${toCity.id}">
           <div class="rc-price">€0</div>
-          <div class="rc-meta">${cell.km}km · ${fmtTime(cell.min)}</div>
+          <div class="rc-meta">${cell.km}km</div>
+          <div class="rc-perkm">€0/km</div>
         </td>`;
       } else {
+        const perKm = cell.km > 0 ? (cell.cost / cell.km) : 0;
         html += `<td class="routes-cell" data-from="${fromCity.id}" data-to="${toCity.id}">
           <div class="rc-price">€${cell.cost.toFixed(2)}</div>
-          <div class="rc-meta">${cell.tollCount} ${cell.tollCount === 1 ? t('routes.toll') : t('routes.tolls')} · ${cell.km}km · ${fmtTime(cell.min)}</div>
+          <div class="rc-meta">${cell.tollCount} ${cell.tollCount === 1 ? t('routes.toll') : t('routes.tolls')} · ${cell.km}km</div>
+          <div class="rc-perkm">€${perKm.toFixed(3)}/km</div>
         </td>`;
       }
     });
