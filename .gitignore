@@ -1,0 +1,8 @@
+# Backups created by curate-ramps.js and other one-shot scripts
+data/*.bak
+
+# Resume state for the curation tool — local-only progress
+tools/.curation-progress.json
+
+# macOS Finder noise
+.DS_Store

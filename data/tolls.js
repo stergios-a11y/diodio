@@ -34,24 +34,24 @@ const TOLL_DATA = [
       north: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Αγ. Στεφάνου", entry_name: "Πολυδενδρίου",
-        pre_exit:   { lat: 38.139403, lng: 23.843396 },
-        off_ramp:   { lat: 38.138400, lng: 23.864450 },
-        on_ramp:    { lat: 38.214850, lng: 23.863100 },
-        post_merge: { lat: 38.221824, lng: 23.851825 },
+        pre_exit:   { lat: 38.13631451771822, lng: 23.841738538691523 },
+        off_ramp:   { lat: 38.13833823155696, lng: 23.843249742760467 },
+        on_ramp:    { lat: 38.202404734112505, lng: 23.85462956758912 },
+        post_merge: { lat: 38.206819131930764, lng: 23.855254234010836 },
         minutes: 12,
         via: [{ lat: 38.13840, lng: 23.86445 },{ lat: 38.155, lng: 23.862 },{ lat: 38.176, lng: 23.855 },{ lat: 38.21485, lng: 23.86310 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
       south: {
         label: "Southbound (towards Athens)",
         exit_name: "Πολυδενδρίου", entry_name: "Αγ. Στεφάνου",
-        pre_exit:   { lat: 38.221765, lng: 23.851588 },
-        off_ramp:   { lat: 38.214850, lng: 23.863100 },
-        on_ramp:    { lat: 38.138400, lng: 23.864450 },
-        post_merge: { lat: 38.139520, lng: 23.843192 },
+        pre_exit:   { lat: 38.20627367700232, lng: 23.85497115527781 },
+        off_ramp:   { lat: 38.20230326448211, lng: 23.853767843828077 },
+        on_ramp:    { lat: 38.13859494242029, lng: 23.842336167071487 },
+        post_merge: { lat: 38.13685726142458, lng: 23.84182068410737 },
         minutes: 12,
         via: [{ lat: 38.21485, lng: 23.86310 },{ lat: 38.176, lng: 23.855 },{ lat: 38.155, lng: 23.862 },{ lat: 38.13840, lng: 23.86445 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
     },
   },
@@ -104,10 +104,10 @@ const TOLL_DATA = [
       north: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Κάστρου", entry_name: "Λιβανατών",
-        pre_exit:   { lat: 38.479746, lng: 23.164023 },
-        off_ramp:   { lat: 38.488739, lng: 23.163872 },
-        on_ramp:    { lat: 38.708781, lng: 23.055859 },
-        post_merge: { lat: 38.717515, lng: 23.054438 },
+        pre_exit:   { lat: 38.571955247833486, lng: 23.19585429040776 },
+        off_ramp:   { lat: 38.571955247833486, lng: 23.19585429040776 },
+        on_ramp:    { lat: 38.62254660197413, lng: 23.12393023130427 },
+        post_merge: { lat: 38.62274330021454, lng: 23.120518509124068 },
         minutes: 15,
         via: [{ lat: 38.49755, lng: 23.16145 },{ lat: 38.560, lng: 23.130 },{ lat: 38.617, lng: 23.100 },{ lat: 38.660, lng: 23.070 },{ lat: 38.71150, lng: 23.03740 }],
         confidence: "verified"
@@ -115,10 +115,10 @@ const TOLL_DATA = [
       south: {
         label: "Southbound (towards Athens)",
         exit_name: "Λιβανατών", entry_name: "Κάστρου",
-        pre_exit:   { lat: 38.717520, lng: 23.054248 },
-        off_ramp:   { lat: 38.708781, lng: 23.055859 },
-        on_ramp:    { lat: 38.488739, lng: 23.163872 },
-        post_merge: { lat: 38.479746, lng: 23.163852 },
+        pre_exit:   { lat: 38.62267234322968, lng: 23.120105534694485 },
+        off_ramp:   { lat: 38.62199329801496, lng: 23.12343345503746 },
+        on_ramp:    { lat: 38.57375826149571, lng: 23.198828494003354 },
+        post_merge: { lat: 38.57155117924188, lng: 23.194775607458954 },
         minutes: 15,
         via: [{ lat: 38.71150, lng: 23.03740 },{ lat: 38.660, lng: 23.070 },{ lat: 38.617, lng: 23.100 },{ lat: 38.560, lng: 23.130 },{ lat: 38.49755, lng: 23.16145 }],
         confidence: "verified"
@@ -139,10 +139,10 @@ const TOLL_DATA = [
       north: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Μώλου", entry_name: "Θερμοπυλών",
-        pre_exit:   { lat: 38.800966, lng: 22.654757 },
-        off_ramp:   { lat: 38.802371, lng: 22.643456 },
-        on_ramp:    { lat: 38.804485, lng: 22.568722 },
-        post_merge: { lat: 38.802543, lng: 22.557493 },
+        pre_exit:   { lat: 38.80092992897871, lng: 22.653421150540826 },
+        off_ramp:   { lat: 38.801814017985045, lng: 22.647676438837426 },
+        on_ramp:    { lat: 38.799591076740796, lng: 22.511031168094227 },
+        post_merge: { lat: 38.80039529850744, lng: 22.50702057095407 },
         minutes: 16,
         via: [{ lat: 38.80955, lng: 22.64730 },{ lat: 38.809, lng: 22.620 },{ lat: 38.800, lng: 22.580 },{ lat: 38.79785, lng: 22.53585 }],
         confidence: "verified"
@@ -150,10 +150,10 @@ const TOLL_DATA = [
       south: {
         label: "Southbound (towards Athens)",
         exit_name: "Θερμοπυλών", entry_name: "Μώλου",
-        pre_exit:   { lat: 38.802415, lng: 22.557499 },
-        off_ramp:   { lat: 38.804485, lng: 22.568722 },
-        on_ramp:    { lat: 38.802371, lng: 22.643456 },
-        post_merge: { lat: 38.800832, lng: 22.654672 },
+        pre_exit:   { lat: 38.80095331249726, lng: 22.505496133170862 },
+        off_ramp:   { lat: 38.80095331249726, lng: 22.505496133170862 },
+        on_ramp:    { lat: 38.785807362122654, lng: 22.699659343761724 },
+        post_merge: { lat: 38.785807362122654, lng: 22.699659343761724 },
         minutes: 16,
         via: [{ lat: 38.79785, lng: 22.53585 },{ lat: 38.800, lng: 22.580 },{ lat: 38.809, lng: 22.620 },{ lat: 38.80955, lng: 22.64730 }],
         confidence: "verified"
@@ -174,24 +174,24 @@ const TOLL_DATA = [
       north: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Λαμίας", entry_name: "Αγ. Μαρίνας",
-        pre_exit:   { lat: 38.863265, lng: 22.461336 },
-        off_ramp:   { lat: 38.872725, lng: 22.456369 },
-        on_ramp:    { lat: 38.895550, lng: 22.584350 },
-        post_merge: { lat: 38.911079, lng: 22.585273 },
+        pre_exit:   { lat: 38.86690865730291, lng: 22.459566047881285 },
+        off_ramp:   { lat: 38.86929536606521, lng: 22.459751248106066 },
+        on_ramp:    { lat: 38.903048456353915, lng: 22.569177624283917 },
+        post_merge: { lat: 38.90361673813972, lng: 22.57127220012787 },
         minutes: 18,
         via: [{ lat: 38.87855, lng: 22.45425 },{ lat: 38.882, lng: 22.500 },{ lat: 38.890, lng: 22.540 },{ lat: 38.89555, lng: 22.58435 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
       south: {
         label: "Southbound (towards Athens)",
         exit_name: "Αγ. Μαρίνας", entry_name: "Λαμίας",
-        pre_exit:   { lat: 38.911167, lng: 22.585205 },
-        off_ramp:   { lat: 38.895550, lng: 22.584350 },
-        on_ramp:    { lat: 38.872725, lng: 22.456369 },
-        post_merge: { lat: 38.863300, lng: 22.461132 },
+        pre_exit:   { lat: 38.9044727354293, lng: 22.573705862773096 },
+        off_ramp:   { lat: 38.9044727354293, lng: 22.573705862773096 },
+        on_ramp:    { lat: 38.89899548628808, lng: 22.499170865064745 },
+        post_merge: { lat: 38.897702225415934, lng: 22.496105733925777 },
         minutes: 18,
         via: [{ lat: 38.89555, lng: 22.58435 },{ lat: 38.890, lng: 22.540 },{ lat: 38.882, lng: 22.500 },{ lat: 38.87855, lng: 22.45425 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
     },
   },
