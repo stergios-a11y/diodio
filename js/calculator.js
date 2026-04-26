@@ -66,18 +66,6 @@ async function geocode(name) {
   return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
 }
 
-// ── OSRM main route ───────────────────────────────────────
-async function fetchOSRM(waypoints) {
-  const coords = waypoints.map(w => `${w.lng},${w.lat}`).join(';');
-  const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
-  try {
-    const r = await fetch(url);
-    const d = await r.json();
-    if (d.code !== 'Ok') return null;
-    return d.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-  } catch { return null; }
-}
-
 // ── Geometry helpers ──────────────────────────────────────
 function distToSegment(p, a, b) {
   const dx = b[0]-a[0], dy = b[1]-a[1];
@@ -275,9 +263,10 @@ async function analyze() {
     // 2. Detect overall travel direction
     const travelDir = detectDirection(fromCoord, toCoord);
 
-    // 3. Main motorway route
-    const routeCoords = await fetchOSRM([fromCoord, toCoord]);
-    if (!routeCoords) throw new Error(t('err.route'));
+    // 3. Main motorway route (Mapbox via map.js, with caching)
+    const mainRoute = await window.fetchMainRoute(fromCoord, toCoord);
+    if (!mainRoute || !mainRoute.coords?.length) throw new Error(t('err.route'));
+    const routeCoords = mainRoute.coords;
 
     // 4. Draw blue main route
     routeLayer = L.polyline(routeCoords, {

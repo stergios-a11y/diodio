@@ -57,8 +57,9 @@ window.clearActiveRouteLayer = function() {
 };
 
 // ── Route fetcher ─────────────────────────────────────────
-// Uses Mapbox Directions API for bypass (motorway exclusion works there),
-// OSRM for highway comparison. Cached in localStorage.
+// Uses Mapbox Directions API for all routing: main analyze route, bypass
+// (with motorway exclusion), and highway-vs-bypass comparison. Cached in
+// localStorage so repeat queries don't burn API calls.
 const routeCache = {};
 
 async function fetchRoute(exitPt, entryPt, mode, via) {
@@ -111,6 +112,11 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
 window.fetchBypassRoute = async function(exitPt, entryPt, via) {
   const r = await fetchRoute(exitPt, entryPt, 'bypass', via);
   return r ? r.coords : null;
+};
+// Main analyze route: full origin → destination via motorway. Returns the
+// same {coords, distanceKm, durationMin} shape as fetchRoute, or null on failure.
+window.fetchMainRoute = async function(fromCoord, toCoord) {
+  return fetchRoute(fromCoord, toCoord, 'highway');
 };
 window.fetchRoute = fetchRoute;
 
