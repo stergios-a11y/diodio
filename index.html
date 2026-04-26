@@ -14,7 +14,7 @@
 <body>
 
   <header id="topbar">
-    <div class="logo">DIO<em>DIO</em></div>
+    <a class="logo" href="#map" id="logo-link">DIO<em>DIO</em></a>
     <div class="topbar-sep"></div>
     <nav class="topbar-nav">
       <a class="nav-link" data-page="map" data-i18n="nav.map">Χάρτης</a>
@@ -41,8 +41,48 @@
         </svg>
         <span data-i18n="btn.help">Οδηγίες χρήσης</span>
       </button>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </button>
     </div>
   </header>
+
+  <!-- Mobile drawer menu (hidden until hamburger tapped) -->
+  <div id="mobile-drawer" class="mobile-drawer">
+    <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
+    <aside class="mobile-drawer-panel">
+      <div class="mobile-drawer-head">
+        <span class="mobile-drawer-logo">DIO<em>DIO</em></span>
+        <button class="mobile-drawer-close" id="mobile-drawer-close" aria-label="Close">✕</button>
+      </div>
+      <nav class="mobile-drawer-nav">
+        <a class="mobile-nav-link" data-page="map" data-i18n="nav.map">Χάρτης</a>
+        <a class="mobile-nav-link" data-page="routes" data-i18n="nav.routes">Διαδρομές</a>
+        <a class="mobile-nav-link" data-page="tolls" data-i18n="nav.tolls">Όλα τα διόδια</a>
+      </nav>
+      <div class="mobile-drawer-divider"></div>
+      <div class="mobile-drawer-actions">
+        <a class="mobile-drawer-action" href="mailto:stergiosgousios@gmail.com?subject=DIODIO%20Feedback">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span data-i18n="btn.feedback.short">Σχόλια</span>
+        </a>
+        <button class="mobile-drawer-action" id="mobile-help-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span data-i18n="btn.help">Οδηγίες χρήσης</span>
+        </button>
+      </div>
+    </aside>
+  </div>
 
   <main id="page-map" class="page page-active">
     <div id="map-container"><div id="map"></div></div>

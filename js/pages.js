@@ -23,7 +23,7 @@ function applyPage(page) {
   document.querySelectorAll('.page').forEach(el => {
     el.classList.toggle('page-active', el.id === `page-${page}`);
   });
-  document.querySelectorAll('.nav-link').forEach(el => {
+  document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(el => {
     el.classList.toggle('active', el.dataset.page === page);
   });
   if (page === 'routes') buildRoutesGrid();
@@ -298,3 +298,40 @@ document.addEventListener('click', e => {
   }
   buildTollsTable();
 });
+
+/* ════════════════════════════════════════════════════════════════
+   MOBILE HAMBURGER DRAWER
+   ════════════════════════════════════════════════════════════════ */
+(function() {
+  const btn      = document.getElementById('hamburger-btn');
+  const drawer   = document.getElementById('mobile-drawer');
+  const overlay  = document.getElementById('mobile-drawer-overlay');
+  const closeBtn = document.getElementById('mobile-drawer-close');
+  if (!btn || !drawer) return;
+
+  function open()  { drawer.classList.add('open');  document.body.style.overflow = 'hidden'; }
+  function close() { drawer.classList.remove('open'); document.body.style.overflow = ''; }
+
+  btn.addEventListener('click', open);
+  closeBtn?.addEventListener('click', close);
+  overlay?.addEventListener('click', close);
+
+  // Drawer nav links → navigate + close drawer
+  drawer.querySelectorAll('.mobile-nav-link').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      navigateTo(a.dataset.page);
+      close();
+    });
+  });
+
+  // Help button inside drawer → trigger main help modal
+  const mobileHelpBtn = document.getElementById('mobile-help-btn');
+  if (mobileHelpBtn) {
+    mobileHelpBtn.addEventListener('click', () => {
+      close();
+      const mainHelpBtn = document.getElementById('help-btn');
+      if (mainHelpBtn) mainHelpBtn.click();
+    });
+  }
+})();
