@@ -90,12 +90,31 @@ body {
   user-select: none;
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
   transition: transform 0.25s var(--ease), color 0.18s var(--ease);
 }
-.logo:hover { transform: translateY(-1px); color: var(--aegean-dark); }
+.logo:hover { transform: translateY(-1px); }
+.logo:hover .logo-glyph { transform: scale(1.05); }
 .logo:active { transform: translateY(0); }
-.logo em {
+.logo-glyph {
+  flex-shrink: 0;
+  transition: transform 0.25s var(--ease);
+}
+.logo-text {
+  /* "my" prefix: muted gray, less weight */
+  color: var(--muted);
+  font-weight: 500;
+}
+.logo-text .logo-mid {
+  /* "dio" middle: bold dark ink — the main reading anchor */
+  color: var(--ink);
+  font-weight: 700;
+}
+.logo em,
+.logo-text em {
+  /* "dia" suffix: italic aegean blue — the brand flourish */
   font-style: italic;
   font-weight: 500;
   color: var(--aegean);
@@ -1735,8 +1754,22 @@ input[type="range"]::-moz-range-track {
   color: var(--ink);
   margin-bottom: 2px;
   font-variation-settings: "opsz" 144, "SOFT" 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
-.help-logo em { font-style: italic; color: var(--aegean); font-variation-settings: "opsz" 144, "SOFT" 80; }
+.help-logo-text {
+  /* "my" base color (muted) */
+  color: var(--muted);
+  font-weight: 500;
+}
+.help-logo-text .logo-mid {
+  /* "dio" mid: bold ink */
+  color: var(--ink);
+  font-weight: 700;
+}
+.help-logo em { font-style: italic; color: var(--aegean); font-variation-settings: "opsz" 144, "SOFT" 80; font-weight: 500; }
 .help-subtitle {
   font-family: var(--font-display);
   font-style: italic;
@@ -2699,8 +2732,13 @@ input[type="range"]::-moz-range-track {
 .sp-name,
 .help-logo,
 .logo {
-  font-weight: 700 !important;
   letter-spacing: -0.025em;
+}
+/* Logo's middle "dio" stays bold; the "my" prefix and italic "dia" keep their lighter weights. */
+.logo-text .logo-mid,
+.help-logo-text .logo-mid,
+.mobile-drawer-logo .logo-mid {
+  font-weight: 700;
 }
 
 /* Section labels — small, uppercase, looks better in sans-serif */
@@ -2778,10 +2816,14 @@ input[type="range"]::-moz-range-track {
 }
 .mobile-drawer-logo {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 500;
   font-size: 1.5rem;
   letter-spacing: -0.025em;
+  color: var(--muted);
+}
+.mobile-drawer-logo .logo-mid {
   color: var(--ink);
+  font-weight: 700;
 }
 .mobile-drawer-logo em {
   font-style: italic;

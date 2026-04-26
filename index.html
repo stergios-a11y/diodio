@@ -5,12 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Primary metadata (Greek-first; English equivalents in alternates below) -->
-  <title>Διόδια Ελλάδας 2026 — Χάρτης, Τιμές & Σύμβουλος Παράκαμψης | DIODIO</title>
+  <title>mydiodia — Διόδια Ελλάδας 2026, Χάρτης, Τιμές & Σύμβουλος Παράκαμψης</title>
   <meta name="description" content="Διαδραστικός χάρτης για όλα τα διόδια στους ελληνικούς αυτοκινητοδρόμους. Δες τιμές 2026, υπολόγισε το κόστος της διαδρομής σου, και βρες ποια διόδια αξίζει να παρακάμψεις." />
-  <meta name="keywords" content="διόδια, διόδια Ελλάδα, διόδια 2026, τιμές διοδίων, παράκαμψη διοδίων, αυτοκινητόδρομοι, ΠΑΘΕ, Εγνατία, Ολυμπία Οδός, Greece tolls, toll roads Greece" />
-  <meta name="author" content="DIODIO" />
+  <meta name="keywords" content="διόδια, διόδια Ελλάδα, διόδια 2026, τιμές διοδίων, παράκαμψη διοδίων, αυτοκινητόδρομοι, ΠΑΘΕ, Εγνατία, Ολυμπία Οδός, Greece tolls, toll roads Greece, mydiodia" />
+  <meta name="author" content="mydiodia" />
   <meta name="theme-color" content="#2a6b9e" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
+
+  <!-- Favicon set: drop these files into the site root -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
 
   <!-- Canonical & language alternates -->
   <link rel="canonical" href="https://stergios-a11y.github.io/diodio/" />
@@ -20,17 +27,21 @@
 
   <!-- OpenGraph (social previews) -->
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="DIODIO" />
-  <meta property="og:title" content="Διόδια Ελλάδας 2026 — Χάρτης, Τιμές & Σύμβουλος Παράκαμψης" />
+  <meta property="og:site_name" content="mydiodia" />
+  <meta property="og:title" content="mydiodia — Διόδια Ελλάδας 2026, Χάρτης, Τιμές & Σύμβουλος Παράκαμψης" />
   <meta property="og:description" content="Διαδραστικός χάρτης για όλα τα διόδια στους ελληνικούς αυτοκινητοδρόμους. Δες τιμές 2026 και βρες ποια διόδια αξίζει να παρακάμψεις." />
   <meta property="og:url" content="https://stergios-a11y.github.io/diodio/" />
+  <meta property="og:image" content="https://stergios-a11y.github.io/diodio/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta property="og:locale" content="el_GR" />
   <meta property="og:locale:alternate" content="en_US" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Διόδια Ελλάδας 2026 — Χάρτης & Σύμβουλος Παράκαμψης" />
+  <meta name="twitter:title" content="mydiodia — Διόδια Ελλάδας 2026" />
   <meta name="twitter:description" content="Δες τιμές 2026, υπολόγισε το κόστος, και βρες ποια διόδια αξίζει να παρακάμψεις." />
+  <meta name="twitter:image" content="https://stergios-a11y.github.io/diodio/og-image.png" />
 
   <!-- Structured data: WebApplication + Dataset.
        Helps Google show rich snippets and understand this is an interactive
@@ -42,8 +53,8 @@
       {
         "@type": "WebApplication",
         "@id": "https://stergios-a11y.github.io/diodio/#app",
-        "name": "DIODIO",
-        "alternateName": "DIODIO — Greece Toll Road Advisor",
+        "name": "mydiodia",
+        "alternateName": "mydiodia — Greece Toll Road Advisor",
         "url": "https://stergios-a11y.github.io/diodio/",
         "description": "Interactive map and bypass advisor for tolls on Greek motorways. Shows 2026 prices for all four vehicle classes, calculates total route cost, and recommends which tolls to pay vs. bypass based on your time-vs-money preference.",
         "applicationCategory": "TravelApplication",
@@ -92,7 +103,7 @@
         "dateModified": "2026-04-26",
         "creator": {
           "@type": "Person",
-          "name": "DIODIO"
+          "name": "mydiodia"
         },
         "license": "https://creativecommons.org/licenses/by/4.0/",
         "isAccessibleForFree": true
@@ -105,19 +116,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/style.css?v=20260427-0011" />
+  <link rel="stylesheet" href="css/style.css?v=20260427-0012" />
 </head>
 <body>
 
   <noscript>
     <div style="max-width:760px;margin:40px auto;padding:24px;font-family:Inter,sans-serif;color:#1a1f2e;line-height:1.6;">
-      <h1 style="font-size:1.8rem;margin:0 0 8px;">DIODIO — Οδηγός Διοδίων Ελλάδας 2026</h1>
+      <h1 style="font-size:1.8rem;margin:0 0 8px;">mydiodia — Οδηγός Διοδίων Ελλάδας 2026</h1>
       <p style="font-size:1.05rem;color:#5a6678;margin-top:0;">
         Διαδραστικός χάρτης για όλα τα διόδια στους ελληνικούς αυτοκινητοδρόμους.
         Δες τιμές 2026, υπολόγισε το κόστος της διαδρομής σου, και βρες ποια διόδια
         αξίζει να παρακάμψεις βάσει του χρόνου που είσαι διατεθειμένος να ξοδέψεις.
       </p>
-      <p><strong>Για να χρησιμοποιήσεις το DIODIO απαιτείται JavaScript.</strong> Παρακαλούμε ενεργοποίησέ το στον περιηγητή σου.</p>
+      <p><strong>Για να χρησιμοποιήσεις το mydiodia απαιτείται JavaScript.</strong> Παρακαλούμε ενεργοποίησέ το στον περιηγητή σου.</p>
 
       <h2 style="font-size:1.2rem;margin-top:32px;">Καλυπτόμενοι αυτοκινητόδρομοι</h2>
       <ul>
@@ -147,18 +158,21 @@
 
       <hr style="margin:32px 0;border:none;border-top:1px solid #e0e3e8;" />
 
-      <h1 style="font-size:1.4rem;">DIODIO — Greece Toll Road Advisor 2026</h1>
+      <h1 style="font-size:1.4rem;">mydiodia — Greece Toll Road Advisor 2026</h1>
       <p>
         Interactive map and bypass advisor for tolls on Greek motorways. See 2026 prices
         for cars, motorcycles, vans, and trucks; calculate total cost for your route;
         and discover which tolls are worth bypassing based on local roads.
       </p>
-      <p><strong>JavaScript required.</strong> Please enable it to use DIODIO.</p>
+      <p><strong>JavaScript required.</strong> Please enable it to use mydiodia.</p>
     </div>
   </noscript>
 
   <header id="topbar">
-    <a class="logo" href="#map" id="logo-link">DIO<em>DIO</em></a>
+    <a class="logo" href="#map" id="logo-link" aria-label="mydiodia.gr">
+      <svg class="logo-glyph" viewBox="0 0 96 96" width="28" height="28" aria-hidden="true"><rect x="2" y="14" width="90" height="11" fill="#2a6b9e" rx="1.5"/><rect x="32" y="17" width="32" height="6" fill="#f4c430" rx="0.8"/><rect x="6" y="34" width="36" height="48" fill="#2a6b9e" rx="1.5"/><rect x="11" y="39" width="26" height="17" fill="#ffffff" rx="0.5"/><rect x="17" y="63" width="12" height="19" fill="#1a4a6e" rx="0.5"/><rect x="86" y="25" width="5" height="57" fill="#2a6b9e" rx="0.5"/><circle cx="42" cy="57" r="2.5" fill="#1a4a6e"/><rect x="42" y="55" width="42" height="4" fill="#f4c430" rx="0.5"/><rect x="50" y="55" width="3.5" height="4" fill="#c8302a"/><rect x="62" y="55" width="3.5" height="4" fill="#c8302a"/><rect x="74" y="55" width="3.5" height="4" fill="#c8302a"/><rect x="82.5" y="53" width="3.5" height="29" fill="#1a4a6e" rx="0.5"/><rect x="0" y="84" width="92" height="2.5" fill="#1a1f2e" rx="0.4"/></svg>
+      <span class="logo-text">my<span class="logo-mid">dio</span><em>dia</em></span>
+    </a>
     <div class="topbar-sep"></div>
     <nav class="topbar-nav">
       <a class="nav-link" data-page="map" data-i18n="nav.map">Χάρτης</a>
@@ -170,7 +184,7 @@
         <span class="flag-option flag-el" data-lang="el">🇬🇷</span>
         <span class="flag-option flag-en" data-lang="en">🇬🇧</span>
       </button>
-      <a class="btn-ghost btn-feedback-top" href="mailto:stergiosgousios@gmail.com?subject=DIODIO%20Feedback" data-i18n-title="btn.feedback.title">
+      <a class="btn-ghost btn-feedback-top" href="mailto:stergiosgousios@gmail.com?subject=mydiodia%20Feedback" data-i18n-title="btn.feedback.title">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
@@ -200,7 +214,7 @@
     <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
     <aside class="mobile-drawer-panel">
       <div class="mobile-drawer-head">
-        <span class="mobile-drawer-logo">DIO<em>DIO</em></span>
+        <span class="mobile-drawer-logo">my<span class="logo-mid">dio</span><em>dia</em></span>
         <button class="mobile-drawer-close" id="mobile-drawer-close" aria-label="Close">✕</button>
       </div>
       <nav class="mobile-drawer-nav">
@@ -210,7 +224,7 @@
       </nav>
       <div class="mobile-drawer-divider"></div>
       <div class="mobile-drawer-actions">
-        <a class="mobile-drawer-action" href="mailto:stergiosgousios@gmail.com?subject=DIODIO%20Feedback">
+        <a class="mobile-drawer-action" href="mailto:stergiosgousios@gmail.com?subject=mydiodia%20Feedback">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
@@ -256,7 +270,10 @@
   <div id="help-modal">
     <div class="help-box">
       <button class="help-close" id="help-close">✕</button>
-      <div class="help-logo">DIO<em>DIO</em></div>
+      <div class="help-logo">
+        <svg class="logo-glyph" viewBox="0 0 96 96" width="44" height="44" aria-hidden="true"><rect x="2" y="14" width="90" height="11" fill="#2a6b9e" rx="1.5"/><rect x="32" y="17" width="32" height="6" fill="#f4c430" rx="0.8"/><rect x="6" y="34" width="36" height="48" fill="#2a6b9e" rx="1.5"/><rect x="11" y="39" width="26" height="17" fill="#ffffff" rx="0.5"/><rect x="17" y="63" width="12" height="19" fill="#1a4a6e" rx="0.5"/><rect x="86" y="25" width="5" height="57" fill="#2a6b9e" rx="0.5"/><circle cx="42" cy="57" r="2.5" fill="#1a4a6e"/><rect x="42" y="55" width="42" height="4" fill="#f4c430" rx="0.5"/><rect x="50" y="55" width="3.5" height="4" fill="#c8302a"/><rect x="62" y="55" width="3.5" height="4" fill="#c8302a"/><rect x="74" y="55" width="3.5" height="4" fill="#c8302a"/><rect x="82.5" y="53" width="3.5" height="29" fill="#1a4a6e" rx="0.5"/><rect x="0" y="84" width="92" height="2.5" fill="#1a1f2e" rx="0.4"/></svg>
+        <span class="help-logo-text">my<span class="logo-mid">dio</span><em>dia</em></span>
+      </div>
       <div class="help-subtitle" data-i18n="help.subtitle">Οδηγός Διοδίων Ελλάδας</div>
 
       <div class="help-section">
@@ -366,7 +383,7 @@
       <div id="routes-grid" class="routes-grid"></div>
       <footer class="site-footer">
         <div class="site-footer-inner">
-          <span class="footer-copy" data-i18n="footer.copy">© 2026 DIODIO · Στέργιος Γούσιος</span>
+          <span class="footer-copy" data-i18n="footer.copy">© 2026 mydiodia · Στέργιος Γούσιος</span>
           <span class="footer-sep">·</span>
           <span class="footer-license">
             <span data-i18n="footer.code">Κώδικας: MIT</span>
@@ -432,7 +449,7 @@
       </div>
       <footer class="site-footer">
         <div class="site-footer-inner">
-          <span class="footer-copy" data-i18n="footer.copy">© 2026 DIODIO · Στέργιος Γούσιος</span>
+          <span class="footer-copy" data-i18n="footer.copy">© 2026 mydiodia · Στέργιος Γούσιος</span>
           <span class="footer-sep">·</span>
           <span class="footer-license">
             <span data-i18n="footer.code">Κώδικας: MIT</span>
@@ -449,10 +466,10 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260426-2155"></script>
-  <script src="data/tolls.js?v=20260427-0009"></script>
-  <script src="data/routes.js?v=20260427-0008"></script>
-  <script src="js/map.js?v=20260427-0011"></script>
+  <script src="js/i18n.js?v=20260427-0012"></script>
+  <script src="data/tolls.js?v=20260426-2155"></script>
+  <script src="data/routes.js?v=20260426-2155"></script>
+  <script src="js/map.js?v=20260426-2155"></script>
   <script src="js/calculator.js?v=20260426-2155"></script>
   <script src="js/pages.js?v=20260426-2155"></script>
 </body>

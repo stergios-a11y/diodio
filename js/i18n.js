@@ -1,12 +1,12 @@
 /**
- * DIODIO — i18n.js
+ * mydiodia — i18n.js
  * Language toggle: Greek (el) ⇄ English (en).
  * Default: el. Preference saved to localStorage.
  */
 
 const STRINGS = {
   el: {
-    'title':                   'DIODIO — Οδηγός Διοδίων Ελλάδας',
+    'title':                   'mydiodia — Οδηγός Διοδίων Ελλάδας',
     'tagline':                 'Χάρτης διοδίων & σύμβουλος διαδρομής',
     'btn.legend.hide':         'Απόκρυψη',
     'btn.legend.show':         'Υπόμνημα',
@@ -167,14 +167,14 @@ const STRINGS = {
     'hwy.A6.sub':              'Περιφερειακός Αθηνών',
     'hwy.BRIDGE':              'Γέφυρες & Τούνελ',
     'hwy.BRIDGE.sub':          'Ρίο–Αντίρριο · Ακτιο',
-    'footer.copy':             '© 2026 DIODIO · Στέργιος Γούσιος',
+    'footer.copy':             '© 2026 mydiodia · Στέργιος Γούσιος',
     'footer.code':             'Κώδικας: MIT',
     'footer.data':             'Δεδομένα: CC BY-NC 4.0',
     'footer.source':           'Πηγαίος κώδικας',
   },
 
   en: {
-    'title':                   'DIODIO — Greece Toll Road Advisor',
+    'title':                   'mydiodia — Greece Toll Road Advisor',
     'tagline':                 'Greek highway toll map & route advisor',
     'btn.legend.hide':         'Hide legend',
     'btn.legend.show':         'Legend',
@@ -334,7 +334,7 @@ const STRINGS = {
     'hwy.A6.sub':              'Athens ring road',
     'hwy.BRIDGE':              'Bridges & Tunnels',
     'hwy.BRIDGE.sub':          'Rio–Antirrio · Aktio',
-    'footer.copy':             '© 2026 DIODIO · Stergios Gousios',
+    'footer.copy':             '© 2026 mydiodia · Stergios Gousios',
     'footer.code':             'Code: MIT',
     'footer.data':             'Data: CC BY-NC 4.0',
     'footer.source':           'Source code',

@@ -169,6 +169,19 @@ function parseDirectionMeta(dirText) {
     const m = dirText.match(new RegExp(`${f}:\\s*\\{\\s*lat:\\s*([-\\d.]+),\\s*lng:\\s*([-\\d.]+)\\s*\\}`));
     if (m) coords[f] = { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
   }
+  // Old-schema fallback: if pre_exit/post_merge missing, surface the legacy
+  // exit:/entry: coords as "was" hints. Only off_ramp and on_ramp get hints
+  // (they correspond to exit and entry); pre_exit and post_merge stay (none).
+  if (!coords.off_ramp || !coords.on_ramp) {
+    const legacyExit = dirText.match(/\bexit:\s*\{\s*lat:\s*([-\d.]+),\s*lng:\s*([-\d.]+)\s*\}/);
+    const legacyEntry = dirText.match(/\bentry:\s*\{\s*lat:\s*([-\d.]+),\s*lng:\s*([-\d.]+)\s*\}/);
+    if (legacyExit && !coords.off_ramp) {
+      coords.off_ramp = { lat: parseFloat(legacyExit[1]), lng: parseFloat(legacyExit[2]) };
+    }
+    if (legacyEntry && !coords.on_ramp) {
+      coords.on_ramp = { lat: parseFloat(legacyEntry[1]), lng: parseFloat(legacyEntry[2]) };
+    }
+  }
   return { label, exit, entry, conf, coords };
 }
 
@@ -178,30 +191,60 @@ function rewriteDirection(source, tollId, dirKey, newCoords) {
   // Find the toll block, then the direction sub-block, then replace each
   // of the 4 coord fields. We do this on a substring and splice back in,
   // so we don't accidentally hit another toll's block.
+  //
+  // Two schema cases handled:
+  //   (a) Already-migrated direction has all 4 fields (pre_exit, off_ramp,
+  //       on_ramp, post_merge) — we replace each in place.
+  //   (b) Old-schema direction has only `exit:` and `entry:` (the 17 tolls
+  //       compute-ramp-anchors.js flagged as off-route). We replace the
+  //       `exit:`/`entry:` pair with all 4 new fields, preserving everything
+  //       else (label, exit_name, entry_name, minutes, via, confidence).
   const toll = extractTollBlock(source, tollId);
   if (!toll) throw new Error(`toll ${tollId} not found`);
   const dir = extractDirectionBlock(toll.text, dirKey);
   if (!dir) throw new Error(`direction ${tollId}:${dirKey} not found`);
 
   let dirText = dir.text;
-  for (const f of COORD_FIELDS) {
-    const c = newCoords[f];
-    // Match the existing field, capturing the whitespace after the colon so
-    // we preserve the original alignment in the file (keeps git diffs clean).
-    const re = new RegExp(`(${f}:)(\\s*)\\{\\s*lat:\\s*[-\\d.]+,\\s*lng:\\s*[-\\d.]+\\s*\\}`);
-    const m = dirText.match(re);
-    if (!m) {
-      throw new Error(`field ${f} not found in ${tollId}:${dirKey}`);
+
+  // Detect schema: does this direction have pre_exit?
+  const hasNewSchema = /\bpre_exit:/.test(dirText);
+
+  if (hasNewSchema) {
+    // Case (a): in-place field-by-field replacement.
+    for (const f of COORD_FIELDS) {
+      const c = newCoords[f];
+      // Capture the whitespace after the colon so we preserve original alignment.
+      const re = new RegExp(`(${f}:)(\\s*)\\{\\s*lat:\\s*[-\\d.]+,\\s*lng:\\s*[-\\d.]+\\s*\\}`);
+      const m = dirText.match(re);
+      if (!m) {
+        throw new Error(`field ${f} not found in ${tollId}:${dirKey}`);
+      }
+      const ws = m[2] || ' ';
+      dirText = dirText.replace(re, `$1${ws}{ lat: ${c.lat}, lng: ${c.lng} }`);
     }
-    const ws = m[2] || ' ';
-    dirText = dirText.replace(re, `$1${ws}{ lat: ${c.lat}, lng: ${c.lng} }`);
+  } else {
+    // Case (b): old schema. Replace `exit: { ... }, ... entry: { ... },`
+    // with all 4 new fields. We match from the `exit:` line through the
+    // `entry:` line inclusive (and any trailing comma/newline). Both lines
+    // appear together in the data file (Thiva format), so this is safe.
+    const oldRe = /(\s*)exit:\s*\{\s*lat:\s*[-\d.]+,\s*lng:\s*[-\d.]+\s*\}\s*,\s*\n\s*entry:\s*\{\s*lat:\s*[-\d.]+,\s*lng:\s*[-\d.]+\s*\}\s*,/;
+    const m = dirText.match(oldRe);
+    if (!m) {
+      throw new Error(`couldn't find old-schema exit:/entry: pair in ${tollId}:${dirKey}`);
+    }
+    const indent = m[1].replace(/^\n*/, ''); // preserve leading indent of `exit:`
+    const c = newCoords;
+    const replacement =
+      `\n${indent}pre_exit:   { lat: ${c.pre_exit.lat}, lng: ${c.pre_exit.lng} },\n` +
+      `${indent}off_ramp:   { lat: ${c.off_ramp.lat}, lng: ${c.off_ramp.lng} },\n` +
+      `${indent}on_ramp:    { lat: ${c.on_ramp.lat}, lng: ${c.on_ramp.lng} },\n` +
+      `${indent}post_merge: { lat: ${c.post_merge.lat}, lng: ${c.post_merge.lng} },`;
+    dirText = dirText.replace(oldRe, replacement);
   }
 
   // Bump confidence to "verified" since this is now hand-curated.
   if (/confidence:\s*"[^"]+"/.test(dirText)) {
     dirText = dirText.replace(/confidence:\s*"[^"]+"/, 'confidence: "verified"');
-  } else {
-    // No confidence field present — leave as-is. Some entries don't have one.
   }
 
   // Splice direction back into toll, then toll back into source.
