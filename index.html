@@ -105,7 +105,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/style.css?v=20260426-1518" />
+  <link rel="stylesheet" href="css/style.css?v=20260426-1522" />
 </head>
 <body>
 
@@ -365,11 +365,32 @@
         <h1 class="page-title" data-i18n="tolls.title">Όλα τα διόδια</h1>
         <p class="page-subtitle" data-i18n="tolls.subtitle">Τιμές, αυτοκινητόδρομος, και χρόνος παράκαμψης ανά κατεύθυνση.</p>
       </div>
-      <div class="page-toolbar">
+      <div class="page-toolbar tolls-toolbar">
         <input id="tolls-search" type="text" class="bar-input" placeholder="" data-i18n-placeholder="tolls.search" />
         <select id="tolls-highway-filter" class="bar-select">
           <option value="" data-i18n="tolls.allhighways">Όλοι οι αυτοκινητόδρομοι</option>
         </select>
+        <span class="toolbar-divider" aria-hidden="true"></span>
+        <label class="page-toolbar-label" for="tolls-vehicle" data-i18n="tolls.advisor.vehicle">Όχημα</label>
+        <select id="tolls-vehicle" class="bar-select">
+          <option value="cat1" data-i18n="bar.moto">🏍 Μοτο</option>
+          <option value="cat2" selected data-i18n="bar.car">🚗 Αυτοκίνητο</option>
+          <option value="cat3" data-i18n="bar.van">🚐 Βαν</option>
+          <option value="cat4" data-i18n="bar.truck">🚛 Φορτηγό</option>
+        </select>
+        <label class="tolls-time-control" for="tolls-time-slider">
+          <span class="tolls-time-label" data-i18n="tolls.advisor.time">Ανοχή</span>
+          <input type="range" id="tolls-time-slider" min="2" max="15" value="5" step="1" class="tolls-time-slider" />
+          <span class="tolls-time-pill">
+            <span class="tolls-time-num" id="tolls-time-num">5</span>
+            <span class="tolls-time-suffix" data-i18n="tolls.advisor.time.short">λεπ. ανά €1</span>
+          </span>
+        </label>
+        <label class="tolls-avoid-toggle">
+          <input type="checkbox" id="tolls-avoid-only" />
+          <span data-i18n="tolls.advisor.avoidonly">Μόνο όσα αξίζει να παρακάμψω</span>
+        </label>
+        <span class="tolls-count" id="tolls-count" aria-live="polite"></span>
       </div>
       <div class="tolls-table-wrap">
         <table id="tolls-table" class="tolls-table">
@@ -382,6 +403,7 @@
               <th data-sort="cat3" data-i18n="bar.van">🚐</th>
               <th data-sort="cat4" data-i18n="bar.truck">🚛</th>
               <th data-sort="bypass" data-i18n="tolls.col.bypass">Παράκαμψη</th>
+              <th data-sort="verdict" data-i18n="tolls.col.verdict">Συμβουλή</th>
             </tr>
           </thead>
           <tbody id="tolls-tbody"></tbody>
@@ -393,11 +415,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260426-1518"></script>
-  <script src="data/tolls.js?v=20260426-1518"></script>
-  <script src="data/routes.js?v=20260426-1518"></script>
-  <script src="js/map.js?v=20260426-1518"></script>
-  <script src="js/calculator.js?v=20260426-1518"></script>
-  <script src="js/pages.js?v=20260426-1518"></script>
+  <script src="js/i18n.js?v=20260426-1522"></script>
+  <script src="data/tolls.js?v=20260426-1522"></script>
+  <script src="data/routes.js?v=20260426-1522"></script>
+  <script src="js/map.js?v=20260426-1522"></script>
+  <script src="js/calculator.js?v=20260426-1522"></script>
+  <script src="js/pages.js?v=20260426-1522"></script>
 </body>
 </html>

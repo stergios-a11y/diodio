@@ -2019,16 +2019,36 @@ input[type="range"]::-moz-range-thumb {
 .tolls-toolbar #tolls-vehicle { min-width: 130px; }
 
 .tolls-time-control {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+  cursor: pointer;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.tolls-time-control:hover,
+.tolls-time-control:focus-within {
+  border-color: var(--aegean);
+  box-shadow: 0 0 0 3px rgba(42,107,158,0.08);
+}
+.tolls-time-label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.86rem;
+  color: var(--muted);
+  letter-spacing: 0.005em;
+  white-space: nowrap;
 }
 .tolls-time-pill {
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
-  padding: 5px 11px;
+  padding: 4px 10px;
   background: var(--aegean);
   color: var(--paper);
   border-radius: 999px;
@@ -2038,18 +2058,47 @@ input[type="range"]::-moz-range-thumb {
 }
 .tolls-time-pill .tolls-time-num {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem;
   letter-spacing: -0.025em;
+  min-width: 14px;
+  text-align: center;
 }
 .tolls-time-pill .tolls-time-suffix {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 500;
   opacity: 0.85;
   letter-spacing: 0.005em;
 }
 .tolls-time-slider {
-  width: 110px;
+  width: 150px;
+  height: 6px;
   flex-shrink: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(to right, rgba(42,107,158,0.18), rgba(42,107,158,0.32));
+  border-radius: 3px;
+  cursor: grab;
+}
+.tolls-time-slider:active { cursor: grabbing; }
+.tolls-time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  background: var(--aegean);
+  border: 2px solid var(--paper);
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 1px 4px rgba(42,107,158,0.45);
+  transition: transform 0.12s var(--ease);
+}
+.tolls-time-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.tolls-time-slider:active::-webkit-slider-thumb { cursor: grabbing; transform: scale(1.18); }
+.tolls-time-slider::-moz-range-thumb {
+  width: 18px; height: 18px;
+  background: var(--aegean);
+  border: 2px solid var(--paper);
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 1px 4px rgba(42,107,158,0.45);
 }
 
 .tolls-avoid-toggle {
@@ -2177,7 +2226,9 @@ input[type="range"]::-moz-range-thumb {
   .tolls-toolbar #tolls-vehicle { width: auto; min-width: 110px; flex: 0 0 auto; }
   .tolls-toolbar .toolbar-divider { display: none; }
   .tolls-toolbar .tolls-time-control { flex: 1 1 100%; justify-content: space-between; }
-  .tolls-toolbar .tolls-time-slider { flex: 1; max-width: 200px; }
+  .tolls-toolbar .tolls-time-slider { flex: 1; max-width: 200px; min-width: 100px; }
+  .tolls-toolbar .tolls-time-slider::-webkit-slider-thumb { width: 22px; height: 22px; }
+  .tolls-toolbar .tolls-time-slider::-moz-range-thumb { width: 22px; height: 22px; }
   .tolls-toolbar .tolls-avoid-toggle { flex: 1 1 100%; }
   .tolls-toolbar .tolls-count { margin-left: 0; flex: 1 1 100%; text-align: right; }
   .routes-grid-table { font-size: 0.72rem; }
