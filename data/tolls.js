@@ -28,7 +28,7 @@ const TOLL_DATA = [
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.1764690, lng: 23.8546228,
-    cat1: 1.00, cat2: 1.90, cat3: 3.80, cat4: 5.70,
+    cat1: 2.70, cat2: 3.90, cat3: 9.75, cat4: 13.70,
     notes: "Northern Attica. First toll heading north from Athens.",
     bypass_directions: {
       north: {
@@ -63,7 +63,7 @@ const TOLL_DATA = [
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.3708752, lng: 23.2868636,
-    cat1: 1.30, cat2: 2.40, cat3: 4.80, cat4: 7.20,
+    cat1: 3.20, cat2: 4.55, cat3: 11.45, cat4: 16.00,
     notes: "North of Thiva / Thebes.",
     bypass_directions: {
       north: {
@@ -98,7 +98,7 @@ const TOLL_DATA = [
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.6174740, lng: 23.1434298,
-    cat1: 1.20, cat2: 2.30, cat3: 4.60, cat4: 6.90,
+    cat1: 3.15, cat2: 4.55, cat3: 11.40, cat4: 15.95,
     notes: "Between Thiva and Kamena Vourla.",
     bypass_directions: {
       north: {
@@ -133,7 +133,7 @@ const TOLL_DATA = [
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.8087016, lng: 22.6025569,
-    cat1: 1.40, cat2: 2.60, cat3: 5.20, cat4: 7.80,
+    cat1: 1.45, cat2: 2.10, cat3: 5.25, cat4: 7.35,
     notes: "Near ferry port for Sporades islands.",
     bypass_directions: {
       north: {
@@ -168,7 +168,7 @@ const TOLL_DATA = [
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.9238268, lng: 22.6291966,
-    cat1: 1.20, cat2: 2.30, cat3: 4.60, cat4: 6.90,
+    cat1: 1.55, cat2: 2.25, cat3: 5.65, cat4: 7.90,
     notes: "Zone boundary station near Kamena Vourla.",
     bypass_directions: {
       north: {
@@ -203,7 +203,7 @@ const TOLL_DATA = [
     operator: "Kentriki Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.9203273, lng: 22.8462812,
-    cat1: 1.90, cat2: 3.70, cat3: 7.40, cat4: 11.10,
+    cat1: 2.90, cat2: 4.10, cat3: 10.20, cat4: 14.30,
     notes: "Highest-priced station on Kentriki Odos section.",
     bypass_directions: {
       north: {
@@ -356,7 +356,7 @@ const TOLL_DATA = [
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
     lat: 39.8044068, lng: 22.5028431,
-    cat1: 0.85, cat2: 1.60, cat3: 3.20, cat4: 4.80,
+    cat1: 2.10, cat2: 3.00, cat3: 7.50, cat4: 10.50,
     notes: "Entry to Aegean Motorway concession north of Larissa.",
     bypass_directions: {
       north: {
@@ -391,7 +391,7 @@ const TOLL_DATA = [
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
     lat: 40.0357339, lng: 22.5698233,
-    cat1: 4.30, cat2: 8.60, cat3: 17.20, cat4: 25.80,
+    cat1: 2.60, cat2: 3.80, cat3: 9.40, cat4: 13.10,
     notes: "Highest toll — covers Tempi Valley tunnel. Old road via Stomio coastal village.",
     bypass_directions: {
       north: {
@@ -461,7 +461,7 @@ const TOLL_DATA = [
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
     lat: 40.6024027, lng: 22.6982903,
-    cat1: 0.58, cat2: 1.15, cat3: 2.30, cat4: 3.45,
+    cat1: 0.80, cat2: 1.15, cat3: 2.90, cat4: 4.10,
     notes: "Thessaloniki ring junction. Northern terminus of PATHE.",
     bypass_directions: {
       north: {
@@ -496,7 +496,7 @@ const TOLL_DATA = [
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
     lat: 40.7068438, lng: 23.1914413,
-    cat1: 1.18, cat2: 2.35, cat3: 4.70, cat4: 7.05,
+    cat1: 2.00, cat2: 2.90, cat3: 7.25, cat4: 10.20,
     notes: "North of Thessaloniki towards Kavala / Halkidiki junction.",
     bypass_directions: {
       north: {
@@ -527,7 +527,7 @@ const TOLL_DATA = [
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
     lat: 40.8582573, lng: 24.1623607,
-    cat1: 1.33, cat2: 2.65, cat3: 5.30, cat4: 7.95,
+    cat1: 1.85, cat2: 2.65, cat3: 6.70, cat4: 9.40,
     notes: "Between Kavala and Drama junctions.",
     bypass_directions: {
       north: {
@@ -558,7 +558,7 @@ const TOLL_DATA = [
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
     lat: 40.7269335, lng: 23.6936209,
-    cat1: 0.70, cat2: 1.40, cat3: 2.80, cat4: 4.20,
+    cat1: 0.95, cat2: 1.40, cat3: 3.50, cat4: 4.90,
     notes: "Popular summer exit for Asprovalta beach.",
     bypass_directions: null,
   },
@@ -570,7 +570,7 @@ const TOLL_DATA = [
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Southbound (entering Greece from N. Macedonia)",
     lat: 41.1081360, lng: 22.5590944,
-    cat1: 1.48, cat2: 2.95, cat3: 5.90, cat4: 8.85,
+    cat1: 2.05, cat2: 2.95, cat3: 7.40, cat4: 10.40,
     notes: "Greek–North Macedonian border. No bypass.",
     bypass_directions: null,
   },
@@ -587,7 +587,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 39.5403268, lng: 20.6743276,
-    cat1: 1.00, cat2: 2.00, cat3: 4.00, cat4: 6.00,
+    cat1: 2.35, cat2: 3.35, cat3: 8.45, cat4: 11.85,
     notes: "Western terminus of Egnatia.",
     bypass_directions: {
       east: {
@@ -622,7 +622,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 39.6188630, lng: 20.9475803,
-    cat1: 1.10, cat2: 2.15, cat3: 4.30, cat4: 6.45,
+    cat1: 1.35, cat2: 1.95, cat3: 4.90, cat4: 6.85,
     notes: "Ioannina bypass. Named after Pamvotida lake.",
     bypass_directions: {
       east: {
@@ -653,7 +653,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 39.7855212, lng: 21.2854099,
-    cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
+    cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35,
     notes: "Mountain tunnel through Pindus range. Old road via Metsovo village.",
     bypass_directions: {
       east: {
@@ -688,7 +688,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 40.2378869, lng: 21.5810286,
-    cat1: 0.90, cat2: 1.80, cat3: 3.60, cat4: 5.40,
+    cat1: 1.65, cat2: 2.40, cat3: 6.00, cat4: 8.40,
     notes: "",
     bypass_directions: {
       east: {
@@ -723,7 +723,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 40.3671958, lng: 22.0602089,
-    cat1: 0.80, cat2: 1.60, cat3: 3.20, cat4: 4.80,
+    cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35,
     notes: "",
     bypass_directions: {
       east: {
@@ -754,7 +754,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 40.5665678, lng: 21.0665417,
-    cat1: 0.80, cat2: 1.60, cat3: 3.20, cat4: 4.80,
+    cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15,
     notes: "Branch spur of Egnatia towards Kastoria / Albanian border.",
     bypass_directions: null,
   },
@@ -766,7 +766,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 40.6956111, lng: 22.9162091,
-    cat1: 0.60, cat2: 1.20, cat3: 2.40, cat4: 3.60,
+    cat1: 0.45, cat2: 0.65, cat3: 1.70, cat4: 2.35,
     notes: "Western Thessaloniki bypass.",
     bypass_directions: null,
   },
@@ -778,7 +778,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 41.0435183, lng: 23.2952374,
-    cat1: 0.90, cat2: 1.80, cat3: 3.60, cat4: 5.40,
+    cat1: 1.60, cat2: 2.35, cat3: 5.85, cat4: 8.20,
     notes: "Branch spur north of Thessaloniki ring.",
     bypass_directions: null,
   },
@@ -802,7 +802,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 41.1203415, lng: 25.0802422,
-    cat1: 0.85, cat2: 1.70, cat3: 3.40, cat4: 5.10,
+    cat1: 1.60, cat2: 2.25, cat3: 5.70, cat4: 8.00,
     notes: "",
     bypass_directions: {
       east: {
@@ -837,7 +837,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 41.0135240, lng: 25.5332019,
-    cat1: 0.85, cat2: 1.70, cat3: 3.40, cat4: 5.10,
+    cat1: 1.90, cat2: 2.75, cat3: 6.90, cat4: 9.65,
     notes: "",
     bypass_directions: null,
   },
@@ -849,7 +849,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 40.9441053, lng: 26.2045028,
-    cat1: 0.80, cat2: 1.60, cat3: 3.20, cat4: 4.80,
+    cat1: 1.40, cat2: 2.00, cat3: 5.00, cat4: 7.00,
     notes: "Eastern terminus of main Egnatia line.",
     bypass_directions: null,
   },
@@ -861,7 +861,7 @@ const TOLL_DATA = [
     operator: "Egnatia Odos",
     type: "entry", direction_label: "Westbound (entering Greece from Bulgaria)",
     lat: 41.3641919, lng: 23.3567727,
-    cat1: 1.18, cat2: 2.35, cat3: 4.70, cat4: 7.05,
+    cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.30,
     notes: "Greek–Bulgarian border spur.",
     bypass_directions: null,
   },
@@ -878,7 +878,7 @@ const TOLL_DATA = [
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.3592412, lng: 21.6565418,
-    cat1: 1.20, cat2: 2.40, cat3: 4.80, cat4: 7.20,
+    cat1: 2.50, cat2: 3.55, cat3: 8.90, cat4: 12.50,
     notes: "First toll northbound from Antirrio.",
     bypass_directions: {
       north: {
@@ -909,7 +909,7 @@ const TOLL_DATA = [
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.5494744, lng: 21.2723798,
-    cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
+    cat1: 2.90, cat2: 4.20, cat3: 10.50, cat4: 14.70,
     notes: "Zone 2 (Chaliki – Amfilochia).",
     bypass_directions: {
       north: {
@@ -944,7 +944,7 @@ const TOLL_DATA = [
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.9898946, lng: 21.1709225,
-    cat1: 1.63, cat2: 3.25, cat3: 6.50, cat4: 9.75,
+    cat1: 2.50, cat2: 3.55, cat3: 8.95, cat4: 12.50,
     notes: "Arta–Ioannina section.",
     bypass_directions: {
       north: {
@@ -975,7 +975,7 @@ const TOLL_DATA = [
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 39.4252460, lng: 20.9053087,
-    cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
+    cat1: 2.55, cat2: 3.70, cat3: 9.25, cat4: 12.95,
     notes: "Near Arta. Northern terminus of Nea Odos A5 section.",
     bypass_directions: {
       north: {
@@ -1015,7 +1015,7 @@ const TOLL_DATA = [
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.0422442, lng: 23.4958076,
-    cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
+    cat1: 1.70, cat2: 2.50, cat3: 6.30, cat4: 8.90,
     notes: "Western Athens gateway. Junction with A6 Attiki Odos.",
     bypass_directions: {
       west: {
@@ -1050,7 +1050,7 @@ const TOLL_DATA = [
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 37.9249719, lng: 23.0325365,
-    cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
+    cat1: 1.50, cat2: 2.10, cat3: 5.40, cat4: 7.60,
     notes: "At the Corinth Canal. Iconic crossing point into the Peloponnese.",
     bypass_directions: {
       west: {
@@ -1113,6 +1113,32 @@ const TOLL_DATA = [
     },
   },
   {
+    id: "olympia_zevgolatio_east_exit",
+    name_gr: "Πλευρικά Ζευγολατιού — Ανατολική έξοδος",
+    name_en: "Zevgolatio side — E exit",
+    highway: "A8", highway_name: "Olympia Odos (A8/E94)",
+    operator: "Olympia Odos",
+    type: "side", direction: "east", role: "exit",
+    direction_label: "Eastbound exit at Zevgolatio interchange (towards Athens)",
+    lat: 37.931497835751856, lng: 22.78794210146641,
+    cat1: 0.60, cat2: 0.90, cat3: 2.20, cat4: 3.10,
+    notes: "Side toll booth — paid only when exiting A8 eastbound (towards Athens) at Zevgolatio.",
+    bypass_directions: null,
+  },
+  {
+    id: "olympia_zevgolatio_east_entry",
+    name_gr: "Πλευρικά Ζευγολατιού — Ανατολική είσοδος",
+    name_en: "Zevgolatio side — E entry",
+    highway: "A8", highway_name: "Olympia Odos (A8/E94)",
+    operator: "Olympia Odos",
+    type: "side", direction: "east", role: "entry",
+    direction_label: "Eastbound entry at Zevgolatio interchange (towards Athens)",
+    lat: 37.931231748519615, lng: 22.78796536726395,
+    cat1: 0.60, cat2: 0.90, cat3: 2.20, cat4: 3.10,
+    notes: "Side toll booth — paid only when entering A8 eastbound (towards Athens) at Zevgolatio.",
+    bypass_directions: null,
+  },
+  {
     id: "olympia_kiato",
     name_gr: "Διόδια Κιάτου",
     name_en: "Kiato",
@@ -1132,7 +1158,7 @@ const TOLL_DATA = [
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.2057293, lng: 22.1392536,
-    cat1: 1.20, cat2: 2.40, cat3: 4.80, cat4: 7.20,
+    cat1: 2.70, cat2: 3.80, cat3: 9.70, cat4: 13.60,
     notes: "Halfway Athens–Patras. Old coastal road available.",
     bypass_directions: {
       west: {
@@ -1167,7 +1193,7 @@ const TOLL_DATA = [
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.3164492, lng: 21.8300325,
-    cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
+    cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.50,
     notes: "Near Rio ferry landing and bridge approach.",
     bypass_directions: {
       west: {
@@ -1202,7 +1228,7 @@ const TOLL_DATA = [
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.1449493, lng: 21.6191570,
-    cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
+    cat1: 2.50, cat2: 3.60, cat3: 9.00, cat4: 12.70,
     notes: "Eastern approach to Patras.",
     bypass_directions: null,
   },
@@ -1231,7 +1257,7 @@ const TOLL_DATA = [
     operator: "Kentriki Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 38.9148821, lng: 22.3487648,
-    cat1: 1.20, cat2: 2.30, cat3: 4.60, cat4: 6.90,
+    cat1: 1.40, cat2: 2.05, cat3: 5.15, cat4: 7.20,
     notes: "Southern terminus of Kentriki Odos. Near Lamia, junction with A1.",
     bypass_directions: null,
   },
@@ -1243,7 +1269,7 @@ const TOLL_DATA = [
     operator: "Kentriki Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 39.2566317, lng: 22.0831633,
-    cat1: 0.98, cat2: 1.95, cat3: 3.90, cat4: 5.85,
+    cat1: 2.60, cat2: 3.70, cat3: 9.30, cat4: 13.00,
     notes: "",
     bypass_directions: {
       north: {
@@ -1276,7 +1302,7 @@ const TOLL_DATA = [
     operator: "Kentriki Odos",
     type: "frontal", direction_label: "Both directions",
     lat: 39.5204295, lng: 21.8322372,
-    cat1: 1.00, cat2: 2.00, cat3: 4.00, cat4: 6.00,
+    cat1: 2.25, cat2: 3.25, cat3: 8.10, cat4: 11.40,
     notes: "Northern terminus of Kentriki Odos.",
     bypass_directions: {
       north: {
@@ -1312,10 +1338,10 @@ const TOLL_DATA = [
     name_en: "Rio–Antirrio Bridge",
     highway: "BRIDGE", highway_name: "Rio–Antirrio Bridge (Gefyra SA)",
     operator: "Gefyra SA",
-    type: "bridge", direction_label: "Westbound only. Eastbound is FREE.",
+    type: "bridge", direction_label: "Both directions",
     lat: 38.3337794, lng: 21.7660189,
-    cat1: 7.60, cat2: 15.50, cat3: 25.00, cat4: 35.00,
-    notes: "2.88 km cable-stayed bridge. Toll only westbound. Return eastbound is free.",
+    cat1: 2.50, cat2: 15.90, cat3: 24.70, cat4: 50.90,
+    notes: "Charilaos Trikoupis Bridge. Single-crossing toll (2026): motorbikes €2.50, cars €15.90, trucks 2-axle €24.70, trucks 4+ axle €50.90. Buses and disability cards have separate tariffs. Discounts: Aller-Retour (5h roundtrip), 30-trip cards, e-Pass.",
     bypass_directions: null,
   },
   {
@@ -1360,7 +1386,7 @@ const TOLL_DATA = [
     operator: "Moreas SA",
     type: "frontal", direction_label: "Both directions",
     lat: 37.8359076, lng: 22.8079391,
-    cat1: 1.05, cat2: 2.10, cat3: 4.20, cat4: 6.30,
+    cat1: 2.00, cat2: 2.95, cat3: 7.45, cat4: 10.45,
     notes: "Start of Moreas motorway south of Corinth.",
     bypass_directions: null,
   },
@@ -1372,7 +1398,7 @@ const TOLL_DATA = [
     operator: "Moreas SA",
     type: "frontal", direction_label: "Both directions",
     lat: 37.6007682, lng: 22.4464524,
-    cat1: 1.20, cat2: 2.40, cat3: 4.80, cat4: 7.20,
+    cat1: 1.90, cat2: 2.80, cat3: 7.10, cat4: 9.95,
     notes: "Near ancient Mycenae. Exit for Nafplio.",
     bypass_directions: null,
   },
@@ -1384,7 +1410,7 @@ const TOLL_DATA = [
     operator: "Moreas SA",
     type: "frontal", direction_label: "Both directions",
     lat: 37.2988500, lng: 22.2102678,
-    cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
+    cat1: 2.40, cat2: 3.45, cat3: 8.60, cat4: 12.10,
     notes: "Arcadian plateau. Junction for Sparta branch.",
     bypass_directions: null,
   },
@@ -1408,7 +1434,7 @@ const TOLL_DATA = [
     operator: "Moreas SA",
     type: "frontal", direction_label: "Both directions",
     lat: 37.1368508, lng: 22.0379627,
-    cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
+    cat1: 1.50, cat2: 2.25, cat3: 5.65, cat4: 7.90,
     notes: "Southern terminus of Moreas motorway.",
     bypass_directions: null,
   },
