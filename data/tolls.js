@@ -692,6 +692,18 @@ const TOLL_DATA = [
     bypass_directions: null,
   },
   {
+    id: "egnatia_kavala",
+    name_gr: "Διόδια Καβάλας",
+    name_en: "Kavala",
+    highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
+    operator: "Egnatia Odos",
+    type: "frontal", direction_label: "Both directions",
+    lat: 40.959857128564344, lng: 24.47234347415425,
+    cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15,
+    notes: "Frontal toll on Egnatia mainline near Kavala.",
+    bypass_directions: null,
+  },
+  {
     id: "egnatia_xanthi",
     name_gr: "Διόδια Ιάσμου / Ξάνθης",
     name_en: "Iasmos / Xanthi",
@@ -1008,6 +1020,18 @@ const TOLL_DATA = [
         confidence: "verified"
       },
     },
+  },
+  {
+    id: "olympia_kiato",
+    name_gr: "Διόδια Κιάτου",
+    name_en: "Kiato",
+    highway: "A8", highway_name: "Olympia Odos (A8/E94)",
+    operator: "Olympia Odos",
+    type: "frontal", direction_label: "Both directions",
+    lat: 37.996686833044144, lng: 22.735416380916327,
+    cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.60,
+    notes: "Frontal toll on Olympia Odos near Kiato.",
+    bypass_directions: null,
   },
   {
     id: "olympia_aigio",
