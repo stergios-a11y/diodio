@@ -310,10 +310,13 @@ async function analyze() {
         iconSize: [20,20], iconAnchor: [10,10],
       });
       const m = L.marker([r.toll.lat, r.toll.lng], { icon, zIndexOffset: 1000 });
+      const popupLang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'en';
+      const popupName = popupLang === 'el' ? r.toll.name_gr : r.toll.name_en;
+      const popupVerdict = t(`verdict.${r.verdict.toLowerCase()}`);
       m.bindPopup(`
         <div class="map-popup">
-          <div class="map-popup-name">${r.toll.name_en}</div>
-          <div class="map-popup-verdict ${r.verdict}">${r.verdict} · €${r.toll[catKey].toFixed(2)}</div>
+          <div class="map-popup-name">${popupName}</div>
+          <div class="map-popup-verdict ${r.verdict}">${popupVerdict} · €${r.toll[catKey].toFixed(2)}</div>
           <div class="map-popup-reason">${r.reasoning}</div>
         </div>`, { maxWidth: 220 });
       m.addTo(map);
@@ -344,12 +347,16 @@ async function analyze() {
       const bypassInfo = r.dir
         ? `${t('sp.exit.tag').replace('↙ ', '')}${r.dir.exit_name} · ${t('sp.entry.tag').replace('↗ ', '')}${r.dir.entry_name} · +${r.dir.minutes} ${t('bar.time.label2')}`
         : t('verdict.no.bypass.short');
+      const verdictKey = `verdict.${r.verdict.toLowerCase()}`;
+      const verdictLabel = t(verdictKey);
+      const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'en';
+      const tollName = lang === 'el' ? r.toll.name_gr : r.toll.name_en;
       html += `
         <div class="toll-chip verdict-${r.verdict}"
           onclick="const el=this.querySelector('.chip-reason');el.style.display=el.style.display==='block'?'none':'block'">
-          <span class="chip-name">${r.toll.name_en}</span>
+          <span class="chip-name">${tollName}</span>
           <span class="chip-price">€${r.toll[catKey].toFixed(2)}</span>
-          <span class="chip-verdict">${r.verdict}</span>
+          <span class="chip-verdict">${verdictLabel}</span>
           <span class="chip-reason">${r.reasoning}<br><small style="opacity:0.7">${bypassInfo}</small></span>
         </div>`;
     });
