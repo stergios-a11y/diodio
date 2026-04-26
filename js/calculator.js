@@ -304,7 +304,7 @@ function drawBypassLine(dir, label) {
   }
 
   const layer = L.polyline(initialCoords, {
-    color:     '#2e7a4a',
+    color:     '#2a6b9e', // blue: bypass = local/free road (Greek convention)
     weight:    4,
     opacity:   dir.exit && dir.entry ? 0.5 : 0.85,
     dashArray: dir.exit && dir.entry ? '8 6' : null,
@@ -527,9 +527,9 @@ async function analyze() {
     if (!mainRoute || !mainRoute.coords?.length) throw new Error(t('err.route'));
     const routeCoords = mainRoute.coords;
 
-    // 4. Draw blue main route
+    // 4. Draw main route in green (motorway = green per Greek convention)
     routeLayer = L.polyline(routeCoords, {
-      color: '#2a6b9e', weight: 4, opacity: 0.6,
+      color: '#2e7a4a', weight: 4, opacity: 0.6,
     }).addTo(map);
     if (window.setActiveRouteLayer) window.setActiveRouteLayer(routeCoords);
 

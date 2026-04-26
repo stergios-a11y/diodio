@@ -340,8 +340,10 @@ function openSidePanel(toll) {
 
   if (bd) {
     const dirEntries = Object.entries(bd);
-    // Distinct colors for each direction so they don't overlap visually
-    const dirColors = ['#2e7a4a', '#1e5f7a'];
+    // Distinct colors for each direction so they don't overlap visually.
+    // Both shades are blue because the bypass line is now blue (Greek
+    // motorway-sign convention: blue = local/free road).
+    const dirColors = ['#2a6b9e', '#3d83bc'];
 
     dirEntries.forEach(([key, dir], i) => {
       if (!dir.exit || !dir.entry) return;
@@ -357,14 +359,15 @@ function openSidePanel(toll) {
         (dir.exit.lng + dir.entry.lng) / 2,
       ];
 
-      // ─── Bypass line (local roads, green/teal) ───
+      // ─── Bypass line (local roads, blue per Greek motorway-sign convention:
+      //     blue = local/free road, green = motorway) ───
       const placeholderCoords = [[dir.exit.lat, dir.exit.lng], [dir.entry.lat, dir.entry.lng]];
       const bypassLine = L.polyline(placeholderCoords, {
         color: lineColor, weight: 4, opacity: 0.5, dashArray: '8 6',
         lineCap: 'round', lineJoin: 'round',
       }).addTo(map);
       bypassLine.bindTooltip(
-        `🟢 ${translateDirectionLabel(dir.label)} — ${t('bypass.via.local')}`,
+        `🔵 ${translateDirectionLabel(dir.label)} — ${t('bypass.via.local')}`,
         { sticky: true, className: 'bypass-tooltip' }
       );
       bypassLine._dirKey = key;
@@ -380,13 +383,13 @@ function openSidePanel(toll) {
       bypassArrow._dirKey = key;
       inspectLayers.push(bypassArrow);
 
-      // ─── Highway segment line (motorway, dashed Aegean blue) ───
+      // ─── Highway segment line (motorway, green per Greek convention) ───
       const highwayLine = L.polyline(placeholderCoords, {
-        color: '#2a6b9e', weight: 3.5, opacity: 0.4, dashArray: '4 6',
+        color: '#2e7a4a', weight: 3.5, opacity: 0.4, dashArray: '4 6',
         lineCap: 'round', lineJoin: 'round',
       }).addTo(map);
       highwayLine.bindTooltip(
-        `🔵 ${translateDirectionLabel(dir.label)} — ${t('bypass.via.highway')}`,
+        `🟢 ${translateDirectionLabel(dir.label)} — ${t('bypass.via.highway')}`,
         { sticky: true, className: 'bypass-tooltip' }
       );
       highwayLine._dirKey = key;
@@ -553,7 +556,10 @@ function openSidePanel(toll) {
       if (layer.setOpacity) {
         layer.setOpacity(visible ? 1 : 0);
       } else if (layer.setStyle) {
-        const isHighway = layer.options.color === '#2a6b9e';
+        // Highway line is rendered in green; bypass in blue. We dim the
+        // highway slightly more so the bypass reads as the primary route
+        // when both are visible.
+        const isHighway = layer.options.color === '#2e7a4a';
         layer.setStyle({ opacity: visible ? (isHighway ? 0.7 : 0.9) : 0 });
       }
     });
@@ -635,12 +641,12 @@ function openSidePanel(toll) {
           ${confHTML}
           <div class="sp-dir-compare" data-stats="${key}">
             <div class="sp-cmp-row sp-cmp-bypass">
-              <span class="sp-cmp-dot" style="background:#2e7a4a"></span>
+              <span class="sp-cmp-dot" style="background:#2a6b9e"></span>
               <span class="sp-cmp-label">${t('compare.bypass')}</span>
               <span class="sp-cmp-vals" data-bypass-vals>${t('compare.loading')}</span>
             </div>
             <div class="sp-cmp-row sp-cmp-highway">
-              <span class="sp-cmp-dot" style="background:#2a6b9e"></span>
+              <span class="sp-cmp-dot" style="background:#2e7a4a"></span>
               <span class="sp-cmp-label">${t('compare.highway')}</span>
               <span class="sp-cmp-vals" data-highway-vals>${t('compare.loading')}</span>
             </div>

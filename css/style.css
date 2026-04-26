@@ -360,8 +360,8 @@ body {
   transform-origin: center center;
 }
 .dir-arrow svg { display: block; }
-.dir-arrow-bypass  { color: #2e7a4a; }   /* match the green bypass line */
-.dir-arrow-highway { color: #2a6b9e; }   /* match the blue highway line */
+.dir-arrow-bypass  { color: #2a6b9e; }   /* match the blue bypass line (local road) */
+.dir-arrow-highway { color: #2e7a4a; }   /* match the green highway line (motorway) */
 
 /* ══════════════════════════════════════
    RAMPS TOGGLE INSIDE LEGEND
