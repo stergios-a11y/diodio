@@ -86,7 +86,7 @@ const STRINGS = {
     'err.no.tolls':            'Δεν βρέθηκαν διόδια σε αυτή τη διαδρομή',
     'hover.click.details':     'κλικ για λεπτομέρειες',
     'verdict.pay':             'ΠΛΗΡΩΣΕ',
-    'verdict.avoid':           'ΑΠΕΦΥΓΕ',
+    'verdict.avoid':           'ΑΠΟΦΥΓΕ',
     'verdict.marginal':        'ΟΡΙΑΚΟ',
     'verdict.avoid.reason':    'Έξοδος {exit}, είσοδος {entry}. +{min} λεπτά εξοικονόμηση €{cost}.',
     'verdict.marginal.reason': 'Έξοδος {exit}. +{min} λεπτά — οριακή περίπτωση.',

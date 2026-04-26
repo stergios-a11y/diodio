@@ -306,7 +306,7 @@ async function analyze() {
       const color = verdictColors[r.verdict] || '#555';
       const icon  = L.divIcon({
         className: '',
-        html: `<div style="width:20px;height:20px;background:${color};border:2.5px solid white;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;font-family:sans-serif;">${r.verdict==='PAY'?'✓':r.verdict==='AVOID'?'✕':'~'}</div>`,
+        html: `<div style="width:22px;height:22px;background:${color};border:2.5px solid white;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;font-family:Inter,sans-serif;letter-spacing:-0.02em;">${r.verdict==='PAY'?'€':r.verdict==='AVOID'?'✕':'~'}</div>`,
         iconSize: [20,20], iconAnchor: [10,10],
       });
       const m = L.marker([r.toll.lat, r.toll.lng], { icon, zIndexOffset: 1000 });

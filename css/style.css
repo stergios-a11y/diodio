@@ -160,22 +160,22 @@ body {
   box-shadow: 0 0 0 3px var(--aegean-lt);
 }
 .flag-option {
-  padding: 4px 11px 3px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--muted);
+  padding: 4px 8px 3px;
+  font-size: 0.95rem;
+  line-height: 1;
   border-radius: 999px;
   transition: all 0.2s var(--ease);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  letter-spacing: 0.04em;
   cursor: pointer;
+  filter: grayscale(0.6) opacity(0.55);
 }
+.flag-option:hover { filter: grayscale(0) opacity(1); }
 .flag-option.active {
-  background: var(--aegean);
-  color: var(--paper);
-  box-shadow: 0 1px 4px rgba(42,107,158,0.3);
+  background: var(--aegean-lt);
+  filter: grayscale(0) opacity(1);
+  box-shadow: 0 1px 4px rgba(42,107,158,0.18);
+  transform: scale(1.05);
 }
 
 /* ══════════════════════════════════════
