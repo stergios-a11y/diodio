@@ -20,7 +20,7 @@ function sliderTierKey(n) {
 }
 function updateSliderUI() {
   tvVal.textContent = slider.value;
-  if (tvTier) tvTier.textContent = `· ${t(sliderTierKey(parseInt(slider.value)))}`;
+  if (tvTier) tvTier.textContent = t(sliderTierKey(parseInt(slider.value)));
 }
 slider.addEventListener('input', updateSliderUI);
 window.addEventListener('langchange', updateSliderUI);
