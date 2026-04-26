@@ -854,8 +854,7 @@ const tollNameMarkers = [];
 function buildLabelHtml(toll) {
   const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
   const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
-  const color = HIGHWAY_COLORS[toll.highway] || '#888';
-  return `<div class="toll-name-label"><span class="toll-name-dot" style="background:${color}"></span>${short}</div>`;
+  return `<div class="toll-name-label">${short}</div>`;
 }
 
 function buildTollNameMarkers() {
@@ -894,17 +893,28 @@ function updateTollNameLabels() {
   });
 }
 
-// Mark a toll's label as active (green dot, prominent) — call when toll is selected
+// Mark a toll as active (label = green pill, dot = green) — call when toll is selected
 function setActiveTollLabel(activeTollId) {
+  // Update labels
   tollNameMarkers.forEach(({ marker, toll }) => {
     const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
     const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
+    const isActive = toll.id === activeTollId;
+    marker.setIcon(L.divIcon({
+      className: '',
+      html: `<div class="toll-name-label${isActive ? ' active' : ''}">${short}</div>`,
+      iconSize: [null, null], iconAnchor: [0, -10],
+    }));
+  });
+  // Update dot markers — turn the active one green, restore others to highway color
+  allMarkers.forEach(({ toll, marker }) => {
     const color = HIGHWAY_COLORS[toll.highway] || '#888';
     const isActive = toll.id === activeTollId;
     marker.setIcon(L.divIcon({
       className: '',
-      html: `<div class="toll-name-label${isActive ? ' active' : ''}"><span class="toll-name-dot" style="background:${isActive ? '#1f5828' : color}"></span>${short}</div>`,
-      iconSize: [null, null], iconAnchor: [0, -10],
+      html: `<div class="toll-marker${isActive ? ' active' : ''}" style="background:${isActive ? '#1f5828' : color}"></div>`,
+      iconSize: isActive ? [14, 14] : [11, 11],
+      iconAnchor: isActive ? [7, 7] : [5.5, 5.5],
     }));
   });
 }
