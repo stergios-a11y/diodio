@@ -196,7 +196,7 @@ const TOLL_DATA = [
   },
   {
     id: "a1_moschochori",
-    name_gr: "Διόδια Μοσχοχωρίου",
+    name_gr: "Διόδια Μοσχοχωρίου / Κιλελέρ",
     name_en: "Moschochori / Kileler",
     highway: "A1", highway_name: "PATHE (A1/E75) · Kentriki Odos",
     operator: "Kentriki Odos",
@@ -225,7 +225,7 @@ const TOLL_DATA = [
   },
   {
     id: "a1_makrychori",
-    name_gr: "Διόδια Μακρυχωρίου",
+    name_gr: "Διόδια Μακρυχωρίου / Λάρισας",
     name_en: "Makrychori / Larissa",
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
@@ -411,7 +411,7 @@ const TOLL_DATA = [
   },
   {
     id: "a1_evzoni",
-    name_gr: "Διόδια Ευζώνων",
+    name_gr: "Διόδια Ευζώνων (Σύνορα Β. Μακεδονίας)",
     name_en: "Evzoni (N. Macedonia Border)",
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
@@ -428,7 +428,7 @@ const TOLL_DATA = [
 
   {
     id: "egnatia_igoumenitsa",
-    name_gr: "Διόδια Τυριάς",
+    name_gr: "Διόδια Τυριάς / Ηγουμενίτσας",
     name_en: "Tyria / Igoumenitsa",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
@@ -457,7 +457,7 @@ const TOLL_DATA = [
   },
   {
     id: "egnatia_ioannina",
-    name_gr: "Διόδια Παμβώτιδας",
+    name_gr: "Διόδια Παμβώτιδας / Ιωαννίνων",
     name_en: "Pamvotida / Ioannina",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
@@ -486,7 +486,7 @@ const TOLL_DATA = [
   },
   {
     id: "egnatia_metsovo",
-    name_gr: "Διόδια Μαλακασίου",
+    name_gr: "Διόδια Μαλακασίου / Σήραγγα Μετσόβου",
     name_en: "Malakasi / Metsovo Tunnel",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
@@ -515,7 +515,7 @@ const TOLL_DATA = [
   },
   {
     id: "egnatia_kozani",
-    name_gr: "Διόδια Σιάτιστας",
+    name_gr: "Διόδια Σιάτιστας / Κοζάνης",
     name_en: "Siatista / Kozani",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
@@ -544,7 +544,7 @@ const TOLL_DATA = [
   },
   {
     id: "egnatia_veroia",
-    name_gr: "Διόδια Πολυμύλου",
+    name_gr: "Διόδια Πολυμύλου / Βέροιας",
     name_en: "Polymylo / Veroia",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
@@ -585,7 +585,7 @@ const TOLL_DATA = [
   },
   {
     id: "egnatia_thessaloniki_west",
-    name_gr: "Διόδια Θεσσαλονίκης-Ωραιοκάστρου",
+    name_gr: "Διόδια Θεσσαλονίκης Δυτ. (Ωραιόκαστρο)",
     name_en: "Thessaloniki West (Oraiokastro)",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
@@ -609,7 +609,7 @@ const TOLL_DATA = [
   },
   {
     id: "egnatia_xanthi",
-    name_gr: "Διόδια Ιάσμου",
+    name_gr: "Διόδια Ιάσμου / Ξάνθης",
     name_en: "Iasmos / Xanthi",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
@@ -638,7 +638,7 @@ const TOLL_DATA = [
   },
   {
     id: "egnatia_komotini",
-    name_gr: "Διόδια Μέστης",
+    name_gr: "Διόδια Μέστης / Κομοτηνής",
     name_en: "Mestis / Komotini",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
@@ -650,7 +650,7 @@ const TOLL_DATA = [
   },
   {
     id: "egnatia_alexandroupoli",
-    name_gr: "Διόδια Αρδανίου",
+    name_gr: "Διόδια Αρδανίου / Αλεξανδρούπολης",
     name_en: "Ardanio / Alexandroupoli",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
@@ -662,7 +662,7 @@ const TOLL_DATA = [
   },
   {
     id: "egnatia_promahonas",
-    name_gr: "Διόδια Προμαχώνα",
+    name_gr: "Διόδια Προμαχώνα (Σύνορα Βουλγαρίας)",
     name_en: "Promahonas (Bulgarian Border)",
     highway: "A2", highway_name: "Egnatia Odos (A2/E90) — branch",
     operator: "Egnatia Odos",
@@ -766,7 +766,7 @@ const TOLL_DATA = [
   },
   {
     id: "ionia_terovos",
-    name_gr: "Διόδια Τέροβου",
+    name_gr: "Διόδια Τέροβου / Άρτας",
     name_en: "Terovos / Arta",
     highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
@@ -829,7 +829,7 @@ const TOLL_DATA = [
   },
   {
     id: "olympia_isthmos_canal",
-    name_gr: "Διόδια Ισθμού",
+    name_gr: "Διόδια Ισθμού (Διώρυγα Κορίνθου)",
     name_en: "Isthmos (Corinth Canal)",
     highway: "A8", highway_name: "Olympia Odos (A8/E94)",
     operator: "Olympia Odos",
@@ -887,7 +887,7 @@ const TOLL_DATA = [
   },
   {
     id: "olympia_aigio",
-    name_gr: "Διόδια Ελαιώνα",
+    name_gr: "Διόδια Ελαιώνα / Αιγίου",
     name_en: "Elaionas / Aigio",
     highway: "A8", highway_name: "Olympia Odos (A8/E94)",
     operator: "Olympia Odos",
@@ -1093,7 +1093,7 @@ const TOLL_DATA = [
 
   {
     id: "moreas_corinth",
-    name_gr: "Διόδια Σπαθοβουνίου",
+    name_gr: "Διόδια Σπαθοβουνίου / Κορίνθου",
     name_en: "Spathvounio / Corinth",
     highway: "A7", highway_name: "Moreas (A7)",
     operator: "Moreas SA",
@@ -1105,7 +1105,7 @@ const TOLL_DATA = [
   },
   {
     id: "moreas_nestani",
-    name_gr: "Διόδια Νεστάνης",
+    name_gr: "Διόδια Νεστάνης / Άργους",
     name_en: "Nestani / Argos",
     highway: "A7", highway_name: "Moreas (A7)",
     operator: "Moreas SA",
@@ -1117,7 +1117,7 @@ const TOLL_DATA = [
   },
   {
     id: "moreas_petrina",
-    name_gr: "Διόδια Πετρίνας",
+    name_gr: "Διόδια Πετρίνας / Τρίπολης",
     name_en: "Petrina / Tripoli",
     highway: "A7", highway_name: "Moreas (A7)",
     operator: "Moreas SA",
@@ -1129,7 +1129,7 @@ const TOLL_DATA = [
   },
   {
     id: "moreas_veligosti",
-    name_gr: "Διόδια Βελιγοστής",
+    name_gr: "Διόδια Βελιγοστής (διακλάδωση Σπάρτης)",
     name_en: "Veligosti / Sparta branch",
     highway: "A7", highway_name: "Moreas (A7) — Sparta spur",
     operator: "Moreas SA",
