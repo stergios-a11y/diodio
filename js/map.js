@@ -198,8 +198,8 @@ function buildHoverTooltip(toll) {
   return `
     <div class="tt-header">
       <div>
-        <div class="tt-name">${toll.name_en}</div>
-        <div class="tt-name-gr">${toll.name_gr}</div>
+        <div class="tt-name">${stripTollPrefix(toll.name_en)}</div>
+        <div class="tt-name-gr">${stripTollPrefix(toll.name_gr)}</div>
         <div class="tt-sub">${toll.operator} · <em>${t('hover.click.details')}</em></div>
       </div>
       <div class="tt-badge" style="color:${color};border-color:${color}">${toll.highway}</div>
@@ -614,8 +614,9 @@ function openSidePanel(toll) {
   }
 
   // Name: show Greek first in Greek mode, English first in English mode
-  const primaryName   = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
-  const secondaryName = getCurrentLang() === 'el' ? toll.name_en : toll.name_gr;
+  // Strip "Διόδια" / "Toll of" prefix — the panel header already says "Toll Information".
+  const primaryName   = stripTollPrefix(getCurrentLang() === 'el' ? toll.name_gr : toll.name_en);
+  const secondaryName = stripTollPrefix(getCurrentLang() === 'el' ? toll.name_en : toll.name_gr);
 
   // Notes are English-only in data; only show when in English mode
   const notesHTML = (toll.notes && getCurrentLang() === 'en')
@@ -863,7 +864,7 @@ const tollNameMarkers = [];
 
 function buildLabelHtml(toll) {
   const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
-  const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
+  const short = stripTollPrefix(name);
   return `<div class="toll-name-label">${short}</div>`;
 }
 
@@ -908,7 +909,7 @@ function setActiveTollLabel(activeTollId) {
   // Update labels
   tollNameMarkers.forEach(({ marker, toll }) => {
     const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
-    const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
+    const short = stripTollPrefix(name);
     const isActive = toll.id === activeTollId;
     marker.setIcon(L.divIcon({
       className: '',

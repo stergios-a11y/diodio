@@ -376,6 +376,14 @@ window.toggleLanguage   = toggleLanguage;
 window.applyTranslations = applyTranslations;
 window.getCurrentLang   = () => currentLang;
 
+// Strip the redundant "Διόδια" / "Toll of" prefix for clean display in lists/labels.
+// The toll name in TOLL_DATA has these prefixes so the data is self-describing,
+// but we don't need to repeat "Διόδια" before every entry in tables and labels.
+window.stripTollPrefix = function(name) {
+  if (!name) return '';
+  return name.replace(/^Διόδια\s+/i, '').replace(/^Toll\s+of\s+/i, '');
+};
+
 // Apply on DOM ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', applyTranslations);

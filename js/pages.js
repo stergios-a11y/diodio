@@ -223,8 +223,8 @@ function buildTollsTable() {
   // Render rows
   let html = '';
   rows.forEach(toll => {
-    const primary = lang === 'el' ? toll.name_gr : toll.name_en;
-    const secondary = lang === 'el' ? toll.name_en : toll.name_gr;
+    const primary = stripTollPrefix(lang === 'el' ? toll.name_gr : toll.name_en);
+    const secondary = stripTollPrefix(lang === 'el' ? toll.name_en : toll.name_gr);
     const hwyColor = HIGHWAY_COLORS[toll.highway] || '#888';
 
     let bypassHtml = '';
