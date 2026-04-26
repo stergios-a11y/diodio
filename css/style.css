@@ -240,37 +240,59 @@ body {
    TOLL NAME LABELS — refined
    ══════════════════════════════════════ */
 .toll-name-label {
-  background: linear-gradient(180deg, #2a6e35 0%, #1f5828 100%);
-  border: 1.5px solid rgba(255,255,255,0.95);
-  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,253,247,0.97);
+  border: 1px solid rgba(0,0,0,0.1);
+  color: var(--ink);
   font-family: var(--font-body);
   font-weight: 600;
   font-style: normal;
   font-size: 0.7rem;
   letter-spacing: 0.01em;
-  padding: 3px 12px 4px;
+  padding: 2px 10px 3px 9px;
   border-radius: 999px;
   white-space: nowrap;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.18),
-    inset 0 0 0 1px rgba(255,255,255,0.08),
-    0 1px 2px rgba(0,0,0,0.3),
-    0 4px 12px rgba(0,0,0,0.15);
+    0 1px 2px rgba(0,0,0,0.08),
+    0 3px 8px rgba(0,0,0,0.06);
   cursor: pointer;
   transform: translateX(-50%) translateY(-7px);
   text-rendering: optimizeLegibility;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
-  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), background 0.18s var(--ease), color 0.18s var(--ease);
   text-transform: uppercase;
-  font-variation-settings: "opsz" 14;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.toll-name-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.6);
 }
 .toll-name-label:hover {
   transform: translateX(-50%) translateY(-9px);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.22),
-    inset 0 0 0 1px rgba(255,255,255,0.1),
-    0 2px 4px rgba(0,0,0,0.32),
-    0 8px 22px rgba(0,0,0,0.22);
+    0 2px 4px rgba(0,0,0,0.12),
+    0 6px 16px rgba(0,0,0,0.12);
+  background: #ffffff;
+}
+/* Active state: green pill with white dot */
+.toll-name-label.active {
+  background: linear-gradient(180deg, #2a6e35 0%, #1f5828 100%);
+  border-color: rgba(255,255,255,0.95);
+  color: #ffffff;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 1px 2px rgba(0,0,0,0.3),
+    0 4px 12px rgba(0,0,0,0.18);
+}
+.toll-name-label.active .toll-name-dot {
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,0.9);
 }
 
 /* ══════════════════════════════════════
@@ -716,12 +738,17 @@ body {
   border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 .sp-price-row:last-child { border-bottom: none; }
-.sp-price-row span {
+.sp-price-row > span {
   color: var(--ink-2);
   font-family: var(--font-body);
   font-weight: 400;
   letter-spacing: -0.005em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
+.sp-emoji { font-size: 1.05rem; line-height: 1; }
+.sp-vlabel { display: inline; }
 .sp-price-row strong {
   color: var(--ink);
   font-weight: 600;
@@ -1800,13 +1827,13 @@ input[type="range"]::-moz-range-thumb {
   }
   #legend.pushed { right: 6px; top: auto; bottom: calc(var(--bar-h) + 220px); }
 
-  /* Side panel as bottom sheet — leaves clear space for the map above */
+  /* Side panel as bottom sheet — leaves 50% of screen for the map above */
   #toll-side-panel {
     width: 100%;
     top: auto;
-    bottom: 116px;
-    height: 48vh;
-    max-height: 48vh;
+    bottom: 0;
+    height: 50vh;
+    max-height: 50vh;
     border-left: none;
     border-top: 1px solid var(--line-strong);
     box-shadow: 0 -8px 32px rgba(26,31,46,0.14);
@@ -1815,16 +1842,41 @@ input[type="range"]::-moz-range-thumb {
   }
   #toll-side-panel.open { transform: translateY(0); }
 
+  /* When panel open on mobile, hide bottom bar and resize map */
+  body.panel-open #bottom-bar { display: none; }
+  body.panel-open #map-container { bottom: 50vh !important; }
+  body.panel-open #results-panel { display: none; }
+  body.panel-open #legend { display: none; }
+  body.panel-open #map-controls { display: none; }
+
   /* Tighter side panel content on mobile so more fits in the smaller sheet */
-  .sp-header { padding: 9px 14px; }
+  .sp-header { padding: 9px 14px; padding-top: 14px; }
   .sp-header-inner { padding: 14px 16px 12px; }
-  .sp-name { font-size: 1.45rem; margin-bottom: 2px; }
-  .sp-name-gr { font-size: 0.82rem; margin-bottom: 8px; }
-  .sp-operator { padding-top: 8px; font-size: 0.66rem; }
-  .sp-section-title { padding: 10px 16px 5px; font-size: 0.75rem; }
-  .sp-prices { padding: 8px 16px 12px; }
-  .sp-price-row { padding: 5px 0; font-size: 0.82rem; }
-  .sp-price-row strong { font-size: 1rem; }
+  .sp-name { font-size: 1.4rem; margin-bottom: 2px; line-height: 1.1; }
+  .sp-name-gr { font-size: 0.82rem; margin-bottom: 6px; }
+  .sp-section-title { padding: 8px 16px 4px; font-size: 0.66rem; }
+  .sp-prices {
+    padding: 6px 16px 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  /* Compact price cells: emoji on top, price below; hide the text label */
+  .sp-price-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    background: var(--paper-2);
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: var(--radius);
+    gap: 3px;
+  }
+  .sp-price-row span { display: flex; align-items: center; gap: 4px; line-height: 1; }
+  .sp-price-row .sp-emoji { font-size: 1.25rem; }
+  .sp-price-row .sp-vlabel { display: none; }   /* hide text label on mobile */
+  .sp-price-row strong { font-size: 0.9rem; letter-spacing: -0.02em; }
+
   .sp-direction { padding: 9px 16px 12px; font-size: 0.86rem; }
   .sp-dir { padding: 11px 16px 13px; }
   .sp-dir-label { font-size: 0.92rem; margin-bottom: 6px; }
@@ -1839,13 +1891,12 @@ input[type="range"]::-moz-range-thumb {
     top: 6px;
     left: 50%;
     transform: translateX(-50%);
-    width: 38px;
+    width: 40px;
     height: 4px;
     background: var(--line-strong);
     border-radius: 2px;
     z-index: 10;
   }
-  .sp-header { padding-top: 14px; }
 
   #bottom-bar {
     height: auto;

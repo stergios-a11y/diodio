@@ -281,9 +281,13 @@ function closeSidePanel() {
   document.getElementById('toll-side-panel')?.classList.remove('open');
   legendEl.classList.remove('pushed');
   document.getElementById('map-controls')?.classList.remove('pushed');
+  document.body.classList.remove('panel-open');
   clearInspectLayers();
   restoreAll();
   sidePanelOpen = false;
+  if (typeof setActiveTollLabel === 'function') setActiveTollLabel(null);
+  // Refresh map size after layout change so it fills new available area
+  setTimeout(() => map.invalidateSize(), 320);
 }
 
 // EXIT sign icon
@@ -310,6 +314,10 @@ function openSidePanel(toll) {
   sidePanelOpenedAt = Date.now();
   legendEl.classList.add('pushed');
   document.getElementById('map-controls')?.classList.add('pushed');
+  document.body.classList.add('panel-open');
+
+  // Mark this toll's label as active (green dot)
+  if (typeof setActiveTollLabel === 'function') setActiveTollLabel(toll.id);
 
   // Dim everything first
   dimAll();
@@ -322,7 +330,12 @@ function openSidePanel(toll) {
   const hwyLayer = highwayRouteLayers[toll.highway];
   if (hwyLayer) hwyLayer.setStyle({ opacity: 0.35 });
 
-  map.setView([toll.lat, toll.lng], Math.max(map.getZoom(), 11), { animate: true });
+  // Wait for layout transition to settle (panel opens, bottom bar hides on mobile),
+  // then invalidate map size so Leaflet recalculates its viewport and centers correctly.
+  setTimeout(() => {
+    map.invalidateSize();
+    map.setView([toll.lat, toll.lng], Math.max(map.getZoom(), 11), { animate: true });
+  }, 320);
 
   const bd    = toll.bypass_directions;
   const color = HIGHWAY_COLORS[toll.highway] || '#888';
@@ -551,7 +564,6 @@ function openSidePanel(toll) {
         const isActive = k === defaultDir;
         filterPillsHTML += `<button class="sp-filter-btn${isActive ? ' active' : ''}" data-dir-filter="${k}">${short}</button>`;
       });
-      filterPillsHTML += `<button class="sp-filter-btn sp-filter-both" data-dir-filter="both">${t('filter.both')}</button>`;
       filterPillsHTML += `</div>`;
     }
 
@@ -606,14 +618,12 @@ function openSidePanel(toll) {
       <div class="sp-hwy-badge" style="--hwy-color:${color}">${t('hwy.' + toll.highway)}</div>
       <div class="sp-name">${primaryName}</div>
       <div class="sp-name-gr">${secondaryName}</div>
-      <div class="sp-operator">${toll.operator}</div>
     </div>
-    <div class="sp-section-title">${t('sp.prices')}</div>
     <div class="sp-prices">
-      <div class="sp-price-row"><span>${t('sp.motorcycle')}</span><strong>€${toll.cat1.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span>${t('sp.car')}</span><strong>€${toll.cat2.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span>${t('sp.van')}</span><strong>€${toll.cat3.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span>${t('sp.truck')}</span><strong>€${toll.cat4.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span><span class="sp-emoji">🏍</span><span class="sp-vlabel">${t('sp.motorcycle')}</span></span><strong>€${toll.cat1.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span><span class="sp-emoji">🚗</span><span class="sp-vlabel">${t('sp.car')}</span></span><strong>€${toll.cat2.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span><span class="sp-emoji">🚐</span><span class="sp-vlabel">${t('sp.van')}</span></span><strong>€${toll.cat3.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span><span class="sp-emoji">🚛</span><span class="sp-vlabel">${t('sp.truck')}</span></span><strong>€${toll.cat4.toFixed(2)}</strong></div>
     </div>
     ${
       // Hide Direction section when it's redundant — frontal toll charges both directions
@@ -682,6 +692,51 @@ map.on('click', () => {
   if (sidePanelOpen && Date.now() - sidePanelOpenedAt > 800) closeSidePanel();
 });
 document.getElementById('sp-close').addEventListener('click', closeSidePanel);
+
+// Swipe-down to close on mobile (touch only)
+(function() {
+  const panel = document.getElementById('toll-side-panel');
+  if (!panel) return;
+  let startY = null;
+  let startT = 0;
+  let dragging = false;
+
+  panel.addEventListener('touchstart', (e) => {
+    if (window.innerWidth > 640) return; // only on mobile
+    if (!panel.classList.contains('open')) return;
+    // Only start a drag if the touch is on the header area (not on scrollable content
+    // unless that content is scrolled to top)
+    const scroll = panel.querySelector('.sp-scroll');
+    if (scroll && scroll.scrollTop > 0) return;
+    startY = e.touches[0].clientY;
+    startT = Date.now();
+    dragging = true;
+    panel.style.transition = 'none';
+  }, { passive: true });
+
+  panel.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy < 0) return; // only allow downward drag
+    panel.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+
+  panel.addEventListener('touchend', (e) => {
+    if (!dragging) return;
+    dragging = false;
+    panel.style.transition = '';
+    const dy = (e.changedTouches[0].clientY - startY) || 0;
+    const dt = Date.now() - startT;
+    const fastSwipe = dy > 60 && dt < 300;
+    const longSwipe = dy > 120;
+    if (fastSwipe || longSwipe) {
+      panel.style.transform = '';
+      closeSidePanel();
+    } else {
+      panel.style.transform = '';
+    }
+  });
+})();
 
 // ── Ramp markers layer (off by default) ──────────────────
 // Each entry: { tollId, exitM, entryM, connLine }
@@ -793,14 +848,18 @@ document.getElementById('legend-ramps-btn').addEventListener('click', function()
 // ── Toll names layer (labels above each toll marker) — always on, zoom-aware ──
 const tollNameMarkers = [];
 
+function buildLabelHtml(toll) {
+  const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
+  const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
+  const color = HIGHWAY_COLORS[toll.highway] || '#888';
+  return `<div class="toll-name-label"><span class="toll-name-dot" style="background:${color}"></span>${short}</div>`;
+}
+
 function buildTollNameMarkers() {
   TOLL_DATA.forEach(toll => {
-    const lang = getCurrentLang();
-    const name = lang === 'el' ? toll.name_gr : toll.name_en;
-    const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
     const icon = L.divIcon({
       className: '',
-      html: `<div class="toll-name-label">${short}</div>`,
+      html: buildLabelHtml(toll),
       iconSize: [null, null], iconAnchor: [0, -10],
     });
     const m = L.marker([toll.lat, toll.lng], { icon, zIndexOffset: 30 });
@@ -820,19 +879,33 @@ function buildTollNameMarkers() {
   });
 }
 buildTollNameMarkers();
-updateTollNamesVisibility(); // show immediately if at sufficient zoom
+updateTollNamesVisibility();
 
 function updateTollNameLabels() {
   tollNameMarkers.forEach(({ marker, toll }) => {
-    const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
-    const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
     marker.setIcon(L.divIcon({
       className: '',
-      html: `<div class="toll-name-label">${short}</div>`,
+      html: buildLabelHtml(toll),
       iconSize: [null, null], iconAnchor: [0, -10],
     }));
   });
 }
+
+// Mark a toll's label as active (green dot, prominent) — call when toll is selected
+function setActiveTollLabel(activeTollId) {
+  tollNameMarkers.forEach(({ marker, toll }) => {
+    const name = getCurrentLang() === 'el' ? toll.name_gr : toll.name_en;
+    const short = name.replace(/^Διόδια\s+/, '').replace(/^Toll\s+of\s+/i, '');
+    const color = HIGHWAY_COLORS[toll.highway] || '#888';
+    const isActive = toll.id === activeTollId;
+    marker.setIcon(L.divIcon({
+      className: '',
+      html: `<div class="toll-name-label${isActive ? ' active' : ''}"><span class="toll-name-dot" style="background:${isActive ? '#1f5828' : color}"></span>${short}</div>`,
+      iconSize: [null, null], iconAnchor: [0, -10],
+    }));
+  });
+}
+window.setActiveTollLabel = setActiveTollLabel;
 
 // Re-render labels when language changes
 window.addEventListener('langchange', () => {
