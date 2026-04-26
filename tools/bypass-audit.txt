@@ -1,0 +1,246 @@
+
+a1_afidnes · A1 · Afidnes
+  north: Northbound (towards Thessaloniki)
+    ✗ exit  "Αγ. Στεφάνου" → approximate (best: "Α.Κ. ΑΓ. ΠΑΡΑΣΚΕΥΗΣ" 14.87km, top match: fuzzy, 14.9km from current, side=ok)
+    ✗ entry "Πολυδενδρίου" → approximate (best: "Σ.Ε.Α. Καπανδριτίου" 0.81km, top match: none, 0.8km from current, side=ok)
+  south: Southbound (towards Athens)
+    ✗ exit  "Πολυδενδρίου" → approximate (best: "Σ.Ε.Α. Καπανδριτίου" 0.81km, top match: none, 0.8km from current, side=ok)
+    ✗ entry "Αγ. Στεφάνου" → approximate (best: "Α.Κ. ΑΓ. ΠΑΡΑΣΚΕΥΗΣ" 14.87km, top match: fuzzy, 14.9km from current, side=ok)
+
+a1_thiva · A1 · Thiva (Thebes)
+  north: Northbound (towards Thessaloniki)
+    ? exit  "Ριτσώνας" → auto (matched "Ριτσώνα" 3.80km, score 50)
+    ✓ entry "Θήβας" → verified (matched "Θήβα" 1.22km, score 60)
+  south: Southbound (towards Athens)
+    ✓ exit  "Θήβας" → verified (matched "Θήβα" 1.22km, score 60)
+    ? entry "Ριτσώνας" → auto (matched "Ριτσώνα" 3.80km, score 50)
+
+a1_traganas · A1 · Traganas
+  north: Northbound (towards Thessaloniki)
+    ✓ exit  "Κάστρου" → verified (matched "Κάστρο" 1.00km, score 46)
+    ✓ entry "Λιβανατών" → verified (matched "Λιβανάτες" 1.63km, score 58)
+  south: Southbound (towards Athens)
+    ✓ exit  "Λιβανατών" → verified (matched "Λιβανάτες" 1.63km, score 58)
+    ✓ entry "Κάστρου" → verified (matched "Κάστρο" 1.00km, score 46)
+
+a1_agios_konstantinos · A1 · Agios Konstantinos (Agia Triada)
+  north: Northbound (towards Thessaloniki)
+    ✓ exit  "Μώλου" → verified (matched "Μώλος" 0.87km, score 62)
+    ✓ entry "Θερμοπυλών" → verified (matched "Θερμοπύλες" 2.94km, score 53)
+  south: Southbound (towards Athens)
+    ✓ exit  "Θερμοπυλών" → verified (matched "Θερμοπύλες" 2.94km, score 53)
+    ✓ entry "Μώλου" → verified (matched "Μώλος" 0.87km, score 62)
+
+a1_mavromantila · A1 · Mavromantila
+  north: Northbound (towards Thessaloniki)
+    ✓ exit  "Λαμίας" → verified (matched "Λαμία" 0.67km, score 62)
+    ✗ entry "Αγ. Μαρίνας" → approximate (best: "Αγία Μαρίνα" 1.39km, top match: fuzzy, 1.4km from current, side=WRONG)
+  south: Southbound (towards Athens)
+    ✗ exit  "Αγ. Μαρίνας" → approximate (best: "Αγία Μαρίνα" 1.39km, top match: fuzzy, 1.4km from current, side=WRONG)
+    ✓ entry "Λαμίας" → verified (matched "Λαμία" 0.67km, score 62)
+
+a1_pelasgia · A1 · Pelasgia
+  north: Northbound (towards Thessaloniki)
+    ✗ exit  "Γλύφας" → approximate (best: "Γλύφα" 6.81km, top match: fuzzy, 6.8km from current, side=WRONG)
+    ✗ entry "Αλμυρού" → approximate (best: "Σούρπη" 12.65km, top match: none, 12.7km from current, side=ok)
+  south: Southbound (towards Athens)
+    ✗ exit  "Αλμυρού" → approximate (best: "Σούρπη" 12.65km, top match: none, 12.7km from current, side=ok)
+    ✗ entry "Γλύφας" → approximate (best: "Γλύφα" 6.81km, top match: fuzzy, 6.8km from current, side=WRONG)
+
+a1_moschochori · A1 · Moschochori / Kileler
+  north: Northbound (towards Thessaloniki)
+    ✗ exit  "Κιλελέρ" → approximate (best: "Κιλελέρ" 7.68km, top match: exact, 7.7km from current, side=ok)
+    ✗ entry "Νίκαιας" → approximate (best: "Λάρισα Νότια" 1.87km, top match: none, 1.9km from current, side=ok)
+  south: Southbound (towards Athens)
+    ✗ exit  "Νίκαιας" → approximate (best: "Λάρισα Νότια" 1.87km, top match: none, 1.9km from current, side=ok)
+    ✗ entry "Κιλελέρ" → approximate (best: "Κιλελέρ" 7.68km, top match: exact, 7.7km from current, side=ok)
+
+a1_makrychori · A1 · Makrychori / Larissa
+  north: Northbound (towards Thessaloniki)
+    ✗ exit  "Ευαγγελισμού" → approximate (best: "Ευαγγελισμός" 1.69km, top match: fuzzy, 1.7km from current, side=WRONG)
+    ✗ entry "Γυρτώνης" → approximate (best: "Ευαγγελισμός" 10.43km, top match: none, 10.4km from current, side=ok)
+  south: Southbound (towards Athens)
+    ✗ exit  "Γυρτώνης" → approximate (best: "Ευαγγελισμός" 10.43km, top match: none, 10.4km from current, side=ok)
+    ✗ entry "Ευαγγελισμού" → approximate (best: "Ευαγγελισμός" 1.69km, top match: fuzzy, 1.7km from current, side=WRONG)
+
+a1_leptokarya · A1 · Leptokarya
+  north: Northbound (towards Thessaloniki)
+    ✓ exit  "Πλαταμώνα" → verified (matched "Πλαταμώνας" 1.40km, score 59)
+    ✓ entry "Λεπτοκαρυάς" → verified (matched "Λεπτοκαρυά" 1.93km, score 57)
+  south: Southbound (towards Athens)
+    ✓ exit  "Λεπτοκαρυάς" → verified (matched "Λεπτοκαρυά" 1.93km, score 57)
+    ✓ entry "Πλαταμώνα" → verified (matched "Πλαταμώνας" 1.40km, score 59)
+
+a1_kleidi · A1 · Kleidi / Aeginio
+  north: Northbound
+    ? exit  "Αιγινίου" → auto (matched "Αιγίνιο" 3.76km, score 35)
+    ✗ entry "Κολινδρού" → approximate (best: "Αιγίνιο" 4.12km, top match: none, 4.1km from current, side=ok)
+  south: Southbound
+    ✗ exit  "Κολινδρού" → approximate (best: "Αιγίνιο" 4.12km, top match: none, 4.1km from current, side=ok)
+    ? entry "Αιγινίου" → auto (matched "Αιγίνιο" 3.76km, score 35)
+
+a1_malgara · A1 · Malgara
+  north: Northbound (towards Thessaloniki)
+    ✗ exit  "Χαλάστρας" → approximate (best: "Ημικόμβος Χαλάστρας" 2.18km, top match: fuzzy, 2.2km from current, side=WRONG)
+    ✓ entry "Μαλγάρων" → verified (matched "Κόμβος Νέων Μαλγάρων" 1.52km, score 59)
+  south: Southbound (towards Athens)
+    ✓ exit  "Μαλγάρων" → verified (matched "Κόμβος Νέων Μαλγάρων" 1.52km, score 59)
+    ✗ entry "Χαλάστρας" → approximate (best: "Ημικόμβος Χαλάστρας" 2.18km, top match: fuzzy, 2.2km from current, side=WRONG)
+
+a1_analipsi · A1 · Analipsi
+  north: Northbound (towards Kavala)
+    ✓ exit  "Προφήτη" → verified (matched "Κόμβος Προφήτη" 0.18km, score 64)
+    ? entry "Λαγκαδά" → auto (matched "Λαγκαδάς" 3.65km, score 50)
+  south: Southbound (towards Thessaloniki)
+    ? exit  "Λαγκαδά" → auto (matched "Λαγκαδάς" 3.65km, score 50)
+    ✓ entry "Προφήτη" → verified (matched "Κόμβος Προφήτη" 0.18km, score 64)
+
+a1_moustheni · A1 · Moustheni / Strymoniko
+  north: Northbound (towards Kavala/Drama)
+    ? exit  "Γαληψού" → auto (matched "Κόμβος Γαληψού" 7.55km, score 45)
+    ✗ entry "Μουσθένης" → approximate (best: "Κόμβος Μουσθένης" 2.70km, top match: fuzzy, 2.7km from current, side=WRONG)
+  south: Southbound (towards Thessaloniki)
+    ✗ exit  "Μουσθένης" → approximate (best: "Κόμβος Μουσθένης" 2.70km, top match: fuzzy, 2.7km from current, side=WRONG)
+    ? entry "Γαληψού" → auto (matched "Κόμβος Γαληψού" 7.55km, score 45)
+
+egnatia_igoumenitsa · A2 · Tyria / Igoumenitsa
+  east: Eastbound (towards Ioannina)
+    ✗ exit  "Δωδώνης" → approximate (best: "Δωδώνης" 1.65km, top match: exact, 1.7km from current, side=WRONG)
+    ? entry "Σελλών" → auto (matched "Σελλών (Τύρια)" 3.93km, score 49)
+  west: Westbound (towards Igoumenitsa)
+    ? exit  "Σελλών" → auto (matched "Σελλών (Τύρια)" 3.93km, score 49)
+    ✗ entry "Δωδώνης" → approximate (best: "Δωδώνης" 1.65km, top match: exact, 1.7km from current, side=WRONG)
+
+egnatia_ioannina · A2 · Pamvotida / Ioannina
+  east: Eastbound (towards Thessaloniki)
+    ✗ exit  "Αράχθου" → approximate (best: "Αράχθου - Ζαγορίου" 11.81km, top match: fuzzy, 11.8km from current, side=WRONG)
+    ✗ entry "Ιωαννίνων" → approximate (best: "Κόμβος Ιωαννίνων" 7.07km, top match: fuzzy, 7.1km from current, side=WRONG)
+  west: Westbound (towards Igoumenitsa)
+    ✗ exit  "Ιωαννίνων" → approximate (best: "Κόμβος Ιωαννίνων" 7.07km, top match: fuzzy, 7.1km from current, side=WRONG)
+    ✗ entry "Αράχθου" → approximate (best: "Αράχθου - Ζαγορίου" 11.81km, top match: fuzzy, 11.8km from current, side=WRONG)
+
+egnatia_metsovo · A2 · Malakasi / Metsovo Tunnel
+  east: Eastbound (towards Thessaloniki)
+    ? exit  "Μετσόβου" → auto (matched "Μέτσοβο" 3.15km, score 37)
+    ✓ entry "Παναγιάς" → verified (matched "Παναγία" 1.97km, score 57)
+  west: Westbound (towards Ioannina)
+    ✓ exit  "Παναγιάς" → verified (matched "Παναγία" 1.97km, score 57)
+    ? entry "Μετσόβου" → auto (matched "Μέτσοβο" 3.15km, score 37)
+
+egnatia_kozani · A2 · Siatista / Kozani
+  east: Eastbound (towards Thessaloniki)
+    ? exit  "Σιάτιστας" → auto (matched "Σιάτιστα Δυτικά / Καστοριά" 4.16km, score 48)
+    ? entry "Κοζάνης" → auto (matched "Κοζάνη Βόρεια" 5.83km, score 45)
+  west: Westbound (towards Ioannina)
+    ? exit  "Κοζάνης" → auto (matched "Κοζάνη Βόρεια" 5.83km, score 45)
+    ? entry "Σιάτιστας" → auto (matched "Σιάτιστα Δυτικά / Καστοριά" 4.16km, score 48)
+
+egnatia_veroia · A2 · Polymylo / Veroia
+  east: Eastbound (towards Thessaloniki)
+    ✗ exit  "Βέροιας" → approximate (best: "Βέροια" 4.39km, top match: fuzzy, 4.4km from current, side=WRONG)
+    ✓ entry "Πολυμύλου" → verified (matched "Πολύμυλος" 1.86km, score 58)
+  west: Westbound (towards Kozani)
+    ✓ exit  "Πολυμύλου" → verified (matched "Πολύμυλος" 1.86km, score 58)
+    ✗ entry "Βέροιας" → approximate (best: "Βέροια" 4.39km, top match: fuzzy, 4.4km from current, side=WRONG)
+
+egnatia_xanthi · A2 · Iasmos / Xanthi
+  east: Eastbound (towards Komotini)
+    ✗ exit  "ΒΙΠΕ Κομοτηνής" → approximate (best: "Δυτικής Κομοτηνής" 3.58km, top match: fuzzy, 3.6km from current, side=WRONG)
+    ? entry "Ιάσμου" → auto (matched "Κόμβος Ιάσμου" 4.77km, score 46)
+  west: Westbound (towards Kavala)
+    ? exit  "Ιάσμου" → auto (matched "Κόμβος Ιάσμου" 4.77km, score 46)
+    ✗ entry "ΒΙΠΕ Κομοτηνής" → approximate (best: "Δυτικής Κομοτηνής" 3.58km, top match: fuzzy, 3.6km from current, side=WRONG)
+
+ionia_klokova · A5 · Klokova
+  north: Northbound (towards Ioannina)
+    ✗ exit  "Γαβρολίμνης" → approximate (best: "Γαβρολίμνη" 3.51km, top match: fuzzy, 3.5km from current, side=WRONG)
+    ? entry "Μεσολογγίου" → auto (matched "Μεσολόγγι" 6.56km, score 45)
+  south: Southbound (towards Antirrio)
+    ? exit  "Μεσολογγίου" → auto (matched "Μεσολόγγι" 6.56km, score 45)
+    ✗ entry "Γαβρολίμνης" → approximate (best: "Γαβρολίμνη" 3.51km, top match: fuzzy, 3.5km from current, side=WRONG)
+
+ionia_aggelokastro · A5 · Aggelokastro
+  north: Northbound (towards Ioannina)
+    ✗ exit  "Χαλικίου" → approximate (best: "Άγ. Ηλίας/Αστακός" 2.19km, top match: none, 2.2km from current, side=ok)
+    ? entry "Αγγελοκάστρου" → auto (matched "Αγγελόκαστρο" 3.40km, score 36)
+  south: Southbound (towards Antirrio)
+    ? exit  "Αγγελοκάστρου" → auto (matched "Αγγελόκαστρο" 3.40km, score 36)
+    ✗ entry "Χαλικίου" → approximate (best: "Άγ. Ηλίας/Αστακός" 2.19km, top match: none, 2.2km from current, side=ok)
+
+ionia_menidi · A5 · Kouvaras / Menidi
+  north: Northbound (towards Ioannina)
+    ✗ exit  "Κουβαρά" → approximate (best: "Κατούνα" 4.43km, top match: none, 4.4km from current, side=ok)
+    ✗ entry "Αμφιλοχίας" → approximate (best: "Αμφιλοχία" 4.67km, top match: fuzzy, 4.7km from current, side=WRONG)
+  south: Southbound (towards Arta)
+    ✗ exit  "Αμφιλοχίας" → approximate (best: "Αμφιλοχία" 4.67km, top match: fuzzy, 4.7km from current, side=WRONG)
+    ✗ entry "Κουβαρά" → approximate (best: "Κατούνα" 4.43km, top match: none, 4.4km from current, side=ok)
+
+ionia_terovos · A5 · Terovos / Arta
+  north: Northbound (towards Ioannina)
+    ✓ exit  "Αμμοτόπου" → verified (matched "Αμμότοπος" 2.41km, score 55)
+    ✗ entry "Αβγού" → approximate (best: "Τέροβο" 2.13km, top match: none, 2.1km from current, side=ok)
+  south: Southbound (towards Antirrio)
+    ✗ exit  "Αβγού" → approximate (best: "Τέροβο" 2.13km, top match: none, 2.1km from current, side=ok)
+    ✓ entry "Αμμοτόπου" → verified (matched "Αμμότοπος" 2.41km, score 55)
+
+olympia_elefsina · A8 · Elefsina
+  west: Westbound (towards Patras)
+    ✓ exit  "Παραλία Ελευσίνας" → verified (matched "Ελευσίνα" 2.24km, score 56)
+    ✓ entry "Νέα Πέραμος" → verified (matched "Κόμβος Νέας Περάμου" 2.55km, score 55)
+  east: Eastbound (towards Athens)
+    ✓ exit  "Νέα Πέραμος" → verified (matched "Κόμβος Νέας Περάμου" 2.55km, score 55)
+    ✓ entry "Παραλία Ελευσίνας" → verified (matched "Ελευσίνα" 2.24km, score 56)
+
+olympia_isthmos_canal · A8 · Isthmos (Corinth Canal)
+  west: Westbound (towards Peloponnese)
+    ✓ exit  "Αγ. Θεόδωροι" → verified (matched "Κόμβος Αγίων Θεοδώρων" 1.43km, score 44)
+    ✓ entry "Λουτράκι" → verified (matched "Λουτρακίου/Ισθμού" 1.79km, score 58)
+  east: Eastbound (towards Athens)
+    ✓ exit  "Λουτράκι" → verified (matched "Λουτρακίου/Ισθμού" 1.79km, score 58)
+    ✓ entry "Αγ. Θεόδωροι" → verified (matched "Κόμβος Αγίων Θεοδώρων" 1.43km, score 44)
+
+olympia_isthmos · A8 · Zevgolatio
+  west: Westbound (towards Patras)
+    ✓ exit  "Αρχ. Κόρινθος" → verified (matched "Κόμβος Αρχαίας Κορίνθου" 0.33km, score 64)
+    ✓ entry "Κιάτο" → verified (matched "Κόμβος Κιάτου" 0.60km, score 48)
+  east: Eastbound (towards Athens)
+    ✓ exit  "Κιάτο" → verified (matched "Κόμβος Κιάτου" 0.60km, score 48)
+    ✓ entry "Αρχ. Κόρινθος" → verified (matched "Κόμβος Αρχαίας Κορίνθου" 0.33km, score 64)
+
+olympia_aigio · A8 · Elaionas / Aigio
+  west: Westbound (towards Patras)
+    ✓ exit  "Δερβένι" → verified (matched "Κόμβος Δερβενίου" 1.13km, score 60)
+    ✓ entry "Αίγιο" → verified (matched "Αίγιο Ανατολικά" 1.58km, score 59)
+  east: Eastbound (towards Athens)
+    ✓ exit  "Αίγιο" → verified (matched "Αίγιο Ανατολικά" 1.58km, score 59)
+    ✓ entry "Δερβένι" → verified (matched "Κόμβος Δερβενίου" 1.13km, score 60)
+
+olympia_rio · A8 · Rio
+  west: Westbound (towards Rio/Bridge)
+    ✓ exit  "Δρέπανο" → verified (matched "Κόμβος Δρεπάνου" 0.80km, score 47)
+    ✗ entry "Ρίο" → approximate (best: "Κόμβος Ρίου" 0.44km, top match: none, 0.4km from current, side=ok)
+  east: Eastbound (towards Aigio)
+    ✗ exit  "Ρίο" → approximate (best: "Κόμβος Ρίου" 0.44km, top match: none, 0.4km from current, side=ok)
+    ✓ entry "Δρέπανο" → verified (matched "Κόμβος Δρεπάνου" 0.80km, score 47)
+
+e65_sofades · E65 · Sofades
+  north: Northbound (towards Trikala)
+    ✓ exit  "Ανάβρας" → verified (matched "Ανάβρα" 0.15km, score 64)
+    ✓ entry "Σοφάδων" → verified (matched "Σοφάδες" 0.11km, score 65)
+  south: Southbound (towards Lamia)
+    ✓ exit  "Σοφάδων" → verified (matched "Σοφάδες" 0.16km, score 64)
+    ✓ entry "Ανάβρας" → verified (matched "Ανάβρα" 0.31km, score 64)
+
+e65_trikala · E65 · Trikala
+  north: Northbound (towards Trikala city)
+    ✗ exit  "Καρδίτσας" → approximate (best: "Καρδίτσα" 18.36km, top match: fuzzy, 18.4km from current, side=ok)
+    ✓ entry "Τρικάλων" → verified (matched "Τρίκαλα" 2.72km, score 54)
+  south: Southbound (towards Karditsa)
+    ✓ exit  "Τρικάλων" → verified (matched "Τρίκαλα" 2.72km, score 54)
+    ✗ entry "Καρδίτσας" → approximate (best: "Καρδίτσα" 18.36km, top match: fuzzy, 18.4km from current, side=ok)
+
+──────────
+Total endpoints: 120
+  verified:    50 (42%)
+  auto:        22 (18%)
+  approximate: 48 (40%)

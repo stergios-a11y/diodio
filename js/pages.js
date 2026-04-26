@@ -289,7 +289,15 @@ function buildTollsTable() {
       bypassHtml = `<span class="tolls-bypass-na">${t('tolls.bypass.none')}</span>`;
     } else {
       const lines = Object.entries(toll.bypass_directions).map(([key, d]) => {
-        return `<span class="tolls-bypass-line" title="${d.label || ''}">${dirArrow(key)} +${d.minutes ?? '?'}${t('routes.min')}</span>`;
+        // Small confidence dot before each line. Verified = none (clean state),
+        // auto = subtle blue dot, approximate = amber warning dot.
+        let conf = '';
+        if (d.confidence === 'auto') {
+          conf = `<span class="tolls-bypass-conf tbc-auto" title="${t('sp.confidence.tooltip.auto')}"></span>`;
+        } else if (d.confidence === 'approximate') {
+          conf = `<span class="tolls-bypass-conf tbc-approx" title="${t('sp.confidence.tooltip.approximate')}">⚠</span>`;
+        }
+        return `<span class="tolls-bypass-line" title="${d.label || ''}">${conf}${dirArrow(key)} +${d.minutes ?? '?'}${t('routes.min')}</span>`;
       });
       bypassHtml = `<span class="tolls-bypass-stack">${lines.join('')}</span>`;
     }

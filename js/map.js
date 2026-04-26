@@ -527,6 +527,15 @@ function openSidePanel(toll) {
     bypassHTML = filterPillsHTML + activeHeadlineHTML;
     Object.entries(bd).forEach(([key, dir]) => {
       const isActive = key === defaultDir;
+      // Confidence indicator — only render if we have a confidence tag
+      // (older data without the field stays silent)
+      let confHTML = '';
+      if (dir.confidence === 'approximate') {
+        confHTML = `<div class="sp-confidence sp-conf-approximate" title="${t('sp.confidence.tooltip.approximate')}">${t('sp.confidence.approximate')}</div>`;
+      } else if (dir.confidence === 'auto') {
+        confHTML = `<div class="sp-confidence sp-conf-auto" title="${t('sp.confidence.tooltip.auto')}">${t('sp.confidence.auto')}</div>`;
+      }
+      // 'verified' deliberately renders nothing — clean state, no clutter.
       bypassHTML += `
         <div class="sp-dir${isActive ? ' active' : ''}" data-dir-key="${key}">
           <div class="sp-dir-label">${translateDirectionLabel(dir.label)}</div>
@@ -534,6 +543,7 @@ function openSidePanel(toll) {
             <span class="sp-exit-tag">${t('sp.exit.tag')}${dir.exit_name}</span>
             <span class="sp-entry-tag">${t('sp.entry.tag')}${dir.entry_name}</span>
           </div>
+          ${confHTML}
           <div class="sp-dir-compare" data-stats="${key}">
             <div class="sp-cmp-row sp-cmp-bypass">
               <span class="sp-cmp-dot" style="background:#2e7a4a"></span>
