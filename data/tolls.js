@@ -69,10 +69,10 @@ const TOLL_DATA = [
       north: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Ριτσώνας", entry_name: "Θήβας",
-        pre_exit:   { lat: 38.378648, lng: 23.502208 },
-        off_ramp:   { lat: 38.380390, lng: 23.490380 },
-        on_ramp:    { lat: 38.365760, lng: 23.324490 },
-        post_merge: { lat: 38.364594, lng: 23.314427 },
+        pre_exit:   { lat: 38.365991, lng: 23.331733 },
+        off_ramp:   { lat: 38.366465, lng: 23.32461 },
+        on_ramp:    { lat: 38.403263, lng: 23.221864 },
+        post_merge: { lat: 38.405774, lng: 23.219103 },
         minutes: 14,
         via: [{ lat: 38.40685, lng: 23.51860 },{ lat: 38.390, lng: 23.450 },{ lat: 38.371, lng: 23.380 },{ lat: 38.35825, lng: 23.33640 }],
         confidence: "auto"
@@ -80,10 +80,10 @@ const TOLL_DATA = [
       south: {
         label: "Southbound (towards Athens)",
         exit_name: "Θήβας", entry_name: "Ριτσώνας",
-        pre_exit:   { lat: 38.364456, lng: 23.314447 },
-        off_ramp:   { lat: 38.365434, lng: 23.325831 },
-        on_ramp:    { lat: 38.380147, lng: 23.491339 },
-        post_merge: { lat: 38.378474, lng: 23.502207 },
+        pre_exit:   { lat: 38.405441, lng: 23.219123 },
+        off_ramp:   { lat: 38.402589, lng: 23.22106 },
+        on_ramp:    { lat: 38.364631, lng: 23.321978 },
+        post_merge: { lat: 38.365166, lng: 23.324049 },
         minutes: 14,
         via: [{ lat: 38.35825, lng: 23.33640 },{ lat: 38.371, lng: 23.380 },{ lat: 38.390, lng: 23.450 },{ lat: 38.40685, lng: 23.51860 }],
         confidence: "auto"
