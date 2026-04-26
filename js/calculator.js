@@ -337,12 +337,20 @@ async function analyze() {
 
     // 10. Render results panel
     rpTitle.textContent = `${origin} → ${dest}`;
+    const avoidCount = results.filter(r => r.verdict === 'AVOID').length;
+    const payCount   = results.filter(r => r.verdict === 'PAY').length;
     rpStats.innerHTML = `
-      <span class="rp-stat">${t('rp.total')} <strong>€${totalCost.toFixed(2)}</strong></span>
-      <span class="rp-stat green">${t('rp.save')} <strong>€${savings.toFixed(2)}</strong></span>
-      <span class="rp-stat red">+<strong>${extraMin} ${t('bar.time.label2')}</strong></span>`;
+      <span class="rp-stat"><span class="rp-stat-label">${t('rp.total')}</span><strong>€${totalCost.toFixed(2)}</strong></span>
+      <span class="rp-stat green"><span class="rp-stat-label">${t('rp.save')}</span><strong>€${savings.toFixed(2)}</strong></span>
+      <span class="rp-stat red"><span class="rp-stat-label">${t('rp.extra')}</span><strong>+${extraMin} ${t('bar.time.label2')}</strong></span>
+      <span class="rp-stat-divider"></span>
+      <span class="rp-stat sm"><span class="rp-stat-label">${t('rp.tolls')}</span><strong>${results.length}</strong></span>
+      <span class="rp-stat sm"><span class="rp-stat-label">${t('verdict.avoid')}</span><strong>${avoidCount}</strong></span>
+      <span class="rp-stat sm"><span class="rp-stat-label">${t('verdict.pay')}</span><strong>${payCount}</strong></span>`;
 
-    let html = '';
+    // AI advice goes FIRST, then chips
+    let html = `<div class="rp-advice" id="rp-advice-el">${t('rp.advice.loading')}</div>`;
+    html += '<div class="rp-chips">';
     results.forEach(r => {
       const bypassInfo = r.dir
         ? `${t('sp.exit.tag').replace('↙ ', '')}${r.dir.exit_name} · ${t('sp.entry.tag').replace('↗ ', '')}${r.dir.entry_name} · +${r.dir.minutes} ${t('bar.time.label2')}`
@@ -350,7 +358,7 @@ async function analyze() {
       const verdictKey = `verdict.${r.verdict.toLowerCase()}`;
       const verdictLabel = t(verdictKey);
       const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'en';
-      const tollName = lang === 'el' ? r.toll.name_gr : r.toll.name_en;
+      const tollName = stripTollPrefix(lang === 'el' ? r.toll.name_gr : r.toll.name_en);
       html += `
         <div class="toll-chip verdict-${r.verdict}"
           onclick="const el=this.querySelector('.chip-reason');el.style.display=el.style.display==='block'?'none':'block'">
@@ -360,8 +368,7 @@ async function analyze() {
           <span class="chip-reason">${r.reasoning}<br><small style="opacity:0.7">${bypassInfo}</small></span>
         </div>`;
     });
-
-    html += `<div class="rp-advice" id="rp-advice-el">${t('rp.advice.loading')}</div>`;
+    html += '</div>';
     rpBody.innerHTML = html;
     resultsPanel.classList.add('open');
 
