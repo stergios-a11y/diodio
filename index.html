@@ -16,7 +16,11 @@
   <header id="topbar">
     <div class="logo">DIO<em>DIO</em></div>
     <div class="topbar-sep"></div>
-    <div class="topbar-tagline" data-i18n="tagline">Χάρτης διοδίων & σύμβουλος διαδρομής</div>
+    <nav class="topbar-nav">
+      <a class="nav-link" data-page="map" data-i18n="nav.map">Χάρτης</a>
+      <a class="nav-link" data-page="routes" data-i18n="nav.routes">Διαδρομές</a>
+      <a class="nav-link" data-page="tolls" data-i18n="nav.tolls">Διόδια</a>
+    </nav>
     <div class="topbar-right">
       <button class="btn-lang-flag" id="lang-toggle" title="Switch language / Αλλαγή γλώσσας">
         <span class="flag-option flag-el" data-lang="el">🇬🇷 EL</span>
@@ -40,9 +44,10 @@
     </div>
   </header>
 
-  <div id="map-container"><div id="map"></div></div>
+  <main id="page-map" class="page page-active">
+    <div id="map-container"><div id="map"></div></div>
 
-  <aside id="legend">
+    <aside id="legend">
     <div class="legend-title" data-i18n="legend.title">Φίλτρο διοδίων ανά αυτοκινητόδρομο</div>
     <div id="legend-list"></div>
     <div class="legend-divider"></div>
@@ -154,12 +159,65 @@
       <span id="btn-text" data-i18n="bar.analyse">Ανάλυση</span>
     </button>
     <div class="error-pill" id="error-pill"></div>
-  </div>
+    </div>
+  </main>
+
+  <main id="page-routes" class="page">
+    <div class="page-content">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="routes.title">Διαδρομές μεταξύ πόλεων</h1>
+        <p class="page-subtitle" data-i18n="routes.subtitle">Συνολικό κόστος διοδίων και χρόνος για κάθε διαδρομή.</p>
+      </div>
+      <div class="page-toolbar">
+        <label class="page-toolbar-label" data-i18n="routes.vehicle">Όχημα</label>
+        <select id="routes-vehicle" class="bar-select">
+          <option value="cat1">🏍 <span data-i18n="bar.moto">Μοτο</span></option>
+          <option value="cat2" selected>🚗 <span data-i18n="bar.car">Αυτοκίνητο</span></option>
+          <option value="cat3">🚐 <span data-i18n="bar.van">Βαν</span></option>
+          <option value="cat4">🚛 <span data-i18n="bar.truck">Φορτηγό</span></option>
+        </select>
+      </div>
+      <div id="routes-grid" class="routes-grid"></div>
+    </div>
+  </main>
+
+  <main id="page-tolls" class="page">
+    <div class="page-content">
+      <div class="page-header">
+        <h1 class="page-title" data-i18n="tolls.title">Όλα τα διόδια</h1>
+        <p class="page-subtitle" data-i18n="tolls.subtitle">Τιμές, αυτοκινητόδρομος, και χρόνος παράκαμψης ανά κατεύθυνση.</p>
+      </div>
+      <div class="page-toolbar">
+        <input id="tolls-search" type="text" class="bar-input" placeholder="" data-i18n-placeholder="tolls.search" />
+        <select id="tolls-highway-filter" class="bar-select">
+          <option value="" data-i18n="tolls.allhighways">Όλοι οι αυτοκινητόδρομοι</option>
+        </select>
+      </div>
+      <div class="tolls-table-wrap">
+        <table id="tolls-table" class="tolls-table">
+          <thead>
+            <tr>
+              <th data-sort="name" data-i18n="tolls.col.name">Διόδιο</th>
+              <th data-sort="highway" data-i18n="tolls.col.highway">Αυτοκινητόδρομος</th>
+              <th data-sort="cat1" data-i18n="bar.moto">🏍</th>
+              <th data-sort="cat2" data-i18n="bar.car">🚗</th>
+              <th data-sort="cat3" data-i18n="bar.van">🚐</th>
+              <th data-sort="cat4" data-i18n="bar.truck">🚛</th>
+              <th data-sort="bypass" data-i18n="tolls.col.bypass">Παράκαμψη</th>
+            </tr>
+          </thead>
+          <tbody id="tolls-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="js/i18n.js"></script>
   <script src="data/tolls.js"></script>
+  <script src="data/routes.js"></script>
   <script src="js/map.js"></script>
   <script src="js/calculator.js"></script>
+  <script src="js/pages.js"></script>
 </body>
 </html>

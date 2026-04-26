@@ -100,6 +100,24 @@ const STRINGS = {
     'ramp.avoid':              'Παράκαμψη: {toll}',
     'bypass.tooltip':          'Παράκαμψη: έξοδος {exit} → είσοδος {entry} (+{min} λεπτά)',
     'toll.section.tooltip':    '🟠 Τμήμα με διόδιο',
+    'nav.map':                 'Χάρτης',
+    'nav.routes':              'Διαδρομές',
+    'nav.tolls':               'Διόδια',
+    'routes.title':            'Διαδρομές μεταξύ πόλεων',
+    'routes.subtitle':         'Συνολικό κόστος διοδίων και χρόνος διαδρομής για κάθε ζεύγος πόλεων.',
+    'routes.vehicle':          'Όχημα',
+    'routes.toll':             'διόδιο',
+    'routes.tolls':            'διόδια',
+    'routes.hr':               'ώ',
+    'routes.min':              'λ',
+    'tolls.title':             'Όλα τα διόδια',
+    'tolls.subtitle':          'Τιμές, αυτοκινητόδρομος, και χρόνος παράκαμψης ανά κατεύθυνση.',
+    'tolls.search':            'Αναζήτηση…',
+    'tolls.allhighways':       'Όλοι οι αυτοκινητόδρομοι',
+    'tolls.col.name':          'Διόδιο',
+    'tolls.col.highway':       'Αυτοκινητόδρομος',
+    'tolls.col.bypass':        'Παράκαμψη',
+    'tolls.bypass.none':       '—',
     'btn.feedback':            '💬 Σχόλια',
     'btn.feedback.short':      'Σχόλια',
     'btn.feedback.title':      'Στείλε σχόλια ή αναφορά',
@@ -230,6 +248,24 @@ const STRINGS = {
     'ramp.avoid':              'Avoid {toll}',
     'bypass.tooltip':          'Bypass: exit {exit} → rejoin {entry} (+{min} min)',
     'toll.section.tooltip':    '🟠 Toll section on motorway',
+    'nav.map':                 'Map',
+    'nav.routes':              'Routes',
+    'nav.tolls':               'Tolls',
+    'routes.title':            'City-to-city routes',
+    'routes.subtitle':         'Total toll cost and drive time between Greek cities.',
+    'routes.vehicle':          'Vehicle',
+    'routes.toll':             'toll',
+    'routes.tolls':            'tolls',
+    'routes.hr':               'h',
+    'routes.min':              'm',
+    'tolls.title':             'All tolls',
+    'tolls.subtitle':          'Prices, motorway, and bypass time per direction.',
+    'tolls.search':            'Search…',
+    'tolls.allhighways':       'All motorways',
+    'tolls.col.name':          'Toll',
+    'tolls.col.highway':       'Motorway',
+    'tolls.col.bypass':        'Bypass',
+    'tolls.bypass.none':       '—',
     'btn.feedback':            '💬 Feedback',
     'btn.feedback.short':      'Feedback',
     'btn.feedback.title':      'Send feedback or report an issue',
@@ -300,6 +336,11 @@ function applyTranslations() {
   // Elements with data-i18n-title (title attribute)
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     el.title = t(el.dataset.i18nTitle);
+  });
+
+  // Elements with data-i18n-placeholder (input placeholders)
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
   });
 
   // Legend toggle button — state-dependent
