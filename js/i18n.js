@@ -164,6 +164,10 @@ const STRINGS = {
     'hwy.A6.sub':              'Περιφερειακός Αθηνών',
     'hwy.BRIDGE':              'Γέφυρες & Τούνελ',
     'hwy.BRIDGE.sub':          'Ρίο–Αντίρριο · Ακτιο',
+    'footer.copy':             '© 2026 DIODIO · Στέργιος Γούσιος',
+    'footer.code':             'Κώδικας: MIT',
+    'footer.data':             'Δεδομένα: CC BY-NC 4.0',
+    'footer.source':           'Πηγαίος κώδικας',
   },
 
   en: {
@@ -324,6 +328,10 @@ const STRINGS = {
     'hwy.A6.sub':              'Athens ring road',
     'hwy.BRIDGE':              'Bridges & Tunnels',
     'hwy.BRIDGE.sub':          'Rio–Antirrio · Aktio',
+    'footer.copy':             '© 2026 DIODIO · Stergios Gousios',
+    'footer.code':             'Code: MIT',
+    'footer.data':             'Data: CC BY-NC 4.0',
+    'footer.source':           'Source code',
   },
 };
 

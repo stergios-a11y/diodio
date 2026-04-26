@@ -2753,3 +2753,43 @@ input[type="range"]::-moz-range-track {
   .btn-help { display: none !important; }
   /* Logo stays visible, language toggle stays visible */
 }
+
+/* ── Site footer (legal/credits) ──────────────────────────────────────────
+   Lives inside the routes and tolls page wrappers. Map page has no footer
+   (the canvas is the whole page; credits live in the help drawer instead). */
+.site-footer {
+  margin-top: 32px;
+  padding: 18px 24px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+}
+.site-footer-inner {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.005em;
+}
+.site-footer .footer-sep {
+  opacity: 0.4;
+}
+.site-footer .footer-link {
+  color: var(--aegean);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s var(--ease);
+}
+.site-footer .footer-link:hover {
+  border-bottom-color: var(--aegean);
+}
+@media (max-width: 640px) {
+  .site-footer { padding: 14px 16px; font-size: 0.68rem; }
+  .site-footer-inner { flex-direction: column; gap: 3px; }
+  .site-footer .footer-sep { display: none; }
+}

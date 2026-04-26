@@ -1,0 +1,74 @@
+DIODIO Data License — CC BY-NC 4.0
+═══════════════════════════════════════════════════════════════════════════
+
+Copyright (c) 2026 Stergios Gousios
+
+The data files in this directory and the `data/` folder of this repository —
+including but not limited to toll prices, toll booth coordinates, motorway
+metadata, bypass routes, exit/entry ramp coordinates, and any derived audit
+data in `tools/bypass-audit.json` — are licensed under the
+Creative Commons Attribution-NonCommercial 4.0 International License
+(CC BY-NC 4.0).
+
+Full license text:  https://creativecommons.org/licenses/by-nc/4.0/legalcode
+Human-readable:     https://creativecommons.org/licenses/by-nc/4.0/
+
+═══════════════════════════════════════════════════════════════════════════
+WHAT THIS MEANS IN PRACTICE
+═══════════════════════════════════════════════════════════════════════════
+
+YOU ARE FREE TO:
+  • Share — copy and redistribute the data in any medium or format
+  • Adapt — remix, transform, and build upon the data
+  for non-commercial purposes, under the following terms:
+
+ATTRIBUTION (REQUIRED):
+  You must give appropriate credit to "DIODIO" with a link back to
+  https://stergios-a11y.github.io/diodio/ , indicate if changes were made,
+  and not suggest the licensor endorses you or your use.
+
+NON-COMMERCIAL (REQUIRED):
+  You may not use the data for commercial purposes. This includes, but is
+  not limited to:
+    • Embedding in a paid app, paid API, or subscription service
+    • Using on an ad-supported website where the data is a primary feature
+    • Selling derivative datasets or visualizations
+    • Reselling the data in any aggregated form
+
+NO ADDITIONAL RESTRICTIONS:
+  You may not apply legal terms or technological measures that legally
+  restrict others from doing anything the license permits.
+
+═══════════════════════════════════════════════════════════════════════════
+COMMERCIAL USE
+═══════════════════════════════════════════════════════════════════════════
+
+For commercial licensing inquiries — including embedding DIODIO data in a
+paid product, redistribution as part of a commercial dataset, or any other
+revenue-generating use — contact:
+
+  stergiosgousios@gmail.com
+
+We are open to discussing licensing on reasonable terms for legitimate
+commercial use cases. Reach out before deploying.
+
+═══════════════════════════════════════════════════════════════════════════
+ATTRIBUTION FOR DERIVED COORDINATES
+═══════════════════════════════════════════════════════════════════════════
+
+A subset of motorway exit/entry coordinates in this dataset were derived
+from OpenStreetMap (© OpenStreetMap contributors,
+https://www.openstreetmap.org/copyright) and matched against curated
+toll-booth records using tools/audit-bypasses.js. Per OSM's license (ODbL),
+derived works must credit OpenStreetMap. Anyone reusing the coordinate
+data should preserve this attribution alongside the DIODIO credit.
+
+═══════════════════════════════════════════════════════════════════════════
+DISCLAIMER
+═══════════════════════════════════════════════════════════════════════════
+
+The data is provided "as is" without warranty of any kind. Toll prices may
+change without notice; coordinates may be approximate (a confidence field
+on each direction indicates the level of verification). Always verify
+critical information against official operator sources before relying on it
+for planning or commercial use.
