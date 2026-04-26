@@ -80,9 +80,17 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
   } catch (e) { /* ignore */ }
 
   let url;
-  const coordStr = mode === 'bypass'
-    ? [exitPt, ...(via || []), entryPt].map(p => `${p.lng},${p.lat}`).join(';')
-    : `${exitPt.lng},${exitPt.lat};${entryPt.lng},${entryPt.lat}`;
+  // In bypass mode we always insert the curated `via` waypoints between exit
+  // and entry. In highway mode we accept `via` too — used by the side-panel
+  // comparison to anchor the highway segment to the toll booth's exact
+  // position, so Mapbox can't generate a backtracking route through some
+  // alternative interchange. Without this, ramp coordinates can confuse
+  // Mapbox into routing off-motorway then back on, which produces nonsense
+  // distances and arrows that point the wrong way.
+  const waypoints = via?.length
+    ? [exitPt, ...via, entryPt]
+    : [exitPt, entryPt];
+  const coordStr = waypoints.map(p => `${p.lng},${p.lat}`).join(';');
   const exclude = mode === 'bypass' ? '&exclude=motorway' : '';
   url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full${exclude}&access_token=${MAPBOX_TOKEN}`;
 
@@ -412,10 +420,17 @@ function openSidePanel(toll) {
         arrow.setIcon(makeDirectionArrow(mb.bearing, colorClass));
       }
 
-      // Fetch BOTH routes in parallel
+      // Fetch BOTH routes in parallel.
+      // For the highway leg, we anchor the route to the toll booth itself
+      // as a via-waypoint. This forces Mapbox to route exit → toll → entry
+      // through the motorway (the only road class that crosses the toll's
+      // exact lat/lng), eliminating cases where Mapbox would otherwise
+      // generate a backtracking path via local roads or a different
+      // interchange. The toll's `lat`/`lng` are the canonical anchor point.
+      const tollWaypoint = { lat: toll.lat, lng: toll.lng };
       Promise.all([
         fetchRoute(dir.exit, dir.entry, 'bypass', dir.bypass_via),
-        fetchRoute(dir.exit, dir.entry, 'highway'),
+        fetchRoute(dir.exit, dir.entry, 'highway', [tollWaypoint]),
       ]).then(([bypassRes, highwayRes]) => {
         if (bypassRes && bypassRes.coords.length > 1) {
           bypassLine.setLatLngs(bypassRes.coords);
