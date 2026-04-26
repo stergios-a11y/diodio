@@ -730,9 +730,14 @@ map.on('zoomend', () => {
   updateTollNamesVisibility();
 });
 
-document.getElementById('ramps-btn').addEventListener('click', function() {
+document.getElementById('legend-ramps-btn').addEventListener('click', function() {
   rampsVisible = !rampsVisible;
   this.classList.toggle('active', rampsVisible);
+  const stateEl = this.querySelector('.legend-ramps-state');
+  if (stateEl) {
+    stateEl.setAttribute('data-i18n', rampsVisible ? 'legend.ramps.on' : 'legend.ramps.off');
+    stateEl.textContent = t(rampsVisible ? 'legend.ramps.on' : 'legend.ramps.off');
+  }
   if (rampsVisible) {
     updateRampsVisibility();
   } else {

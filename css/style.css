@@ -273,64 +273,49 @@ body {
 }
 
 /* ══════════════════════════════════════
-   MAP CONTROLS — prominent right pills
+   RAMPS TOGGLE INSIDE LEGEND
    ══════════════════════════════════════ */
-#map-controls {
-  position: fixed;
-  right: 12px;
-  bottom: calc(var(--bar-h) + 64px);
-  z-index: 450;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  pointer-events: none;
-  transition: right 0.3s var(--ease);
+.legend-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 6px 12px;
 }
-#map-controls.pushed { right: calc(var(--sp-w) + 14px); }
-
-.map-control-btn {
-  pointer-events: auto;
-  background: var(--paper);
-  border: 1.5px solid var(--line-strong);
-  border-radius: 999px;
-  box-shadow: var(--shadow);
-  padding: 8px 16px 8px 9px;
-  cursor: pointer;
-  transition: all 0.2s var(--ease);
+.legend-ramps-btn {
   display: flex;
+  width: calc(100% - 12px);
+  margin: 4px 6px 8px;
   align-items: center;
   gap: 9px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ink-2);
   font-family: var(--font-body);
   font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--ink-2);
-  white-space: nowrap;
+  font-weight: 500;
   letter-spacing: -0.005em;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.18s var(--ease);
+  text-align: left;
 }
-.map-control-btn:hover {
-  border-color: var(--aegean);
+.legend-ramps-btn:hover {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+.legend-ramps-btn.active {
+  background: var(--aegean-lt);
   color: var(--aegean-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  border-color: var(--aegean);
+  font-weight: 600;
 }
-.map-control-btn.active {
-  background: var(--aegean);
-  border-color: var(--aegean-dark);
-  color: var(--paper);
-  box-shadow: 0 4px 14px rgba(42,107,158,0.32);
-}
-.map-control-btn.active:hover {
-  background: var(--aegean-dark);
-  color: var(--paper);
-}
-
-.mc-icon {
+.legend-ramps-icon {
   display: inline-flex;
   align-items: center;
+  gap: 3px;
   flex-shrink: 0;
 }
-.mc-icon-ramp { gap: 3px; }
-.mc-badge {
+.legend-ramps-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -343,27 +328,24 @@ body {
   border-radius: 3px;
   box-shadow: 0 1px 2px rgba(26,31,46,0.25);
 }
-.mc-badge-exit  { background: var(--aegean); }
-.mc-badge-entry { background: var(--go); }
-.map-control-btn.active .mc-badge { box-shadow: 0 0 0 1.5px var(--paper); }
-
-.mc-icon-text {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px; height: 22px;
+.legend-ramps-badge-exit  { background: var(--aegean); }
+.legend-ramps-badge-entry { background: var(--go); }
+.legend-ramps-label { flex: 1; }
+.legend-ramps-state {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  padding: 2px 6px;
   background: var(--paper-2);
   border: 1px solid var(--line);
-  border-radius: 4px;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.86rem;
-  color: var(--ink);
-  letter-spacing: -0.04em;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
-.map-control-btn.active .mc-icon-text {
+.legend-ramps-btn.active .legend-ramps-state {
   background: var(--paper);
-  border-color: var(--aegean-dark);
+  border-color: var(--aegean);
   color: var(--aegean-dark);
 }
 
@@ -1430,35 +1412,21 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ══════════════════════════════════════
-   FEEDBACK BUTTON — refined
+   FEEDBACK LINK IN TOPBAR
    ══════════════════════════════════════ */
-#feedback-btn {
-  position: fixed;
-  bottom: calc(var(--bar-h) + 12px);
-  right: 12px;
-  z-index: 460;
-  background: var(--paper);
-  border: 1.5px solid var(--line-strong);
-  color: var(--ink-2);
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  padding: 8px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.2s var(--ease);
-  box-shadow: var(--shadow);
-  display: inline-flex; align-items: center; gap: 6px;
+.btn-feedback-top {
   text-decoration: none;
 }
-#feedback-btn:hover {
-  background: var(--terracotta);
+.btn-feedback-top:hover {
   border-color: var(--terracotta);
-  color: var(--paper);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(196,97,61,0.32);
+  color: var(--terracotta);
+  background: rgba(196,97,61,0.08);
 }
+.btn-feedback-top svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.btn-feedback-top:hover svg { opacity: 1; }
 
 /* ══════════════════════════════════════
    MOBILE — ≤ 640px
@@ -1541,17 +1509,13 @@ input[type="range"]::-moz-range-thumb {
 
   #map-container { bottom: 116px; }
   #results-panel { bottom: 116px; max-height: 60vh; }
-  #feedback-btn  { bottom: 124px; right: 6px; padding: 7px 11px; font-size: 0.72rem; }
-  #map-controls {
-    right: 6px;
-    bottom: calc(var(--bar-h) + 130px);
-    gap: 6px;
-  }
-  .map-control-btn {
-    padding: 7px 12px 7px 8px;
-    font-size: 0.74rem;
-    gap: 8px;
-  }
+
+  /* Compact topbar buttons on mobile */
+  .btn-feedback-top span { display: none; }
+  .btn-feedback-top { padding: 6px 9px; }
+  #legend-toggle { display: none; } /* legend has its own scrolling, hide button on mobile */
+  .btn-help span { display: none; }
+  .btn-help { padding: 6px 9px; }
 
   .toll-tooltip { min-width: 220px; max-width: calc(100vw - 20px); }
 }
