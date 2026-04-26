@@ -33,9 +33,10 @@
   --terracotta:  #c4613d;
 
   /* Typography */
-  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:    'JetBrains Mono', monospace;
+  --font-serif:   'DM Serif Display', 'Georgia', serif; /* reserved for hero text only */
 
   /* Layout */
   --topbar-h:   54px;
@@ -1585,14 +1586,18 @@ input[type="range"]::-moz-range-thumb {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
   box-shadow: var(--shadow-sm);
+  -webkit-overflow-scrolling: touch;
 }
+.routes-grid::-webkit-scrollbar { height: 8px; }
+.routes-grid::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
 .routes-grid-table {
-  width: 100%;
   border-collapse: collapse;
   font-family: var(--font-body);
   font-size: 0.84rem;
+  /* No fixed width - let columns size naturally */
 }
 .routes-grid-table th,
 .routes-grid-table td {
@@ -1876,4 +1881,60 @@ input[type="range"]::-moz-range-thumb {
 @media (max-width: 400px) {
   .bar-input { font-size: 0.82rem; }
   .bar-select { font-size: 0.77rem; }
+}
+
+/* ══════════════════════════════════════
+   READABILITY OVERRIDES (after font swap to Inter)
+   Inter doesn't have italic styles that flatter UI text the way Fraunces did,
+   so we drop italics from functional UI elements while keeping them in genuinely
+   typographic content (notes, taglines).
+   ══════════════════════════════════════ */
+.legend-title,
+.legend-sub,
+.sp-section-title,
+.sp-active-dir-eyebrow,
+.sp-header-title,
+.sp-direction,
+.bar-label,
+.tv-compact .lbl,
+.page-subtitle,
+.page-toolbar-label,
+.routes-grid-table thead th,
+.routes-grid-table tbody th,
+.tt-sub em,
+.sp-direction em,
+.sp-cmp-diff,
+.sp-name-gr,
+.tt-name-gr,
+.help-subtitle,
+.legend-ramps-state,
+.flag-option {
+  font-style: normal !important;
+}
+
+/* Restore italics for genuinely typographic flourishes */
+.sp-notes,
+.help-tip,
+.tt-notes,
+.rp-advice {
+  font-style: italic;
+}
+
+/* Inter looks better at slightly heavier weights for display text */
+.page-title,
+.sp-name,
+.help-logo,
+.logo {
+  font-weight: 700 !important;
+  letter-spacing: -0.025em;
+}
+
+/* Section labels — small, uppercase, looks better in sans-serif */
+.sp-section-title,
+.sp-active-dir-eyebrow,
+.legend-title {
+  text-transform: uppercase;
+  letter-spacing: 0.06em !important;
+  font-size: 0.7rem;
+  font-weight: 600;
 }

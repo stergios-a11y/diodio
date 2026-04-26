@@ -265,9 +265,40 @@ const ROUTE_PAIRS = {
 };
 
 // Helper: look up a route between two city ids (order-independent).
+// Falls back to composing routes through hub cities (Athens, Thessaloniki, Larissa)
+// when no direct pair is defined.
 function getRoute(fromId, toId) {
   if (fromId === toId) return null;
-  return ROUTE_PAIRS[`${fromId}-${toId}`] || ROUTE_PAIRS[`${toId}-${fromId}`] || null;
+
+  // Direct lookup
+  const direct = ROUTE_PAIRS[`${fromId}-${toId}`] || ROUTE_PAIRS[`${toId}-${fromId}`];
+  if (direct) return direct;
+
+  // Compose through hubs in priority order. The first hub that links both ends wins.
+  const HUBS = ['athens', 'thessaloniki', 'larissa', 'lamia', 'patras', 'ioannina'];
+  for (const hub of HUBS) {
+    if (hub === fromId || hub === toId) continue;
+    const leg1 = ROUTE_PAIRS[`${fromId}-${hub}`] || ROUTE_PAIRS[`${hub}-${fromId}`];
+    const leg2 = ROUTE_PAIRS[`${hub}-${toId}`] || ROUTE_PAIRS[`${toId}-${hub}`];
+    if (leg1 && leg2) {
+      // Combine tolls, deduplicate, preserve order
+      const combinedTolls = [];
+      const seen = new Set();
+      [...leg1.tolls, ...leg2.tolls].forEach(t => {
+        if (!seen.has(t)) {
+          seen.add(t);
+          combinedTolls.push(t);
+        }
+      });
+      return {
+        tolls: combinedTolls,
+        km:    leg1.km  + leg2.km,
+        min:   leg1.min + leg2.min,
+        composed: hub,  // marker so UI can indicate it's a composed route
+      };
+    }
+  }
+  return null;
 }
 
 if (typeof module !== "undefined") module.exports = { CITIES, ROUTE_PAIRS, getRoute };

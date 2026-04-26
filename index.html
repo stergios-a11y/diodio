@@ -7,7 +7,7 @@
   <meta name="description" content="Διαδραστικός χάρτης όλων των διοδίων στους ελληνικούς αυτοκινητοδρόμους. Υπολόγισε αν αξίζει να πληρώσεις κάθε διόδιο." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -171,10 +171,10 @@
       <div class="page-toolbar">
         <label class="page-toolbar-label" data-i18n="routes.vehicle">Όχημα</label>
         <select id="routes-vehicle" class="bar-select">
-          <option value="cat1">🏍 <span data-i18n="bar.moto">Μοτο</span></option>
-          <option value="cat2" selected>🚗 <span data-i18n="bar.car">Αυτοκίνητο</span></option>
-          <option value="cat3">🚐 <span data-i18n="bar.van">Βαν</span></option>
-          <option value="cat4">🚛 <span data-i18n="bar.truck">Φορτηγό</span></option>
+          <option value="cat1" data-i18n="bar.moto">🏍 Μοτο</option>
+          <option value="cat2" selected data-i18n="bar.car">🚗 Αυτοκίνητο</option>
+          <option value="cat3" data-i18n="bar.van">🚐 Βαν</option>
+          <option value="cat4" data-i18n="bar.truck">🚛 Φορτηγό</option>
         </select>
       </div>
       <div id="routes-grid" class="routes-grid"></div>
