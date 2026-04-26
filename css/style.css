@@ -900,6 +900,23 @@ body {
   color: var(--paper);
   box-shadow: 0 1px 4px rgba(42,107,158,0.3);
 }
+/* Side-toll panels — direction pills go yellow instead of blue.
+   Color matches the yellow toll markers (#f4c430).
+   Darker text on yellow for legibility. */
+#toll-side-panel.side-toll .sp-filter-btn:hover {
+  border-color: #c89e1a;
+  color: #6e4f00;
+}
+#toll-side-panel.side-toll .sp-filter-btn.active {
+  background: #f4c430;
+  border-color: #c89e1a;
+  color: #4a3500;
+  box-shadow: 0 1px 4px rgba(244,196,48,0.45);
+}
+#toll-side-panel.side-toll .sp-filter-btn.sp-filter-both.active {
+  background: #f4c430;
+  border-style: solid;
+}
 /* "Both directions" pill is visually secondary, separated by a thin gap */
 .sp-filter-btn.sp-filter-both {
   margin-left: 6px;

@@ -182,8 +182,10 @@ tooltipEl.className = 'toll-tooltip';
 document.body.appendChild(tooltipEl);
 
 function buildHoverTooltip(toll) {
-  const color    = HIGHWAY_COLORS[toll.highway] || '#888';
-  const dirIcons = { frontal: '⇄', entry: '⬆', exit: '⬇', bridge: '⇌' };
+  // Side tolls use the yellow side-toll color across all UI accents,
+  // matching their map markers. Other tolls use the highway color.
+  const color    = toll.type === 'side' ? SIDE_TOLL_COLOR : (HIGHWAY_COLORS[toll.highway] || '#888');
+  const dirIcons = { frontal: '⇄', entry: '⬆', exit: '⬇', bridge: '⇌', side: '◇' };
   const notes    = toll.notes ? `<div class="tt-notes">${toll.notes}</div>` : '';
   return `
     <div class="tt-header">
@@ -358,6 +360,11 @@ function openSidePanel(toll) {
   legendEl.classList.add('pushed');
   document.body.classList.add('panel-open');
 
+  // Mark side-toll panels with a class so CSS can theme them yellow.
+  // (Direction pills, badges, etc. switch from blue to yellow accents.)
+  const panelEl = document.getElementById('toll-side-panel');
+  if (panelEl) panelEl.classList.toggle('side-toll', toll.type === 'side');
+
   // Mark this toll's label as active (green dot)
   if (typeof setActiveTollLabel === 'function') setActiveTollLabel(toll.id);
 
@@ -376,7 +383,9 @@ function openSidePanel(toll) {
   }, 320);
 
   const bd    = toll.bypass_directions;
-  const color = HIGHWAY_COLORS[toll.highway] || '#888';
+  // Side tolls use the yellow side-toll color across all UI accents,
+  // matching their map markers. Other tolls use the highway color.
+  const color = toll.type === 'side' ? SIDE_TOLL_COLOR : (HIGHWAY_COLORS[toll.highway] || '#888');
 
   if (bd) {
     const dirEntries = Object.entries(bd);
@@ -1091,12 +1100,14 @@ function setActiveTollLabel(activeTollId) {
     }));
   });
   // Update dot markers — turn the active one green, restore others to highway color
+  // (or yellow, for side tolls).
   allMarkers.forEach(({ toll, marker }) => {
-    const color = HIGHWAY_COLORS[toll.highway] || '#888';
+    const isSide = toll.type === 'side';
+    const color = isSide ? SIDE_TOLL_COLOR : (HIGHWAY_COLORS[toll.highway] || '#888');
     const isActive = toll.id === activeTollId;
     marker.setIcon(L.divIcon({
       className: '',
-      html: `<div class="toll-marker${isActive ? ' active' : ''}" style="background:${isActive ? '#1f5828' : color}"></div>`,
+      html: `<div class="toll-marker${isActive ? ' active' : ''}${isSide ? ' toll-marker-side' : ''}" style="background:${isActive ? '#1f5828' : color}"></div>`,
       iconSize: isActive ? [14, 14] : [11, 11],
       iconAnchor: isActive ? [7, 7] : [5.5, 5.5],
     }));

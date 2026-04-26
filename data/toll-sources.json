@@ -22,11 +22,12 @@
         "a1_pelasgia", "a1_moschochori", "a1_makrychori", "a1_leptokarya", "a1_kleidi",
         "a1_glyfa_north_entry", "a1_glyfa_south_exit",
         "a1_velestino_north_exit", "a1_velestino_south_entry_a", "a1_velestino_south_entry_b",
-        "a1_gyrtoni_north_exit", "a1_gyrtoni_south_entry"
+        "a1_gyrtoni_north_exit", "a1_gyrtoni_south_entry",
+        "a1_evangelismos_north_entry", "a1_evangelismos_south_exit"
       ],
       "structure": "Single table with 5 frontal (Μετωπικός) and 10 side (Πλευρικός) stations. Cat 1-4 columns. 24% VAT included. Prices effective 01 January 2026.",
       "last_verified": "2026-04-27",
-      "notes": "Section: Raches → Larissa → Kleidi Imathias. Pelasgia and Moschochori are tagged as Kentriki Odos in tolls.js but officially are Aegean Motorway."
+      "notes": "Section: Raches → Larissa → Kleidi Imathias. Pelasgia and Moschochori are tagged as Kentriki Odos in tolls.js but officially are Aegean Motorway. SIDE TOLLS STILL MISSING from this dataset (need coords): M. Monastiriou €2.20, Kileler €2.80, Pyrgetos €2.00, Platamonas €0.80, Makrychori-side €1.30, Leptokarya-side €2.10."
     },
     {
       "operator": "Egnatia Odos (Nea Egnatia)",
