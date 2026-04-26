@@ -19,8 +19,15 @@ function sliderTierKey(n) {
   return 'bar.time.tier.frugal';
 }
 function updateSliderUI() {
+  const v = parseInt(slider.value);
   tvVal.textContent = slider.value;
-  if (tvTier) tvTier.textContent = t(sliderTierKey(parseInt(slider.value)));
+  if (tvTier) tvTier.textContent = t(sliderTierKey(v));
+  // Drive the CSS gradient stop so the "filled" portion of the track tracks
+  // the current value. Without this the track would always show 50% fill.
+  const min = parseFloat(slider.min) || 0;
+  const max = parseFloat(slider.max) || 100;
+  const pct = ((v - min) / (max - min)) * 100;
+  slider.style.setProperty('--fill', pct + '%');
 }
 slider.addEventListener('input', updateSliderUI);
 window.addEventListener('langchange', updateSliderUI);
@@ -202,10 +209,25 @@ function calcVerdict(toll, catKey, timeValue, travelDirection) {
         cost:  cost.toFixed(2),
       }),
     };
-  } else if (extra <= threshold + margin) {
+  } else if (extra <= threshold) {
+    // Just under the threshold — borderline but slightly favors bypass.
     return {
-      verdict: 'MARGINAL', dir,
-      reasoning: t('verdict.marginal.reason', {exit: dir.exit_name, min: extra}),
+      verdict: 'MARGINAL_AVOID', dir,
+      reasoning: t('verdict.marginal.avoid.reason', {
+        exit:  dir.exit_name,
+        entry: dir.entry_name,
+        min:   extra,
+        cost:  cost.toFixed(2),
+      }),
+    };
+  } else if (extra <= threshold + margin) {
+    // Just over the threshold — borderline but slightly favors paying.
+    return {
+      verdict: 'MARGINAL_PAY', dir,
+      reasoning: t('verdict.marginal.pay.reason', {
+        min:  extra,
+        cost: cost.toFixed(2),
+      }),
     };
   } else {
     return {
@@ -256,8 +278,9 @@ window.calcTollVerdictsByDirection = function(toll, catKey, timeValue) {
     const threshold = cost * timeValue;
     const margin    = threshold * 0.20;
     let verdict;
-    if (extra <= threshold - margin)      verdict = 'AVOID';
-    else if (extra <= threshold + margin) verdict = 'MARGINAL';
+    if      (extra <= threshold - margin) verdict = 'AVOID';
+    else if (extra <= threshold)          verdict = 'MARGINAL_AVOID';
+    else if (extra <= threshold + margin) verdict = 'MARGINAL_PAY';
     else                                  verdict = 'PAY';
     out[key] = { verdict, dir: d };
   });
@@ -335,8 +358,8 @@ function drawBypassLine(dir, label) {
 
 // ── AI overall summary (async, optional) ─────────────────
 function fetchAISummary(origin, dest, results, catKeyLabel, savings, extraMin) {
-  const avoidList = results.filter(r => r.verdict === 'AVOID').map(r => r.toll.name_en).join(', ') || 'none';
-  const payList   = results.filter(r => r.verdict === 'PAY').map(r => r.toll.name_en).join(', ') || 'none';
+  const avoidList = results.filter(r => r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID').map(r => r.toll.name_en).join(', ') || 'none';
+  const payList   = results.filter(r => r.verdict === 'PAY'   || r.verdict === 'MARGINAL_PAY').map(r => r.toll.name_en).join(', ') || 'none';
 
   fetch('https://diodio-proxy.stergiosgousios.workers.dev', {
     method:  'POST',
@@ -382,18 +405,30 @@ function renderResults(a) {
   bypassLayers.forEach(l => map.removeLayer(l));
   bypassLayers = [];
 
-  const verdictColors = { PAY: '#b8502d', AVOID: '#2e7a4a', MARGINAL: '#c49320' };
+  const verdictColors = {
+    PAY:            '#b8502d',
+    AVOID:          '#2e7a4a',
+    MARGINAL_AVOID: '#c49320',
+    MARGINAL_PAY:   '#c49320',
+  };
   const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'en';
   results.forEach(r => {
     const color = verdictColors[r.verdict] || '#555';
+    const isMarginal = r.verdict === 'MARGINAL_AVOID' || r.verdict === 'MARGINAL_PAY';
+    const iconChar   = r.verdict === 'PAY'   ? '€'
+                     : r.verdict === 'AVOID' ? '✕'
+                     : isMarginal            ? '~'
+                     : '?';
     const icon  = L.divIcon({
       className: '',
-      html: `<div style="width:22px;height:22px;background:${color};border:2.5px solid white;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;font-family:Inter,sans-serif;letter-spacing:-0.02em;">${r.verdict==='PAY'?'€':r.verdict==='AVOID'?'✕':'~'}</div>`,
+      html: `<div style="width:22px;height:22px;background:${color};border:2.5px solid white;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;font-family:Inter,sans-serif;letter-spacing:-0.02em;">${iconChar}</div>`,
       iconSize: [20,20], iconAnchor: [10,10],
     });
     const m = L.marker([r.toll.lat, r.toll.lng], { icon, zIndexOffset: 1000 });
     const popupName = lang === 'el' ? r.toll.name_gr : r.toll.name_en;
-    const popupVerdict = t(`verdict.${r.verdict.toLowerCase()}`);
+    // i18n key replacement: 'MARGINAL_AVOID' -> 'verdict.marginal.avoid'
+    const verdictKey = `verdict.${r.verdict.toLowerCase().replace('_', '.')}`;
+    const popupVerdict = t(verdictKey);
     m.bindPopup(`
       <div class="map-popup">
         <div class="map-popup-name">${popupName}</div>
@@ -405,17 +440,22 @@ function renderResults(a) {
   });
 
   results.forEach(r => {
-    if (r.verdict === 'AVOID' && r.dir) {
+    if ((r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID') && r.dir) {
       drawBypassLine(r.dir, r.toll.name_en);
     }
   });
 
-  // Stats
+  // Stats. MARGINAL_AVOID counts as "would bypass" (AVOID side); MARGINAL_PAY
+  // counts as "would pay" (PAY side). The user sees a binary decision summary
+  // even when individual tolls are borderline.
+  const isAvoidSide = r => r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID';
+  const isPaySide   = r => r.verdict === 'PAY'   || r.verdict === 'MARGINAL_PAY';
+
   const totalCost  = results.reduce((s, r) => s + r.toll[a.catKey], 0);
-  const savings    = results.filter(r => r.verdict === 'AVOID').reduce((s, r) => s + r.toll[a.catKey], 0);
-  const extraMin   = results.filter(r => r.verdict === 'AVOID' && r.dir).reduce((s, r) => s + r.dir.minutes, 0);
-  const avoidCount = results.filter(r => r.verdict === 'AVOID').length;
-  const payCount   = results.filter(r => r.verdict === 'PAY').length;
+  const savings    = results.filter(isAvoidSide).reduce((s, r) => s + r.toll[a.catKey], 0);
+  const extraMin   = results.filter(r => isAvoidSide(r) && r.dir).reduce((s, r) => s + r.dir.minutes, 0);
+  const avoidCount = results.filter(isAvoidSide).length;
+  const payCount   = results.filter(isPaySide).length;
 
   rpTitle.textContent = `${a.origin} → ${a.dest}`;
   rpStats.innerHTML = `
@@ -433,7 +473,7 @@ function renderResults(a) {
     const bypassInfo = r.dir
       ? `${t('sp.exit.tag').replace('↙ ', '')}${r.dir.exit_name} · ${t('sp.entry.tag').replace('↗ ', '')}${r.dir.entry_name} · +${r.dir.minutes} ${t('bar.time.label2')}`
       : t('verdict.no.bypass.short');
-    const verdictLabel = t(`verdict.${r.verdict.toLowerCase()}`);
+    const verdictLabel = t(`verdict.${r.verdict.toLowerCase().replace('_', '.')}`);
     const tollName = stripTollPrefix(lang === 'el' ? r.toll.name_gr : r.toll.name_en);
     html += `
       <div class="toll-chip verdict-${r.verdict}"

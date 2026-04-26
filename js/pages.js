@@ -151,9 +151,9 @@ document.addEventListener('change', e => {
 let tollsSortColumn = 'name';
 let tollsSortDir    = 'asc';
 
-// Verdict ranking for sort-by-verdict: AVOID first, MARGINAL, then PAY,
+// Verdict ranking for sort-by-verdict: AVOID first, then leans, then PAY,
 // then "no bypass" tolls last.
-const VERDICT_RANK = { AVOID: 0, MARGINAL: 1, PAY: 2 };
+const VERDICT_RANK = { AVOID: 0, MARGINAL_AVOID: 1, MARGINAL_PAY: 2, PAY: 3 };
 
 function buildTollsTable() {
   const tbody = document.getElementById('tolls-tbody');
@@ -165,9 +165,15 @@ function buildTollsTable() {
   const timeValue  = parseInt(document.getElementById('tolls-time-slider')?.value || '5', 10);
   const avoidOnly  = !!document.getElementById('tolls-avoid-only')?.checked;
 
-  // Sync the slider's numeric readout
+  // Sync the slider's numeric readout and gradient fill
   const timeNum = document.getElementById('tolls-time-num');
   if (timeNum) timeNum.textContent = timeValue;
+  const timeSliderEl = document.getElementById('tolls-time-slider');
+  if (timeSliderEl) {
+    const min = parseFloat(timeSliderEl.min) || 0;
+    const max = parseFloat(timeSliderEl.max) || 100;
+    timeSliderEl.style.setProperty('--fill', (((timeValue - min) / (max - min)) * 100) + '%');
+  }
 
   // Populate highway filter dropdown if empty
   const hwySel = document.getElementById('tolls-highway-filter');
@@ -282,22 +288,28 @@ function buildTollsTable() {
     if (!toll.bypass_directions) {
       bypassHtml = `<span class="tolls-bypass-na">${t('tolls.bypass.none')}</span>`;
     } else {
-      const parts = Object.entries(toll.bypass_directions).map(([key, d]) => {
-        return `<span title="${d.label || ''}">${dirArrow(key)} +${d.minutes ?? '?'}${t('routes.min')}</span>`;
+      const lines = Object.entries(toll.bypass_directions).map(([key, d]) => {
+        return `<span class="tolls-bypass-line" title="${d.label || ''}">${dirArrow(key)} +${d.minutes ?? '?'}${t('routes.min')}</span>`;
       });
-      bypassHtml = `<span class="tolls-bypass">${parts.join(' · ')}</span>`;
+      bypassHtml = `<span class="tolls-bypass-stack">${lines.join('')}</span>`;
     }
 
-    // Verdict cell: one stacked row per direction (e.g. "↑ AVOID +12m" /
-    // "↓ PAY +12m"). For tolls with no bypass we show a single muted pill.
+    // Verdict cell: one stacked row per direction. The "+X min" subtitle
+    // only appears for the bypass-side verdicts (AVOID / MARGINAL_AVOID),
+    // since the bypass column already shows the same number for every
+    // direction — repeating it on the PAY side just clutters.
     let verdictHtml;
     if (!toll.bypass_directions || Object.keys(verdicts).length === 0) {
       verdictHtml = `<span class="tolls-verdict tolls-verdict-none">${t('verdict.no.bypass.short')}</span>`;
     } else {
       const lines = Object.entries(verdicts).map(([key, { verdict, dir }]) => {
-        const icon  = verdict === 'AVOID' ? '✕' : verdict === 'PAY' ? '€' : '~';
-        const label = t(`verdict.${verdict.toLowerCase()}`);
-        const sub   = dir ? `+${dir.minutes}${t('routes.min')}` : '';
+        const icon  = verdict === 'AVOID' ? '✕'
+                    : verdict === 'PAY'   ? '€'
+                    : '~';
+        // i18n key: 'MARGINAL_AVOID' -> 'verdict.marginal.avoid'
+        const label = t(`verdict.${verdict.toLowerCase().replace('_', '.')}`);
+        const showSub = (verdict === 'AVOID' || verdict === 'MARGINAL_AVOID') && dir;
+        const sub   = showSub ? `+${dir.minutes}${t('routes.min')}` : '';
         return `<span class="tolls-verdict tolls-verdict-${verdict}" title="${dir?.label || ''}">
           <span class="tv-arrow">${dirArrow(key)}</span>
           <span class="tv-icon">${icon}</span>
