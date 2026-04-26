@@ -587,6 +587,68 @@ body {
 #legend.hidden { opacity: 0; transform: translateY(-8px); pointer-events: none; }
 #legend.pushed { right: calc(var(--sp-w) + 14px); }
 
+/* ══════════════════════════════════════
+   FLOATING SIDE-TOLLS TOGGLE
+   Standalone pill on the bottom-right of the map, above the bottom bar.
+   Independent of legend visibility — always reachable when the map is shown.
+   Shows/hides yellow side-toll markers.
+   ══════════════════════════════════════ */
+.map-floating-toggle {
+  position: fixed;
+  bottom: calc(var(--bar-h) + 14px);
+  right: 12px;
+  z-index: 850;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+  transition: all 0.18s var(--ease), right 0.3s var(--ease);
+  user-select: none;
+}
+.map-floating-toggle:hover {
+  border-color: #c89e1a;
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+.map-floating-toggle.active {
+  background: #fef6d8;          /* very light yellow */
+  border-color: #c89e1a;
+  color: #4a3500;               /* dark brown for contrast on yellow */
+  font-weight: 600;
+}
+.map-floating-toggle-label { white-space: nowrap; }
+.map-floating-toggle-state {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  padding: 2px 6px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.map-floating-toggle.active .map-floating-toggle-state {
+  background: var(--paper);
+  border-color: #c89e1a;
+  color: #4a3500;
+}
+/* When the side panel pushes content, the toggle slides left along with the legend. */
+#legend.pushed ~ .map-floating-toggle {
+  right: calc(var(--sp-w) + 14px);
+}
+
 .legend-title {
   padding: 11px 14px 9px;
   font-family: var(--font-display);
@@ -1820,6 +1882,7 @@ input[type="range"]::-moz-range-track {
 #page-map:not(.page-active) #toll-side-panel,
 #page-map:not(.page-active) #results-panel,
 #page-map:not(.page-active) #bottom-bar,
+#page-map:not(.page-active) .map-floating-toggle,
 #page-map:not(.page-active) #map-container { display: none; }
 #page-routes,
 #page-tolls {
@@ -2451,6 +2514,7 @@ input[type="range"]::-moz-range-track {
   body.panel-open #map-container { bottom: 50vh !important; }
   body.panel-open #results-panel { display: none; }
   body.panel-open #legend { display: none; }
+  body.panel-open .map-floating-toggle { display: none; }
 
   /* Tighter side panel content on mobile so more fits in the smaller sheet */
   .sp-header { padding: 9px 14px; padding-top: 14px; }

@@ -105,7 +105,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/style.css?v=20260427-0007" />
+  <link rel="stylesheet" href="css/style.css?v=20260427-0008" />
 </head>
 <body>
 
@@ -133,8 +133,8 @@
 
       <h2 style="font-size:1.2rem;margin-top:24px;">Δημοφιλείς διαδρομές</h2>
       <ul>
-        <li>Αθήνα → Θεσσαλονίκη — €36,15 για ΙΧ (11 σταθμοί διοδίων)</li>
-        <li>Αθήνα → Πάτρα — €13,80 για ΙΧ (6 σταθμοί)</li>
+        <li>Αθήνα → Θεσσαλονίκη — €33,70 για ΙΧ (11 σταθμοί διοδίων)</li>
+        <li>Αθήνα → Πάτρα — €17,40 για ΙΧ (6 σταθμοί)</li>
         <li>Αθήνα → Καλαμάτα — μέσω Μορέα</li>
         <li>Αθήνα → Ιωάννινα — €44,70 για ΙΧ</li>
         <li>Θεσσαλονίκη → Λάρισα, Πάτρα → Ιωάννινα, Αθήνα → Κοζάνη</li>
@@ -243,14 +243,15 @@
       <span class="legend-ramps-label" data-i18n="control.ramps">Κόμβοι εξόδου/εισόδου</span>
       <span class="legend-ramps-state" data-i18n="legend.ramps.off">Off</span>
     </button>
-    <button id="legend-side-btn" class="legend-ramps-btn" type="button">
-      <span class="legend-ramps-icon">
-        <span class="legend-side-dot"></span>
-      </span>
-      <span class="legend-ramps-label" data-i18n="control.side">Πλευρικά διόδια</span>
-      <span class="legend-ramps-state" data-i18n="legend.side.off">Off</span>
-    </button>
   </aside>
+
+  <!-- Side-tolls toggle: floats below the legend, independent of legend state.
+       Clicking it shows/hides the yellow side-toll markers on the map. -->
+  <button id="side-tolls-toggle" class="map-floating-toggle" type="button">
+    <span class="legend-side-dot"></span>
+    <span class="map-floating-toggle-label" data-i18n="control.side">Πλευρικά διόδια</span>
+    <span class="map-floating-toggle-state" data-i18n="legend.side.off">Off</span>
+  </button>
 
   <div id="help-modal">
     <div class="help-box">
@@ -449,9 +450,9 @@
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
   <script src="js/i18n.js?v=20260426-2155"></script>
-  <script src="data/tolls.js?v=20260427-0007"></script>
-  <script src="data/routes.js?v=20260426-2155"></script>
-  <script src="js/map.js?v=20260427-0007"></script>
+  <script src="data/tolls.js?v=20260426-2155"></script>
+  <script src="data/routes.js?v=20260427-0008"></script>
+  <script src="js/map.js?v=20260427-0008"></script>
   <script src="js/calculator.js?v=20260426-2155"></script>
   <script src="js/pages.js?v=20260426-2155"></script>
 </body>

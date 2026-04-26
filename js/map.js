@@ -1020,13 +1020,13 @@ document.getElementById('legend-ramps-btn').addEventListener('click', function()
 
 // ── Side tolls toggle ─────────────────────────────────────
 // Side tolls (type === "side") are hidden by default. The user toggles
-// them on via this button. Markers are yellow; they cluster tightly
-// around interchanges (~150-365m apart) so hiding them by default
-// reduces visual noise on the map.
-document.getElementById('legend-side-btn').addEventListener('click', function() {
+// them on via the floating "Πλευρικά διόδια / Side tolls" button.
+// Markers are yellow; they cluster tightly around interchanges
+// (~150-365m apart) so hiding them by default reduces visual noise.
+document.getElementById('side-tolls-toggle').addEventListener('click', function() {
   sideTollsVisible = !sideTollsVisible;
   this.classList.toggle('active', sideTollsVisible);
-  const stateEl = this.querySelector('.legend-ramps-state');
+  const stateEl = this.querySelector('.map-floating-toggle-state');
   if (stateEl) {
     stateEl.setAttribute('data-i18n', sideTollsVisible ? 'legend.side.on' : 'legend.side.off');
     stateEl.textContent = t(sideTollsVisible ? 'legend.side.on' : 'legend.side.off');
