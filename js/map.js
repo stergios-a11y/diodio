@@ -652,18 +652,6 @@ function openSidePanel(toll) {
       el.classList.toggle('active', activeKey === 'both' || k === activeKey);
       el.classList.toggle('dimmed', activeKey !== 'both' && k !== activeKey);
     });
-    // Update the active-direction headline
-    const headline = document.getElementById('sp-active-dir');
-    if (headline) {
-      const labelEl = headline.querySelector('.sp-active-dir-name');
-      if (labelEl) {
-        if (activeKey === 'both') {
-          labelEl.textContent = t('filter.both');
-        } else if (bd && bd[activeKey]) {
-          labelEl.textContent = translateDirectionLabel(bd[activeKey].label);
-        }
-      }
-    }
   }
 
   // Build side panel HTML
@@ -688,15 +676,9 @@ function openSidePanel(toll) {
       filterPillsHTML += `</div>`;
     }
 
-    // Active direction headline (prominent, above the per-dir blocks)
+    // Active direction headline removed — the active pill itself now communicates
+    // the selection clearly enough.
     let activeHeadlineHTML = '';
-    if (dirKeys.length > 1) {
-      const activeLabel = translateDirectionLabel(bd[defaultDir].label);
-      activeHeadlineHTML = `<div class="sp-active-dir" id="sp-active-dir">
-        <span class="sp-active-dir-eyebrow">${t('sp.showing')}</span>
-        <span class="sp-active-dir-name">${activeLabel}</span>
-      </div>`;
-    }
 
     bypassHTML = filterPillsHTML + activeHeadlineHTML;
     Object.entries(bd).forEach(([key, dir]) => {

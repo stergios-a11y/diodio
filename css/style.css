@@ -873,23 +873,28 @@ body {
   font-weight: 600;
   letter-spacing: -0.005em;
   background: var(--paper-2);
-  color: var(--ink-2);
+  color: var(--ink-3);
   border: 1px solid var(--line);
   padding: 5px 11px;
   border-radius: 999px;
   cursor: pointer;
+  opacity: 0.7;
   transition: all 0.18s var(--ease);
 }
 .sp-filter-btn:hover {
   border-color: var(--aegean);
   color: var(--aegean-dark);
   background: var(--paper);
+  opacity: 1;
 }
 .sp-filter-btn.active {
-  background: var(--aegean);
+  background: var(--aegean-dark);
   border-color: var(--aegean-dark);
   color: var(--paper);
-  box-shadow: 0 1px 4px rgba(42,107,158,0.3);
+  font-weight: 700;
+  opacity: 1;
+  transform: scale(1.06);
+  box-shadow: 0 2px 6px rgba(30,79,120,0.35), 0 0 0 3px rgba(42,107,158,0.15);
 }
 /* "Both directions" pill is visually secondary, separated by a thin gap */
 .sp-filter-btn.sp-filter-both {
@@ -902,33 +907,6 @@ body {
   background: var(--aegean);
   border-style: solid;
   font-weight: 600;
-}
-
-/* Active direction headline - eyebrow + name */
-.sp-active-dir {
-  padding: 4px 22px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 4px;
-}
-.sp-active-dir-eyebrow {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  font-size: 0.74rem;
-  color: var(--muted);
-  letter-spacing: 0.005em;
-}
-.sp-active-dir-name {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.15rem;
-  letter-spacing: -0.022em;
-  color: var(--aegean-dark);
-  font-variation-settings: "opsz" 144;
-  line-height: 1.2;
 }
 
 /* Direction blocks — refined */
@@ -2577,7 +2555,6 @@ input[type="range"]::-moz-range-track {
 .legend-title,
 .legend-sub,
 .sp-section-title,
-.sp-active-dir-eyebrow,
 .sp-header-title,
 .sp-direction,
 .bar-label,
@@ -2615,7 +2592,6 @@ input[type="range"]::-moz-range-track {
 
 /* Section labels — small, uppercase, looks better in sans-serif */
 .sp-section-title,
-.sp-active-dir-eyebrow,
 .legend-title {
   text-transform: uppercase;
   letter-spacing: 0.06em !important;
