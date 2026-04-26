@@ -692,6 +692,18 @@ function openSidePanel(toll) {
     btn.addEventListener('click', () => setDirectionFilter(btn.dataset.dirFilter));
   });
 
+  // Make the entire direction block clickable too — not just the filter pill —
+  // so the user has a larger hit target. Clicking "anywhere" on the
+  // Northbound block selects northbound, etc.
+  document.querySelectorAll('.sp-dir[data-dir-key]').forEach(block => {
+    block.addEventListener('click', e => {
+      // Don't trigger when clicking interactive children (buttons, links)
+      if (e.target.closest('button, a, input, textarea, select')) return;
+      const key = block.dataset.dirKey;
+      if (key) setDirectionFilter(key);
+    });
+  });
+
   // Apply default direction filter on first open (show first direction only by default)
   if (bd) {
     const dirKeys = Object.keys(bd);
@@ -996,8 +1008,10 @@ window.addEventListener('langchange', () => {
 
 // ── Legend ────────────────────────────────────────────────
 const legendBtn = document.getElementById('legend-toggle');
-const isMobile  = window.innerWidth <= 640;
-window.legendVis = !isMobile;
+// Legend starts hidden by default. Users discover it via the "Show legend"
+// button in the topbar; previously the legend competed with the map for
+// real estate on first load.
+window.legendVis = false;
 let   legendVis = window.legendVis;
 
 legendEl.classList.toggle('hidden', !legendVis);
