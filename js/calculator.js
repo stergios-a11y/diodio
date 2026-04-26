@@ -134,7 +134,12 @@ function calcVerdict(toll, catKey, timeValue, travelDirection) {
   if (extra <= threshold - margin) {
     return {
       verdict: 'AVOID', dir,
-      reasoning: `Exit at ${dir.exit_name}, rejoin at ${dir.entry_name}. +${extra} min saves €${cost.toFixed(2)}.`,
+      reasoning: t('verdict.avoid.reason', {
+        exit:  dir.exit_name,
+        entry: dir.entry_name,
+        min:   extra,
+        cost:  cost.toFixed(2),
+      }),
     };
   } else if (extra <= threshold + margin) {
     return {

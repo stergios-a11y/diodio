@@ -2026,7 +2026,6 @@ input[type="range"]::-moz-range-thumb {
   body.panel-open #map-container { bottom: 50vh !important; }
   body.panel-open #results-panel { display: none; }
   body.panel-open #legend { display: none; }
-  body.panel-open #map-controls { display: none; }
 
   /* Tighter side panel content on mobile so more fits in the smaller sheet */
   .sp-header { padding: 9px 14px; padding-top: 14px; }

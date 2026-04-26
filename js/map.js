@@ -1,10 +1,11 @@
 /**
  * DIODIO — map.js
  * Features:
- *  - OSRM highway route polylines fetched at load
+ *  - Toll markers + zoom-aware name labels
  *  - Help modal
  *  - Legend with solo-filter
  *  - Ramp layer: EXIT/ENTER signs + dashed connection lines toll→exit→entry
+ *  - Side panel: toll details, prices, bypass-vs-highway comparison
  *  - Toll click: dims everything except that toll's exit/entry/bypass
  */
 
@@ -34,70 +35,13 @@ L.tileLayer(
   }
 ).addTo(map);
 
-// ── Highway route polylines (OSRM) ────────────────────────
-const HIGHWAY_WAYPOINTS = {
-  "A1": [
-    [23.8184657, 38.1067470],  // Athens start
-    [23.2868636, 38.3708752],  // Thiva
-    [23.1434298, 38.6174740],  // Traganas
-    [22.6025569, 38.8087016],  // Agios Konstantinos
-    [22.6291966, 38.9238268],  // Mavromantila
-    [22.8462812, 38.9203273],  // Pelasgia
-    [22.5567985, 39.5227965],  // Moschochori
-    [22.5028431, 39.8044068],  // Makrychori/Larissa
-    [22.5698233, 40.0357339],  // Leptokarya/Tempi
-    [22.8384533, 40.6528427],  // Thessaloniki end
-  ],
-  "A2": [
-    [20.2618948, 39.4861509],[20.9475803, 39.6188630],[21.2854099, 39.7855212],
-    [21.5810286, 40.2378869],[22.0602089, 40.3671958],[22.9162091, 40.6956111],
-    [25.0802422, 41.1203415],[25.5332019, 41.0135240],[26.308717, 40.9452663],
-  ],
-  "A5": [
-    [21.6565418, 38.3592412],  // Klokova (first toll)
-    [21.2723798, 38.5494744],  // Aggelokastro
-    [21.1709225, 38.9898946],  // Menidi/Kouvaras
-    [20.9053087, 39.4252460],  // Terovos
-  ],
-  "A8": [
-    [23.5039038, 38.0499433],  // Elefsina toll
-    [23.0325365, 37.9249719],  // Isthmos Canal toll
-    [22.8096664, 37.9222552],  // Zevgolatio toll
-    [22.1392536, 38.2057293],  // Aigio/Elaionas toll
-    [21.8300325, 38.3164492],  // Rio toll
-    [21.6191570, 38.1449493],  // Patras toll
-    [21.3913023, 37.7120702],  // Pyrgos toll
-  ],
-  "E65": [
-    [22.3487648, 38.9148821],[22.0831633, 39.2566317],[21.8322372, 39.5204295],
-  ],
-  "A7": [
-    [22.9066924, 37.9142092],[22.4464524, 37.6007682],[22.1253947, 37.0463151],
-  ],
-  "A6": [
-    [23.4958076, 38.0422442],[23.7495232, 38.0620135],[23.9350000, 37.9410000],
-  ],
-  "BRIDGE": [
-    [21.7200000, 38.3190000],[21.7660189, 38.3337794],
-  ],
-};
-
-const highwayRouteLayers = {};
-
-function simplify(coords, n) {
-  const out = [coords[0]];
-  for (let i = n; i < coords.length - 1; i += n) out.push(coords[i]);
-  out.push(coords[coords.length - 1]);
-  return out;
-}
-
 // Mapbox public token, restricted by URL in account dashboard.
+// Used only for routing (Directions API) — base tiles are CartoDB (see above).
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiYW50YXJhbjIiLCJhIjoiY21vZGxqZ2E2MDQxcjJvcjFwYnl0cW94cCJ9.3XhY5-XiaDcBeEOvFUm_Jw';
 
-// Highway lines are no longer drawn as colored polylines.
-// Motorways are visible through the Mapbox base tile layer above.
-// HIGHWAY_COLORS (from tolls.js) is still used for legend dots, toll markers,
-// side panel badges, and verdict chip borders.
+// Highway lines are not drawn as colored polylines — motorways are visible
+// through the CartoDB base tiles. HIGHWAY_COLORS (from tolls.js) is still
+// used for legend dots, toll markers, side panel badges, and verdict chip borders.
 
 window.setActiveRouteLayer = function(coords) {
   if (window._activeRouteHighlight) map.removeLayer(window._activeRouteHighlight);
@@ -243,7 +187,6 @@ document.addEventListener('mousemove', e => {
 // ── Dim / restore helpers ─────────────────────────────────
 function dimAll() {
   allMarkers.forEach(({ marker }) => marker.setOpacity(0.07));
-  Object.values(highwayRouteLayers).forEach(l => l.setStyle({ opacity: 0.04 }));
   // Also dim ramp markers if visible
   rampMarkers.forEach(({ exitM, entryM, connLine }) => {
     if (exitM)    exitM.setOpacity(0.07);
@@ -254,11 +197,6 @@ function dimAll() {
 
 function restoreAll() {
   allMarkers.forEach(({ marker }) => marker.setOpacity(1));
-  Object.entries(highwayRouteLayers).forEach(([hwy, l]) => {
-    // Respect active legend filter
-    const isDimmedByFilter = activeFilter && activeFilter !== hwy;
-    l.setStyle({ opacity: isDimmedByFilter ? 0.03 : 0.3 });
-  });
   rampMarkers.forEach(({ exitM, entryM, connLine }) => {
     if (exitM)    exitM.setOpacity(rampsVisible ? 1 : 0);
     if (entryM)   entryM.setOpacity(rampsVisible ? 1 : 0);
@@ -281,7 +219,6 @@ function clearInspectLayers() {
 function closeSidePanel() {
   document.getElementById('toll-side-panel')?.classList.remove('open');
   legendEl.classList.remove('pushed');
-  document.getElementById('map-controls')?.classList.remove('pushed');
   document.body.classList.remove('panel-open');
   clearInspectLayers();
   restoreAll();
@@ -322,7 +259,6 @@ function openSidePanel(toll) {
   sidePanelOpenedAt = Date.now();
   currentTollOpen = toll;
   legendEl.classList.add('pushed');
-  document.getElementById('map-controls')?.classList.add('pushed');
   document.body.classList.add('panel-open');
 
   // Mark this toll's label as active (green dot)
@@ -334,10 +270,6 @@ function openSidePanel(toll) {
   // Restore just this toll's marker
   const myMarker = allMarkers.find(m => m.toll.id === toll.id);
   if (myMarker) myMarker.marker.setOpacity(1);
-
-  // Restore this highway's route line
-  const hwyLayer = highwayRouteLayers[toll.highway];
-  if (hwyLayer) hwyLayer.setStyle({ opacity: 0.35 });
 
   // Wait for layout transition to settle (panel opens, bottom bar hides on mobile),
   // then invalidate map size so Leaflet recalculates its viewport and centers correctly.
@@ -988,7 +920,6 @@ function applyFilter(selectedKey) {
     activeFilter = null;
     allKeys.forEach(k => {
       markersByHighway[k]?.forEach(m => m.setOpacity(1));
-      if (highwayRouteLayers[k]) highwayRouteLayers[k].setStyle({ opacity: 0.3 });
     });
     legendList.querySelectorAll('.legend-item').forEach(el => {
       el.classList.remove('active-filter', 'dimmed-filter');
@@ -998,9 +929,6 @@ function applyFilter(selectedKey) {
     allKeys.forEach(k => {
       const solo = k === selectedKey;
       markersByHighway[k]?.forEach(m => m.setOpacity(solo ? 1 : 0.07));
-      if (highwayRouteLayers[k]) {
-        highwayRouteLayers[k].setStyle({ opacity: solo ? 0.7 : 0.03 });
-      }
     });
     legendList.querySelectorAll('.legend-item').forEach(el => {
       const sel = el.dataset.hwy === selectedKey;

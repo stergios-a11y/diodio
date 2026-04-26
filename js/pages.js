@@ -90,13 +90,6 @@ function buildRoutesGrid() {
     };
   }
 
-  function fmtTime(min) {
-    const h = Math.floor(min / 60);
-    const m = min % 60;
-    if (h > 0) return `${h}${t('routes.hr')} ${m}${t('routes.min')}`;
-    return `${m}${t('routes.min')}`;
-  }
-
   const cities = CITIES;
   let html = `<table class="routes-grid-table"><thead><tr><th class="routes-corner"></th>`;
   cities.forEach(c => {
