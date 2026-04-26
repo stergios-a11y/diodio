@@ -652,6 +652,18 @@ function openSidePanel(toll) {
       el.classList.toggle('active', activeKey === 'both' || k === activeKey);
       el.classList.toggle('dimmed', activeKey !== 'both' && k !== activeKey);
     });
+    // Update the active-direction headline
+    const headline = document.getElementById('sp-active-dir');
+    if (headline) {
+      const labelEl = headline.querySelector('.sp-active-dir-name');
+      if (labelEl) {
+        if (activeKey === 'both') {
+          labelEl.textContent = t('filter.both');
+        } else if (bd && bd[activeKey]) {
+          labelEl.textContent = translateDirectionLabel(bd[activeKey].label);
+        }
+      }
+    }
   }
 
   // Build side panel HTML
@@ -676,9 +688,15 @@ function openSidePanel(toll) {
       filterPillsHTML += `</div>`;
     }
 
-    // Active direction headline removed — the active pill itself now communicates
-    // the selection clearly enough.
+    // Active direction headline (prominent, above the per-dir blocks)
     let activeHeadlineHTML = '';
+    if (dirKeys.length > 1) {
+      const activeLabel = translateDirectionLabel(bd[defaultDir].label);
+      activeHeadlineHTML = `<div class="sp-active-dir" id="sp-active-dir">
+        <span class="sp-active-dir-eyebrow">${t('sp.showing')}</span>
+        <span class="sp-active-dir-name">${activeLabel}</span>
+      </div>`;
+    }
 
     bypassHTML = filterPillsHTML + activeHeadlineHTML;
     Object.entries(bd).forEach(([key, dir]) => {
@@ -785,11 +803,18 @@ function openSidePanel(toll) {
 const markersByHighway = {};
 const allMarkers       = [];
 
+// Side tolls (type === "side") get yellow markers and are hidden by default.
+// Toggleable via the legend "Πλευρικά διόδια / Side tolls" button.
+const SIDE_TOLL_COLOR = '#f4c430';  // light yellow
+let sideTollsVisible = false;
+const sideMarkers    = [];  // { toll, marker } for side tolls only
+
 TOLL_DATA.forEach(toll => {
-  const color = HIGHWAY_COLORS[toll.highway] || '#888';
+  const isSide = toll.type === 'side';
+  const color  = isSide ? SIDE_TOLL_COLOR : (HIGHWAY_COLORS[toll.highway] || '#888');
   const icon  = L.divIcon({
     className: '',
-    html: `<div class="toll-marker" style="background:${color}"></div>`,
+    html: `<div class="toll-marker${isSide ? ' toll-marker-side' : ''}" style="background:${color}"></div>`,
     iconSize: [11, 11], iconAnchor: [5.5, 5.5],
   });
 
@@ -808,8 +833,14 @@ TOLL_DATA.forEach(toll => {
     openSidePanel(toll);
   });
 
-  marker.addTo(map);
+  // Side tolls hidden by default; only add to map if not side or toggle is on.
+  if (!isSide || sideTollsVisible) {
+    marker.addTo(map);
+  }
   allMarkers.push({ toll, marker });
+  if (isSide) {
+    sideMarkers.push({ toll, marker });
+  }
   if (!markersByHighway[toll.highway]) markersByHighway[toll.highway] = [];
   markersByHighway[toll.highway].push(marker);
 });
@@ -942,8 +973,11 @@ function updateRampsVisibility() {
 
 function updateTollNamesVisibility() {
   const zoomedIn = map.getZoom() >= ZOOM_THRESHOLD_TOLLNAMES;
-  tollNameMarkers.forEach(({ marker }) => {
-    if (zoomedIn) {
+  tollNameMarkers.forEach(({ marker, toll }) => {
+    // Side toll labels follow the same toggle as their dots.
+    const isSide = toll.type === 'side';
+    const allowed = !isSide || sideTollsVisible;
+    if (zoomedIn && allowed) {
       if (!map.hasLayer(marker)) marker.addTo(map);
     } else {
       if (map.hasLayer(marker))  map.removeLayer(marker);
@@ -973,6 +1007,29 @@ document.getElementById('legend-ramps-btn').addEventListener('click', function()
       if (connLine) map.removeLayer(connLine);
     });
   }
+});
+
+// ── Side tolls toggle ─────────────────────────────────────
+// Side tolls (type === "side") are hidden by default. The user toggles
+// them on via this button. Markers are yellow; they cluster tightly
+// around interchanges (~150-365m apart) so hiding them by default
+// reduces visual noise on the map.
+document.getElementById('legend-side-btn').addEventListener('click', function() {
+  sideTollsVisible = !sideTollsVisible;
+  this.classList.toggle('active', sideTollsVisible);
+  const stateEl = this.querySelector('.legend-ramps-state');
+  if (stateEl) {
+    stateEl.setAttribute('data-i18n', sideTollsVisible ? 'legend.side.on' : 'legend.side.off');
+    stateEl.textContent = t(sideTollsVisible ? 'legend.side.on' : 'legend.side.off');
+  }
+  sideMarkers.forEach(({ marker }) => {
+    if (sideTollsVisible) {
+      marker.addTo(map);
+    } else {
+      map.removeLayer(marker);
+    }
+  });
+  updateTollNamesVisibility();
 });
 
 // ── Toll names layer (labels above each toll marker) — always on, zoom-aware ──

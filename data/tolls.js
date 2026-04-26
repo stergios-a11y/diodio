@@ -1085,41 +1085,6 @@ const TOLL_DATA = [
     },
   },
   {
-    id: "olympia_isthmos",
-    name_gr: "Διόδια Ζευγολατίου",
-    name_en: "Zevgolatio",
-    highway: "A8", highway_name: "Olympia Odos (A8/E94)",
-    operator: "Olympia Odos",
-    type: "frontal", direction_label: "Both directions",
-    lat: 37.9222552, lng: 22.8096664,
-    cat1: 1.40, cat2: 2.80, cat3: 5.60, cat4: 8.40,
-    notes: "Near Corinth. Old road via Ancient Corinth.",
-    bypass_directions: {
-      west: {
-        label: "Westbound (towards Patras)",
-        exit_name: "Αρχ. Κόρινθος", entry_name: "Κιάτο",
-        pre_exit:   { lat: 37.915961, lng: 22.891499 },
-        off_ramp:   { lat: 37.913325, lng: 22.880630 },
-        on_ramp:    { lat: 38.006894, lng: 22.735548 },
-        post_merge: { lat: 38.015210, lng: 22.731201 },
-        minutes: 15,
-        via: [{ lat: 37.9123, lng: 22.8842 },{ lat: 37.930, lng: 22.860 },{ lat: 37.960, lng: 22.810 },{ lat: 38.0054, lng: 22.7421 }],
-        confidence: "verified"
-      },
-      east: {
-        label: "Eastbound (towards Athens)",
-        exit_name: "Κιάτο", entry_name: "Αρχ. Κόρινθος",
-        pre_exit:   { lat: 38.015167, lng: 22.731063 },
-        off_ramp:   { lat: 38.006894, lng: 22.735548 },
-        on_ramp:    { lat: 37.913325, lng: 22.880630 },
-        post_merge: { lat: 37.915835, lng: 22.891565 },
-        minutes: 15,
-        via: [{ lat: 38.0054, lng: 22.7421 },{ lat: 37.960, lng: 22.810 },{ lat: 37.930, lng: 22.860 },{ lat: 37.9123, lng: 22.8842 }],
-        confidence: "verified"
-      },
-    },
-  },
-  {
     id: "olympia_zevgolatio_east_exit",
     name_gr: "Πλευρικά Ζευγολατιού — Ανατολική έξοδος",
     name_en: "Zevgolatio side — E exit",

@@ -63,13 +63,13 @@
       "url_alt": "https://www.olympiaodos.gr/Diodia-OLYMPIA-PASS/Times-diodion/",
       "highways": ["A8"],
       "tolls_in_data": [
-        "olympia_elefsina", "olympia_isthmos_canal", "olympia_isthmos", "olympia_kiato",
+        "olympia_elefsina", "olympia_isthmos_canal", "olympia_kiato",
         "olympia_aigio", "olympia_rio", "olympia_patras", "olympia_pyrgos",
         "olympia_zevgolatio_east_entry", "olympia_zevgolatio_east_exit"
       ],
       "structure": "Two tables: 7 frontal (Μετωπικός) and 11 ramp stations. Ramp tolls labeled (P) = to Patras, (A) = to Athens. Cat 1-4. Prices effective 01 January 2026.",
       "last_verified": "2026-04-27",
-      "notes": "Section: Elefsina → Corinth → Patras → Pyrgos. olympia_isthmos in tolls.js is misleadingly named 'Zevgolatio' but holds frontal-equivalent data — needs cleanup. No toll collectors at ramp stations; payment via auto machines or e-Pass only."
+      "notes": "Section: Elefsina → Corinth → Patras → Pyrgos. The duplicate frontal misnamed 'Zevgolatio' (formerly olympia_isthmos) was deleted Apr 2026 — Zevgolatio is officially a ramp toll, represented by olympia_zevgolatio_east_* entries. No toll collectors at ramp stations; payment via auto machines or e-Pass only."
     },
     {
       "operator": "Kentriki Odos",
