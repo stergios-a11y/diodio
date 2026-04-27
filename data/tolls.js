@@ -214,22 +214,24 @@ const TOLL_DATA = [
     notes: "Highest-priced station on Kentriki Odos section.",
     bypass_directions: {
       north: {
-        label: "Northbound (towards Thessaloniki)",
-        exit_name: "Γλύφας", entry_name: "Αλμυρού",
-        exit:  { lat: 38.94825, lng: 22.95555 },
-        entry: { lat: 39.15855, lng: 22.75620 },
-        minutes: 22,
-        via: [{ lat: 38.94825, lng: 22.95555 },{ lat: 39.000, lng: 22.900 },{ lat: 39.060, lng: 22.850 },{ lat: 39.100, lng: 22.810 },{ lat: 39.15855, lng: 22.75620 }],
-        confidence: "approximate"
+        label: "Northbound",
+        pre_exit:   { lat: 38.886498, lng: 22.785763 },
+        off_ramp:   { lat: 38.887596, lng: 22.789512 },
+        on_ramp:    { lat: 38.947878, lng: 22.876529 },
+        post_merge: { lat: 38.948746, lng: 22.875971 },
+        minutes: 10,
+        via: [],
+        confidence: "verified"
       },
       south: {
-        label: "Southbound (towards Athens)",
-        exit_name: "Αλμυρού", entry_name: "Γλύφας",
-        exit:  { lat: 39.15855, lng: 22.75620 },
-        entry: { lat: 38.94825, lng: 22.95555 },
-        minutes: 22,
-        via: [{ lat: 39.15855, lng: 22.75620 },{ lat: 39.100, lng: 22.810 },{ lat: 39.060, lng: 22.850 },{ lat: 39.000, lng: 22.900 },{ lat: 38.94825, lng: 22.95555 }],
-        confidence: "approximate"
+        label: "Southbound",
+        pre_exit:   { lat: 38.951746, lng: 22.877312 },
+        off_ramp:   { lat: 38.949418, lng: 22.875670 },
+        on_ramp:    { lat: 38.889338, lng: 22.791792 },
+        post_merge: { lat: 38.887981, lng: 22.789319 },
+        minutes: 10,
+        via: [],
+        confidence: "verified"
       },
     },
   },
@@ -319,13 +321,14 @@ const TOLL_DATA = [
         confidence: "approximate"
       },
       south: {
-        label: "Southbound (towards Athens)",
-        exit_name: "Νίκαιας", entry_name: "Κιλελέρ",
-        exit:  { lat: 39.56945, lng: 22.46310 },
-        entry: { lat: 39.46785, lng: 22.53425 },
+        label: "Southbound",
+        pre_exit:   { lat: 39.583333, lng: 22.483724 },
+        off_ramp:   { lat: 39.581018, lng: 22.482136 },
+        on_ramp:    { lat: 39.493444, lng: 22.618908 },
+        post_merge: { lat: 39.493845, lng: 22.620656 },
         minutes: 10,
-        via: [{ lat: 39.56945, lng: 22.46310 },{ lat: 39.523, lng: 22.510 },{ lat: 39.500, lng: 22.520 },{ lat: 39.46785, lng: 22.53425 }],
-        confidence: "approximate"
+        via: [],
+        confidence: "verified"
       },
     },
   },
