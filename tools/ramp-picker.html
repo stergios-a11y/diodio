@@ -410,6 +410,44 @@
       workData = saved ? JSON.parse(JSON.stringify(saved.workData)) : {};
       activeDirs = saved && saved.activeDirs.length ? saved.activeDirs.slice() : getDefaultDirs(toll);
 
+      // If we have NO localStorage state for this toll, seed workData from the
+      // existing bypass_directions in tolls.js. That way an already-verified
+      // toll loads with its current 4 points pre-placed on the map, and you
+      // can refine them or just resave. Session state, when present, always
+      // wins — never overwrite picks you've made.
+      if (!saved && toll.bypass_directions) {
+        const existingDirs = Object.keys(toll.bypass_directions);
+        // Honor whatever direction set the existing record uses (could be
+        // ['north','south'] or ['east','west'] or even just ['both']) instead
+        // of imposing the default axis.
+        if (existingDirs.length) activeDirs = existingDirs.slice();
+        existingDirs.forEach(d => {
+          const src = toll.bypass_directions[d];
+          if (!src) return;
+          // The runtime normalizer in map.js upgrades 2-point legacy data
+          // (exit/entry only) by aliasing pre_exit ← off_ramp ← exit and
+          // post_merge ← on_ramp ← entry. We mirror that here so the picker
+          // sees pre-placed markers regardless of which schema the source uses.
+          const off = src.off_ramp   || src.exit;
+          const on  = src.on_ramp    || src.entry;
+          const pre = src.pre_exit   || off;
+          const post= src.post_merge || on;
+          if (!pre || !off || !on || !post) return;
+          workData[d] = {
+            pre_exit:   { lat: pre.lat,  lng: pre.lng },
+            off_ramp:   { lat: off.lat,  lng: off.lng },
+            on_ramp:    { lat: on.lat,   lng: on.lng },
+            post_merge: { lat: post.lat, lng: post.lng },
+          };
+          if (src.exit_name || src.entry_name) {
+            workData[d].__names = {
+              exit_name:  src.exit_name  || '',
+              entry_name: src.entry_name || '',
+            };
+          }
+        });
+      }
+
       // Toll info
       const status = getTollStatus(toll);
       const statusText = {
