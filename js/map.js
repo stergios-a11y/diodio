@@ -858,12 +858,16 @@ function openSidePanel(toll) {
     });
   });
 
-  // Apply default direction filter on first open (show first direction only by default)
+  // Apply default direction filter on first open (show first direction only).
+  // We call setDirectionFilter synchronously: the layer objects were pushed
+  // into inspectLayers in the loop above, before this point. Deferring the
+  // call (as we used to with setTimeout) caused the browser to paint both
+  // directions briefly before the inactive one was hidden, which looked like
+  // "both directions are highlighted; clicking again filters."
   if (bd) {
     const dirKeys = Object.keys(bd);
     if (dirKeys.length > 1) {
-      // Wait briefly so the layers are added to inspectLayers first, then filter
-      setTimeout(() => setDirectionFilter(dirKeys[0]), 50);
+      setDirectionFilter(dirKeys[0]);
     }
   }
 }
