@@ -265,8 +265,10 @@ const ROUTE_PAIRS = {
 };
 
 // Helper: look up a route between two city ids (order-independent).
-// Falls back to composing routes through hub cities (Athens, Thessaloniki, Larissa)
-// when no direct pair is defined.
+// Falls back to composing routes through hub cities when no direct pair is
+// defined. Evaluates all viable hubs and picks the one yielding the shortest
+// total distance — picking the first matching hub (Athens-first) used to
+// route ioannina↔kalamata via Athens (733km) instead of Patras (452km).
 function getRoute(fromId, toId) {
   if (fromId === toId) return null;
 
@@ -274,13 +276,16 @@ function getRoute(fromId, toId) {
   const direct = ROUTE_PAIRS[`${fromId}-${toId}`] || ROUTE_PAIRS[`${toId}-${fromId}`];
   if (direct) return direct;
 
-  // Compose through hubs in priority order. The first hub that links both ends wins.
+  // Compose through hubs. Evaluate ALL viable hubs, pick the shortest by km.
   const HUBS = ['athens', 'thessaloniki', 'larissa', 'lamia', 'patras', 'ioannina'];
+  let best = null;
   for (const hub of HUBS) {
     if (hub === fromId || hub === toId) continue;
     const leg1 = ROUTE_PAIRS[`${fromId}-${hub}`] || ROUTE_PAIRS[`${hub}-${fromId}`];
     const leg2 = ROUTE_PAIRS[`${hub}-${toId}`] || ROUTE_PAIRS[`${toId}-${hub}`];
-    if (leg1 && leg2) {
+    if (!leg1 || !leg2) continue;
+    const km = leg1.km + leg2.km;
+    if (!best || km < best.km) {
       // Combine tolls, deduplicate, preserve order
       const combinedTolls = [];
       const seen = new Set();
@@ -290,15 +295,15 @@ function getRoute(fromId, toId) {
           combinedTolls.push(t);
         }
       });
-      return {
+      best = {
         tolls: combinedTolls,
-        km:    leg1.km  + leg2.km,
-        min:   leg1.min + leg2.min,
+        km,
+        min: leg1.min + leg2.min,
         composed: hub,  // marker so UI can indicate it's a composed route
       };
     }
   }
-  return null;
+  return best;
 }
 
 if (typeof module !== "undefined") module.exports = { CITIES, ROUTE_PAIRS, getRoute };
