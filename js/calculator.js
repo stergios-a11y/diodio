@@ -155,14 +155,12 @@ function distToSegment(p, a, b) {
 }
 
 function tollsOnRoute(coords, threshold = 0.025) {
+  // First pass: collect ALL spatially-matched tolls (frontal, bridge, AND side).
+  // Side tolls cluster within the threshold of frontals at interchanges; we keep
+  // them initially and decide in a second pass whether each one is actually
+  // billable based on its position in the trip.
   const found = [];
   TOLL_DATA.forEach(toll => {
-    // Side tolls cluster at interchanges within the spatial threshold of
-    // frontals on the same highway. Including them risks double-billing
-    // (frontal + side at the same interchange), so we skip them in the
-    // route analyzer. The toggleable map markers and the All Tolls table
-    // still surface them.
-    if (toll.type === 'side') return;
     const p = [toll.lat, toll.lng];
     for (let i = 0; i < coords.length - 1; i++) {
       if (distToSegment(p, coords[i], coords[i+1]) < threshold) {
@@ -172,7 +170,31 @@ function tollsOnRoute(coords, threshold = 0.025) {
     }
   });
   found.sort((a, b) => a.routeIdx - b.routeIdx);
-  return found.map(x => x.toll);
+
+  // Second pass: apply the entry/transit/exit rule.
+  //
+  // A real motorway journey can pay at most one side toll on entry, then any
+  // number of frontals while in transit, then at most one side toll on exit.
+  // So a side toll is billable only if:
+  //   - it's the FIRST toll on the route AND its role is "entry", OR
+  //   - it's the LAST toll on the route AND its role is "exit"
+  // Any side toll in the middle of the route reflects a polyline brushing past
+  // an interchange the driver passed through — they paid the surrounding
+  // frontals, not the side ramp. Drop those.
+  //
+  // Side tolls with the "wrong" role at first/last position (e.g. an "exit"
+  // toll appearing first, which would mean the driver exited before entering)
+  // are also dropped — that's a Mapbox geometry artifact, not a real charge.
+  const lastIdx = found.length - 1;
+  const billable = found.filter((entry, i) => {
+    const t = entry.toll;
+    if (t.type !== 'side') return true;          // frontals + bridges always count
+    if (i === 0       && t.role === 'entry') return true;  // first-position entry ramp
+    if (i === lastIdx && t.role === 'exit')  return true;  // last-position exit ramp
+    return false;                                 // transit-position side tolls drop
+  });
+
+  return billable.map(x => x.toll);
 }
 
 // ── Detect travel direction from route geometry ───────────
@@ -415,8 +437,8 @@ function renderResults(a) {
   const verdictColors = {
     PAY:            '#b8502d',
     AVOID:          '#2e7a4a',
-    MARGINAL_AVOID: '#5a9970',
-    MARGINAL_PAY:   '#c4805f',
+    MARGINAL_AVOID: '#c49320',
+    MARGINAL_PAY:   '#c49320',
   };
   const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'en';
   results.forEach(r => {
