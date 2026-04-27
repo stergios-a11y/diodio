@@ -31,6 +31,7 @@
     .toll-info .toll-coord { font-family: ui-monospace, monospace; font-size: 10.5px; color: #6a7785; }
     .toll-info .toll-status { font-size: 11px; color: #b8860b; margin-top: 4px; }
     .toll-info .toll-status.null-bypass { color: #b8502d; }
+    .toll-info .toll-status.verified-bypass { color: #2d7a3a; }
 
     .dir-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
     .dir-tab { flex: 1; padding: 8px; border: 1px solid #c5cdd6; background: white; border-radius: 5px; cursor: pointer; font-weight: 500; }
@@ -241,17 +242,25 @@
       post_merge: { num: 4, label: 'Post-merge', short: 'post', hint: 'First point on motorway after on-ramp' },
     };
 
-    // ── Identify in-scope tolls ───────────────────────────────
+    // ── Identify pickable tolls ───────────────────────────────
+    // Includes ALL frontals (verified, approximate, and missing bypasses) so
+    // the operator can re-verify or refine any of them. Status is tracked
+    // per-toll for badges in the dropdown.
     const tolls = TOLL_DATA;
-    const inScope = tolls.filter(t => {
-      if (t.type !== 'frontal') return false;
-      if (!t.bypass_directions) return true;
-      const dirs = Object.values(t.bypass_directions);
-      return dirs.some(d => d.confidence === 'approximate');
-    });
+    function getTollStatus(t) {
+      if (!t.bypass_directions) return 'null';
+      const confidences = Object.values(t.bypass_directions).map(d => d.confidence);
+      if (confidences.some(c => c === 'approximate')) return 'approx';
+      if (confidences.every(c => c === 'verified'))   return 'verified';
+      return 'mixed';  // any other combo (e.g. some 'auto', some 'verified')
+    }
+    const inScope = tolls.filter(t => t.type === 'frontal');
 
+    const counts = { verified: 0, approx: 0, null: 0, mixed: 0 };
+    inScope.forEach(t => counts[getTollStatus(t)]++);
     document.getElementById('meta').textContent =
-      `${inScope.length} frontal tolls in scope (${tolls.filter(t => t.type === 'frontal' && !t.bypass_directions).length} null + ${tolls.filter(t => t.type === 'frontal' && t.bypass_directions && Object.values(t.bypass_directions).some(d => d.confidence === 'approximate')).length} approximate)`;
+      `${inScope.length} frontal tolls — ${counts.verified} verified · ${counts.approx} approximate · ${counts.null} missing` +
+      (counts.mixed ? ` · ${counts.mixed} mixed` : '');
 
     // ── Map setup ─────────────────────────────────────────────
     const map = L.map('map', { center: [38.5, 22.5], zoom: 7, zoomControl: true });
@@ -342,15 +351,22 @@
 
     // ── Toll dropdown ─────────────────────────────────────────
     const sel = document.getElementById('toll-select');
+    const STATUS_LABELS = {
+      'null':     '[null]',
+      'approx':   '[approx]',
+      'verified': '[verified]',
+      'mixed':    '[mixed]',
+    };
     function renderDropdown() {
       sel.innerHTML = '<option value="">— pick a toll —</option>';
       inScope.forEach(t => {
         const opt = document.createElement('option');
         opt.value = t.id;
         const isDone = !!session[t.id];
-        const reason = !t.bypass_directions ? '[null]' : '[approx]';
-        opt.textContent = `${isDone ? '✓ ' : ''}${t.id} — ${t.name_en} ${reason}`;
+        const status = getTollStatus(t);
+        opt.textContent = `${isDone ? '✓ ' : ''}${t.id} — ${t.name_en} ${STATUS_LABELS[status]}`;
         if (isDone) opt.className = 'done';
+        else if (status === 'null')   opt.className = 'partial';  // CSS hook for "needs work"
         sel.appendChild(opt);
       });
     }
@@ -395,13 +411,21 @@
       activeDirs = saved && saved.activeDirs.length ? saved.activeDirs.slice() : getDefaultDirs(toll);
 
       // Toll info
-      const reason = !toll.bypass_directions ? 'null bypass' : 'has approximate direction';
-      const reasonClass = !toll.bypass_directions ? 'null-bypass' : '';
+      const status = getTollStatus(toll);
+      const statusText = {
+        'null':     'No bypass yet',
+        'approx':   'Has approximate direction(s)',
+        'verified': 'Already verified — re-pick to refine',
+        'mixed':    'Mixed confidence',
+      }[status];
+      const statusClass = status === 'null' ? 'null-bypass'
+                        : status === 'verified' ? 'verified-bypass'
+                        : '';
       document.getElementById('toll-info').innerHTML = `
         <div class="toll-id">${toll.id}</div>
         <div class="toll-name">${toll.name_en}</div>
         <div class="toll-coord">${toll.lat.toFixed(6)}, ${toll.lng.toFixed(6)} · ${toll.highway}</div>
-        <div class="toll-status ${reasonClass}">${reason}</div>
+        <div class="toll-status ${statusClass}">${statusText}</div>
       `;
 
       renderDirectionToggles();
