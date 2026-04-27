@@ -121,16 +121,6 @@ body {
   font-variation-settings: "opsz" 144, "SOFT" 80;
 }
 .topbar-sep { width: 1px; height: 22px; background: var(--line); flex-shrink: 0; }
-.topbar-tagline {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  font-size: 0.84rem;
-  color: var(--muted);
-  letter-spacing: 0.005em;
-  flex: 1; min-width: 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
 .topbar-right {
   margin-left: auto;
   display: flex; align-items: center; gap: 7px;
@@ -2517,7 +2507,6 @@ input[type="range"]::-moz-range-track {
   .routes-grid-table thead th { font-size: 0.62rem; }
 }
 @media (max-width: 640px) {
-  .topbar-tagline { display: none; }
   .topbar-sep     { display: none; }
 
   #legend {

@@ -7,7 +7,6 @@
 const STRINGS = {
   el: {
     'title':                   'mydiodia — Οδηγός Διοδίων Ελλάδας',
-    'tagline':                 'Χάρτης διοδίων & σύμβουλος διαδρομής',
     'btn.legend.hide':         'Απόκρυψη',
     'btn.legend.show':         'Υπόμνημα',
     'btn.help':                'Οδηγίες χρήσης',
@@ -15,7 +14,6 @@ const STRINGS = {
     'legend.ramps.title':      'Κόμβοι εξόδου & εισόδου',
     'legend.ramps.exit':       'Κόμβος εξόδου',
     'legend.ramps.entry':      'Κόμβος εισόδου',
-    'legend.tollnames.title':  'Ονόματα διοδίων',
     'help.subtitle':           'Οδηγός Διοδίων Ελλάδας',
     'help.section1.title':     'Εξερεύνησε τα διόδια',
     'help.section1.intro':     'Κλικ σε οποιοδήποτε διόδιο στον χάρτη για τιμές και διαδρομή παράκαμψης.',
@@ -149,7 +147,6 @@ const STRINGS = {
     'filter.both':             'Και τα δύο',
     'bypass.via.local':        'Μέσω τοπικού δρόμου',
     'bypass.via.highway':      'Μέσω αυτοκινητοδρόμου',
-    'lang.toggle':             'EN',
     // Accessible names for unlabeled controls (used via data-i18n-aria-label)
     'aria.origin':             'Πόλη αφετηρίας',
     'aria.dest':               'Πόλη προορισμού',
@@ -182,7 +179,6 @@ const STRINGS = {
 
   en: {
     'title':                   'mydiodia — Greece Toll Road Advisor',
-    'tagline':                 'Greek highway toll map & route advisor',
     'btn.legend.hide':         'Hide legend',
     'btn.legend.show':         'Legend',
     'btn.help':                'How to use',
@@ -190,7 +186,6 @@ const STRINGS = {
     'legend.ramps.title':      'Exit & Entry ramps',
     'legend.ramps.exit':       'Exit ramp (leave motorway)',
     'legend.ramps.entry':      'Entry ramp (rejoin motorway)',
-    'legend.tollnames.title':  'Toll names',
     'help.subtitle':           'Greece Toll Road Advisor',
     'help.section1.title':     'Explore tolls',
     'help.section1.intro':     'Click any toll on the map to see prices and the bypass route.',
@@ -324,7 +319,6 @@ const STRINGS = {
     'filter.both':             'Both',
     'bypass.via.local':        'Via local road',
     'bypass.via.highway':      'Via motorway',
-    'lang.toggle':             'EL',
     'aria.origin':             'Origin city',
     'aria.dest':               'Destination city',
     'aria.vehicle':            'Vehicle type',
