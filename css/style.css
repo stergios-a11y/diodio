@@ -25,10 +25,12 @@
   /* Verdict scale */
   --go:          #2e7a4a;
   --go-bg:       #e6f0e9;
+  --go-soft:     #5a9970;
+  --go-soft-bg:  #eaf3ed;
   --stop:        #b8502d;
   --stop-bg:     #f5e2d5;
-  --maybe:       #c49320;
-  --maybe-bg:    #f7ecc8;
+  --stop-soft:   #c4805f;
+  --stop-soft-bg:#f3e2d6;
 
   --terracotta:  #c4613d;
 
@@ -1582,8 +1584,8 @@ input[type="range"]::-moz-range-track {
 .toll-chip:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
 .toll-chip.verdict-PAY            { border-left-color: var(--stop); }
 .toll-chip.verdict-AVOID          { border-left-color: var(--go); }
-.toll-chip.verdict-MARGINAL_AVOID,
-.toll-chip.verdict-MARGINAL_PAY   { border-left-color: var(--maybe); }
+.toll-chip.verdict-MARGINAL_AVOID { border-left-color: var(--go-soft); }
+.toll-chip.verdict-MARGINAL_PAY   { border-left-color: var(--stop-soft); }
 
 .chip-name {
   font-family: var(--font-display);
@@ -1608,8 +1610,8 @@ input[type="range"]::-moz-range-track {
 }
 .verdict-PAY            .chip-verdict { background: var(--stop-bg);  color: var(--stop); }
 .verdict-AVOID          .chip-verdict { background: var(--go-bg);    color: var(--go); }
-.verdict-MARGINAL_AVOID .chip-verdict,
-.verdict-MARGINAL_PAY   .chip-verdict { background: var(--maybe-bg); color: var(--maybe); }
+.verdict-MARGINAL_AVOID .chip-verdict { background: var(--go-soft-bg);   color: var(--go-soft); }
+.verdict-MARGINAL_PAY   .chip-verdict { background: var(--stop-soft-bg); color: var(--stop-soft); }
 .chip-reason {
   font-family: var(--font-display);
   font-style: italic;
@@ -1658,8 +1660,8 @@ input[type="range"]::-moz-range-track {
 }
 .map-popup-verdict.PAY            { color: var(--stop); }
 .map-popup-verdict.AVOID          { color: var(--go); }
-.map-popup-verdict.MARGINAL_AVOID,
-.map-popup-verdict.MARGINAL_PAY   { color: var(--maybe); }
+.map-popup-verdict.MARGINAL_AVOID { color: var(--go-soft); }
+.map-popup-verdict.MARGINAL_PAY   { color: var(--stop-soft); }
 .map-popup-reason {
   font-family: var(--font-display);
   font-style: italic;
@@ -2441,11 +2443,15 @@ input[type="range"]::-moz-range-track {
   color: #1f5828;
   border-color: rgba(46,122,74,0.3);
 }
-.tolls-verdict-MARGINAL_AVOID,
+.tolls-verdict-MARGINAL_AVOID {
+  background: rgba(90,153,112,0.12);
+  color: #3d6e54;
+  border-color: rgba(90,153,112,0.3);
+}
 .tolls-verdict-MARGINAL_PAY {
-  background: rgba(196,147,32,0.12);
-  color: #8a6914;
-  border-color: rgba(196,147,32,0.32);
+  background: rgba(196,128,95,0.10);
+  color: #8a4d33;
+  border-color: rgba(196,128,95,0.28);
 }
 .tolls-verdict-PAY {
   background: rgba(184,80,45,0.10);

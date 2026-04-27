@@ -415,8 +415,8 @@ function renderResults(a) {
   const verdictColors = {
     PAY:            '#b8502d',
     AVOID:          '#2e7a4a',
-    MARGINAL_AVOID: '#c49320',
-    MARGINAL_PAY:   '#c49320',
+    MARGINAL_AVOID: '#5a9970',
+    MARGINAL_PAY:   '#c4805f',
   };
   const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'en';
   results.forEach(r => {
