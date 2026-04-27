@@ -1042,6 +1042,34 @@ document.getElementById('side-tolls-toggle').addEventListener('click', function(
   });
 });
 
+// ── Bottom-bar height tracker ─────────────────────────────
+// On mobile the bottom bar wraps from 1 row (~72px) to 2-3 rows (140-220px+)
+// depending on viewport, language wrap, and content. CSS can't measure this,
+// so we observe the bar's rendered height and write it to --bar-actual-h on
+// :root. The floating pill anchor (.map-floating-toggle bottom) and the
+// mobile map-container/results-panel offsets read this variable, falling
+// back to --bar-h (72px) before JS runs.
+(function trackBottomBarHeight() {
+  const bar  = document.getElementById('bottom-bar');
+  const root = document.documentElement;
+  if (!bar) return;
+  const update = () => {
+    const h = Math.round(bar.getBoundingClientRect().height);
+    if (h > 0) root.style.setProperty('--bar-actual-h', h + 'px');
+  };
+  update();
+  // ResizeObserver covers content reflow (language change, slider tier label
+  // length change, viewport resize affecting wrap). One observer is enough.
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(update).observe(bar);
+  } else {
+    // Fallback for ancient browsers — recompute on common reflow triggers.
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    window.addEventListener('langchange', update);
+  }
+})();
+
 // ── Toll names layer (labels above each toll marker) — always on, zoom-aware ──
 const tollNameMarkers = [];
 

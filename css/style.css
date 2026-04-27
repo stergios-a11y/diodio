@@ -614,7 +614,7 @@ body {
    ══════════════════════════════════════ */
 .map-floating-toggle {
   position: fixed;
-  bottom: calc(var(--bar-h) + 14px);
+  bottom: calc(var(--bar-actual-h, var(--bar-h)) + 14px);
   right: 12px;
   z-index: 850;
   display: flex;
@@ -2549,15 +2549,8 @@ input[type="range"]::-moz-range-track {
   body.panel-open #legend { display: none; }
   body.panel-open .map-floating-toggle { display: none; }
 
-  /* On mobile the bottom bar wraps to ~116px (matches #map-container bottom
-     override below), so the floating pill needs to sit higher than its
-     desktop anchor at calc(var(--bar-h) + 14px) to stay above the bar
-     instead of overlapping the analyse button. */
-  .map-floating-toggle {
-    bottom: 130px;
-  }
-  /* Also override the pushed-state offset so the pill stays put when the
-     side panel is open (it's hidden anyway on mobile, but be safe). */
+  /* On mobile, side panel is a bottom sheet (not a side push) — reset the
+     desktop "slide-left when panel open" offset so the pill doesn't drift. */
   #legend.pushed ~ .map-floating-toggle {
     right: 12px;
   }
@@ -2686,8 +2679,8 @@ input[type="range"]::-moz-range-track {
   }
   .error-pill { width: 100%; order: 11; }
 
-  #map-container { bottom: 116px; }
-  #results-panel { bottom: 116px; max-height: 60vh; }
+  #map-container { bottom: var(--bar-actual-h, 116px); }
+  #results-panel { bottom: var(--bar-actual-h, 116px); max-height: 60vh; }
 
   /* Compact topbar buttons on mobile */
   .btn-feedback-top span { display: none; }
