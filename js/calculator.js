@@ -157,6 +157,12 @@ function distToSegment(p, a, b) {
 function tollsOnRoute(coords, threshold = 0.025) {
   const found = [];
   TOLL_DATA.forEach(toll => {
+    // Side tolls cluster at interchanges within the spatial threshold of
+    // frontals on the same highway. Including them risks double-billing
+    // (frontal + side at the same interchange), so we skip them in the
+    // route analyzer. The toggleable map markers and the All Tolls table
+    // still surface them.
+    if (toll.type === 'side') return;
     const p = [toll.lat, toll.lng];
     for (let i = 0; i < coords.length - 1; i++) {
       if (distToSegment(p, coords[i], coords[i+1]) < threshold) {
