@@ -786,7 +786,7 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90) — branch",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
-    lat: 40.5665678, lng: 21.0665417,
+    lat: 40.5745294, lng: 21.0614475,
     cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15,
     notes: "Branch spur of Egnatia towards Kastoria / Albanian border.",
     bypass_directions: null,
