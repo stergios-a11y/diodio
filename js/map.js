@@ -1,5 +1,5 @@
 /**
- * DIODIO — map.js
+ * mydiodia — map.js
  * Features:
  *  - Toll markers + zoom-aware name labels
  *  - Help modal
@@ -130,7 +130,7 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
     const res = await fetch(url);
     const data = await res.json();
     if (data.code !== 'Ok' || !data.routes?.length) {
-      console.warn('[DIODIO] route fetch failed', mode, key, data);
+      console.warn('[mydiodia] route fetch failed', mode, key, data);
       return null;
     }
     const r = data.routes[0];
@@ -143,7 +143,7 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
     try { localStorage.setItem(`diodio.route.v5.${key}`, JSON.stringify(result)); } catch (e) {}
     return result;
   } catch (e) {
-    console.warn('[DIODIO] route fetch error', mode, key, e);
+    console.warn('[mydiodia] route fetch error', mode, key, e);
     return null;
   }
 }

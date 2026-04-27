@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   DIODIO — Multi-page hash router
+   mydiodia — Multi-page hash router
    Pages: #map (default), #routes, #tolls
    ════════════════════════════════════════════════════════════════ */
 

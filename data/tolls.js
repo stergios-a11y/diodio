@@ -1,5 +1,5 @@
 /**
- * DIODIO — Greek Toll Booth Dataset
+ * mydiodia — Greek Toll Booth Dataset
  * Coordinates sourced from diodia.com.gr KMZ (49 verified points)
  * Exit/entry ramp coordinates from: Πλήρης Οδηγός Αποφυγής Διοδίων 2026
  * Prices updated April 2026 against official 2026 operator price lists.

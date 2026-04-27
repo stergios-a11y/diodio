@@ -1,16 +1,16 @@
-# DIODIO — Greek Toll Road Advisor
+# mydiodia — Greek Toll Road Advisor
 
 Διαδραστικός χάρτης για όλα τα διόδια στους ελληνικούς αυτοκινητοδρόμους.
 Δες τιμές 2026, υπολόγισε το κόστος της διαδρομής σου, και βρες ποια διόδια
 αξίζει να παρακάμψεις.
 
-**Live site:** https://stergios-a11y.github.io/diodio/
+**Live site:** https://mydiodia.gr/ (also reachable at https://stergios-a11y.github.io/diodio/)
 
 ---
 
-## Τι είναι το DIODIO; / What is DIODIO?
+## Τι είναι το mydiodia; / What is mydiodia?
 
-DIODIO is an interactive map and bypass advisor for tolls on Greek motorways.
+mydiodia is an interactive map and bypass advisor for tolls on Greek motorways.
 It shows 2026 prices for all four vehicle classes (motorcycle, car, van, truck),
 calculates the total cost for any city-to-city route, and recommends which
 tolls are worth paying versus bypassing — based on a time-vs-money preference
@@ -18,9 +18,10 @@ the user controls.
 
 Key features:
 
-- 49 toll booths across A1, A2, A5, A6, A7, A8, E65, plus the Rio–Antirrio
-  bridge and the Aktio–Preveza tunnel
-- 16 cities, 100+ city-to-city routes via hub composition
+- 50 main toll booths plus 11 side-toll booths across A1, A2, A5, A6, A7, A8,
+  E65, plus the Rio–Antirrio bridge and the Aktio–Preveza tunnel
+- 16 cities, 106 explicit city-to-city routes plus shortest-hub composition
+  for the rest
 - Bypass routes for ~70% of tolls, with curated exit / re-entry ramp
   coordinates verified against OpenStreetMap motorway-junction data
 - Greek-first UI with full English translation
@@ -39,8 +40,9 @@ Static site, no build step. Three pages via hash router (`#map`, `#routes`,
 index.html              # entry point (single page)
 css/style.css           # all styles in one file
 data/
-├── tolls.js            # 49 toll booths with prices + bypass routes
-└── routes.js           # 16 cities, hub-composed city-to-city routes
+├── tolls.js            # 61 toll booths with prices + bypass routes
+├── routes.js           # 16 cities, hub-composed city-to-city routes
+└── toll-sources.json   # source registry + classification rules
 js/
 ├── map.js              # Leaflet map + Mapbox routing
 ├── calculator.js       # analyze flow, verdicts (PAY / AVOID / MARGINAL_*)
@@ -48,6 +50,8 @@ js/
 └── i18n.js             # full el / en translation tables
 tools/
 ├── audit-bypasses.js   # one-shot OSM lookup against Overpass (read-only)
+├── audit-directions.js # one-shot direction-label sanity audit
+├── curate-ramps.js     # interactive CLI for adding 4-field ramp coords
 ├── fix-bypasses.js     # apply OSM corrections to data/tolls.js
 └── bypass-audit.json   # latest audit report
 ```
@@ -90,7 +94,7 @@ mv data/tolls.new.js data/tolls.js
 
 ## Licensing
 
-DIODIO uses a split license that protects the curated dataset while keeping
+mydiodia uses a split license that protects the curated dataset while keeping
 the codebase open:
 
 - **Source code** (everything in `js/`, `css/`, `tools/`, `index.html`):
@@ -100,7 +104,7 @@ the codebase open:
   Creative Commons BY-NC 4.0 — see [LICENSE-DATA](LICENSE-DATA). Free for
   non-commercial use with attribution. Commercial use requires permission.
 
-If you'd like to use DIODIO data in a commercial product, please reach out
+If you'd like to use mydiodia data in a commercial product, please reach out
 to stergiosgousios@gmail.com — we're open to reasonable terms.
 
 ## Data sources & attribution

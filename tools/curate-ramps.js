@@ -336,7 +336,7 @@ async function curateDirection(tollMeta, tollId, dirKey, dirMeta) {
 }
 
 async function main() {
-  console.log(`${c.bold}DIODIO ramp-coord curation tool${c.reset}`);
+  console.log(`${c.bold}mydiodia ramp-coord curation tool${c.reset}`);
   console.log(`Corridor: A1 Athens→Thessaloniki (${CORRIDOR_IDS.length} tolls)`);
   console.log('');
 

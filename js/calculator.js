@@ -1,5 +1,5 @@
 /**
- * DIODIO — calculator.js
+ * mydiodia — calculator.js
  * Pure pre-computed bypass logic — no AI for verdicts.
  * bypass_directions in TOLL_DATA now contains real exit/entry
  * names and coordinates from the 2026 bypass guide.

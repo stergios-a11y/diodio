@@ -1,4 +1,4 @@
-# DIODIO — Greek toll road advisor
+# mydiodia — Greek toll road advisor
 # https://stergios-a11y.github.io/diodio/
 
 User-agent: *
