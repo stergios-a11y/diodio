@@ -55,17 +55,77 @@ window.openSidePanelById = function(id) {
   }
 })();
 
-// Use CartoDB Light as the base map — free, reliable, no token needed.
-// Motorways are visible on the base tiles. Mapbox would be richer but the URL-restricted
-// token blocks tile API; we keep Mapbox for routing only (Directions API).
-L.tileLayer(
+// Base map layers — three styles cycled by the topbar toggle:
+//   STREETS   → CartoDB Light (default, free, no token)
+//   SATELLITE → Esri World Imagery (pure aerial, no labels)
+//   HYBRID    → Esri World Imagery + Esri Reference labels overlay
+//
+// Esri legacy URL works without a token and is widely used for non-commercial
+// Leaflet maps. If it ever starts returning 403 (Esri has been gradually
+// retiring the legacy services since 2022, but World_Imagery itself still
+// serves), the migration is to update the Mapbox token's URL allowlist to
+// include the tiles API and switch to mapbox://styles/mapbox/satellite-streets-v12.
+const STREET_LAYER = L.tileLayer(
   'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
   {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 19,
   }
-).addTo(map);
+);
+
+const SATELLITE_LAYER = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+    maxZoom: 19,
+  }
+);
+
+// Reference labels for the hybrid mode. This is a transparent overlay laid on
+// top of SATELLITE_LAYER — it draws place names, road labels, and admin lines.
+// Custom pane so labels render above satellite imagery but below polylines,
+// toll markers, tooltips, and popups.
+map.createPane('basemapLabels');
+map.getPane('basemapLabels').style.zIndex = 350;
+map.getPane('basemapLabels').style.pointerEvents = 'none';
+
+const SATELLITE_LABELS = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: '',  // attribution already shown by SATELLITE_LAYER
+    maxZoom: 19,
+    pane: 'basemapLabels',
+  }
+);
+
+// Active basemap state: 'streets' | 'satellite' | 'hybrid'.
+// Session-only — resets to 'streets' on every page load by design.
+window.basemapMode = 'streets';
+STREET_LAYER.addTo(map);
+
+// Cycle: streets → satellite → hybrid → streets ...
+window.cycleBaseLayer = function() {
+  // Tear down current layer(s)
+  if (window.basemapMode === 'streets') {
+    map.removeLayer(STREET_LAYER);
+    SATELLITE_LAYER.addTo(map);
+    window.basemapMode = 'satellite';
+  } else if (window.basemapMode === 'satellite') {
+    SATELLITE_LABELS.addTo(map);
+    window.basemapMode = 'hybrid';
+  } else {
+    // hybrid → streets
+    map.removeLayer(SATELLITE_LAYER);
+    map.removeLayer(SATELLITE_LABELS);
+    STREET_LAYER.addTo(map);
+    window.basemapMode = 'streets';
+  }
+  // Notify the topbar/drawer buttons to update their label
+  if (typeof window.updateBasemapButtonLabels === 'function') {
+    window.updateBasemapButtonLabels();
+  }
+};
 
 // Mapbox public token, restricted by URL in account dashboard.
 // Used only for routing (Directions API) — base tiles are CartoDB (see above).
@@ -1255,3 +1315,31 @@ renderLegendList();
 
 // Re-render when language changes
 window.addEventListener('langchange', renderLegendList);
+
+// ── Basemap toggle ────────────────────────────────────────
+// Topbar button + mobile drawer button both cycle through streets→satellite→hybrid.
+// updateBasemapButtonLabels() keeps the visible labels in sync with the current
+// mode and the active language.
+window.updateBasemapButtonLabels = function() {
+  const key = `btn.basemap.${window.basemapMode}`;  // btn.basemap.streets|satellite|hybrid
+  const label = t(key);
+  const topBtn = document.getElementById('basemap-toggle');
+  const mobBtn = document.getElementById('mobile-basemap-btn');
+  if (topBtn) {
+    const span = topBtn.querySelector('span[data-basemap-label]');
+    if (span) span.textContent = label;
+  }
+  if (mobBtn) {
+    const span = mobBtn.querySelector('span[data-basemap-label]');
+    if (span) span.textContent = label;
+  }
+};
+
+const basemapTopBtn = document.getElementById('basemap-toggle');
+if (basemapTopBtn) basemapTopBtn.addEventListener('click', window.cycleBaseLayer);
+const basemapMobBtn = document.getElementById('mobile-basemap-btn');
+if (basemapMobBtn) basemapMobBtn.addEventListener('click', window.cycleBaseLayer);
+
+// Initial label paint + re-paint on language change
+window.updateBasemapButtonLabels();
+window.addEventListener('langchange', window.updateBasemapButtonLabels);

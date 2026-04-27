@@ -191,6 +191,14 @@
         <span data-i18n="btn.feedback.short">Σχόλια</span>
       </a>
       <button class="btn-ghost" id="legend-toggle" data-i18n="btn.legend.show">Υπόμνημα</button>
+      <button class="btn-ghost" id="basemap-toggle" data-i18n-title="btn.basemap.title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/>
+          <polyline points="2 15.5 12 22 22 15.5"/>
+          <polyline points="2 12 12 18.5 22 12"/>
+        </svg>
+        <span data-basemap-label>Χάρτης</span>
+      </button>
       <button class="btn-ghost btn-help" id="help-btn">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="10"/>
@@ -237,6 +245,14 @@
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
           <span data-i18n="btn.help">Οδηγίες χρήσης</span>
+        </button>
+        <button class="mobile-drawer-action" id="mobile-basemap-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/>
+            <polyline points="2 15.5 12 22 22 15.5"/>
+            <polyline points="2 12 12 18.5 22 12"/>
+          </svg>
+          <span data-basemap-label>Χάρτης</span>
         </button>
       </div>
     </aside>
@@ -466,10 +482,10 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260427-0800"></script>
+  <script src="js/i18n.js?v=20260427-0900"></script>
   <script src="data/tolls.js?v=20260427-1600"></script>
   <script src="data/routes.js?v=20260427-0700"></script>
-  <script src="js/map.js?v=20260427-0700"></script>
+  <script src="js/map.js?v=20260427-1700"></script>
   <script src="js/calculator.js?v=20260427-1400"></script>
   <script src="js/pages.js?v=20260427-0700"></script>
 </body>
