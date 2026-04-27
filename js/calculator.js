@@ -197,7 +197,49 @@ function tollsOnRoute(coords, threshold = 0.025) {
   return billable.map(x => x.toll);
 }
 
-// ── Detect travel direction from route geometry ───────────
+// ── Side tolls payable on a bypass ────────────────────────
+// When a bypass exits the motorway at one junction and re-enters at another,
+// the driver may pay side tolls AT THOSE TWO ENDPOINTS:
+//   - off_ramp  + side toll with role="exit"  in the same direction → paid
+//   - on_ramp   + side toll with role="entry" in the same direction → paid
+// Side tolls along the local-roads middle of the bypass are NOT paid because
+// the driver is not on the motorway there. Side tolls in the wrong direction
+// are also not paid.
+//
+// Returns:
+//   {
+//     items: [{toll, role}, ...],          // contributing side tolls
+//     totals: { cat1, cat2, cat3, cat4 },  // sum per vehicle category
+//     anyAtRamps: bool                     // whether there are any matches
+//   }
+//
+// Threshold matches tollsOnRoute (0.025 ≈ 2.5 km), tight enough to avoid
+// false positives at unrelated junctions and loose enough to catch ramp
+// coordinates a few hundred meters off the side toll booth.
+function bypassSideTollCost(toll, dirKey, dir) {
+  const empty = { items: [], totals: { cat1: 0, cat2: 0, cat3: 0, cat4: 0 }, anyAtRamps: false };
+  if (!dir || !dir.off_ramp || !dir.on_ramp) return empty;
+  const THRESHOLD = 0.025;
+  const items = [];
+  TOLL_DATA.forEach(s => {
+    if (s.type !== 'side') return;
+    if (s.direction !== dirKey) return;
+    const dOff = Math.hypot(s.lat - dir.off_ramp.lat, s.lng - dir.off_ramp.lng);
+    const dOn  = Math.hypot(s.lat - dir.on_ramp.lat,  s.lng - dir.on_ramp.lng);
+    if (dOff < THRESHOLD && s.role === 'exit')  items.push({ toll: s, role: 'exit' });
+    else if (dOn < THRESHOLD && s.role === 'entry') items.push({ toll: s, role: 'entry' });
+  });
+  const totals = { cat1: 0, cat2: 0, cat3: 0, cat4: 0 };
+  items.forEach(({ toll: s }) => {
+    totals.cat1 += s.cat1 || 0;
+    totals.cat2 += s.cat2 || 0;
+    totals.cat3 += s.cat3 || 0;
+    totals.cat4 += s.cat4 || 0;
+  });
+  return { items, totals, anyAtRamps: items.length > 0 };
+}
+window.bypassSideTollCost = bypassSideTollCost;
+
 // Returns 'northbound','southbound','eastbound','westbound' based on overall movement.
 // Must match the bypass_directions key naming in data/tolls.js.
 function detectDirection(fromCoord, toCoord) {
@@ -211,22 +253,48 @@ function detectDirection(fromCoord, toCoord) {
 }
 
 // ── Verdict calculation (pure math) ──────────────────────
+// Now also incorporates side tolls payable on the bypass: net savings =
+// frontal price − (sum of side tolls billable at off_ramp/on_ramp). If the
+// net is zero or negative, bypassing saves no money and we PAY regardless
+// of the time tradeoff.
 function calcVerdict(toll, catKey, timeValue, travelDirection) {
   const bd = toll.bypass_directions;
   if (!bd) {
     return { verdict: 'PAY', dir: null, reasoning: t('verdict.no.bypass') };
   }
 
-  // Find matching direction entry
-  const dir = bd[travelDirection] || Object.values(bd)[0];
+  // Find matching direction entry. Fall back to any direction if the detected
+  // travel direction has no entry (e.g., a one-direction bypass on a route
+  // going the other way — caller may want to handle this differently).
+  const dirKey = bd[travelDirection] ? travelDirection : Object.keys(bd)[0];
+  const dir = bd[dirKey];
   if (!dir) {
     return { verdict: 'PAY', dir: null, reasoning: t('verdict.no.bypass') };
   }
 
-  const cost      = toll[catKey];
-  const threshold = cost * timeValue;
+  const frontalCost = toll[catKey];
+  const sideInfo    = bypassSideTollCost(toll, dirKey, dir);
+  const sideCost    = sideInfo.totals[catKey] || 0;
+  const netSavings  = frontalCost - sideCost;
+
+  // Bypass costs as much or more than the frontal — never worth bypassing.
+  if (netSavings <= 0) {
+    return {
+      verdict: 'PAY', dir,
+      reasoning: t('verdict.bypass.expensive', {
+        frontal: frontalCost.toFixed(2),
+        side:    sideCost.toFixed(2),
+      }),
+      sideInfo,
+    };
+  }
+
+  const threshold = netSavings * timeValue;
   const extra     = dir.minutes;
   const margin    = threshold * 0.20;
+  const sideHint  = sideInfo.anyAtRamps
+    ? ' ' + t('verdict.bypass.side.suffix', { side: sideCost.toFixed(2) })
+    : '';
 
   if (extra <= threshold - margin) {
     return {
@@ -235,33 +303,35 @@ function calcVerdict(toll, catKey, timeValue, travelDirection) {
         exit:  dir.exit_name,
         entry: dir.entry_name,
         min:   extra,
-        cost:  cost.toFixed(2),
-      }),
+        cost:  netSavings.toFixed(2),
+      }) + sideHint,
+      sideInfo,
     };
   } else if (extra <= threshold) {
-    // Just under the threshold — borderline but slightly favors bypass.
     return {
       verdict: 'MARGINAL_AVOID', dir,
       reasoning: t('verdict.marginal.avoid.reason', {
         exit:  dir.exit_name,
         entry: dir.entry_name,
         min:   extra,
-        cost:  cost.toFixed(2),
-      }),
+        cost:  netSavings.toFixed(2),
+      }) + sideHint,
+      sideInfo,
     };
   } else if (extra <= threshold + margin) {
-    // Just over the threshold — borderline but slightly favors paying.
     return {
       verdict: 'MARGINAL_PAY', dir,
       reasoning: t('verdict.marginal.pay.reason', {
         min:  extra,
-        cost: cost.toFixed(2),
-      }),
+        cost: netSavings.toFixed(2),
+      }) + sideHint,
+      sideInfo,
     };
   } else {
     return {
       verdict: 'PAY', dir,
-      reasoning: t('verdict.pay.reason', {min: extra}),
+      reasoning: t('verdict.pay.reason', { min: extra }) + sideHint,
+      sideInfo,
     };
   }
 }
@@ -299,19 +369,26 @@ window.calcTollVerdict = function(toll, catKey, timeValue) {
 window.calcTollVerdictsByDirection = function(toll, catKey, timeValue) {
   const bd = toll.bypass_directions;
   if (!bd) return {};
-  const cost   = toll[catKey];
-  const out    = {};
+  const frontalCost = toll[catKey];
+  const out         = {};
   Object.entries(bd).forEach(([key, d]) => {
     if (!d) return;
+    const sideInfo   = bypassSideTollCost(toll, key, d);
+    const sideCost   = sideInfo.totals[catKey] || 0;
+    const netSavings = frontalCost - sideCost;
+    if (netSavings <= 0) {
+      out[key] = { verdict: 'PAY', dir: d, sideInfo };
+      return;
+    }
     const extra     = d.minutes;
-    const threshold = cost * timeValue;
+    const threshold = netSavings * timeValue;
     const margin    = threshold * 0.20;
     let verdict;
     if      (extra <= threshold - margin) verdict = 'AVOID';
     else if (extra <= threshold)          verdict = 'MARGINAL_AVOID';
     else if (extra <= threshold + margin) verdict = 'MARGINAL_PAY';
     else                                  verdict = 'PAY';
-    out[key] = { verdict, dir: d };
+    out[key] = { verdict, dir: d, sideInfo };
   });
   return out;
 };

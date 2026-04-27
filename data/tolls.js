@@ -1186,7 +1186,18 @@ const TOLL_DATA = [
     lat: 37.996686833044144, lng: 22.735416380916327,
     cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.60,
     notes: "Frontal toll on Olympia Odos near Kiato.",
-    bypass_directions: null,
+    bypass_directions: {
+      westbound: {
+        label: "Westbound",
+        pre_exit:   { lat: 37.927329, lng: 22.793321 },
+        off_ramp:   { lat: 37.931497, lng: 22.787935 },
+        on_ramp:    { lat: 38.00777, lng: 22.733325 },
+        post_merge: { lat: 38.010805, lng: 22.733535 },
+        minutes: 10,
+        via: [],
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "olympia_aigio",

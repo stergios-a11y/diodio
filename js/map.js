@@ -575,7 +575,7 @@ function openSidePanel(toll) {
           bypassLine.setStyle({ opacity: 0.9, dashArray: null });
           updateArrow(bypassArrow, bypassRes.coords, 'dir-arrow-bypass');
         }
-        updateDirStats(toll.id, key, bypassRes, highwayRes);
+        updateDirStats(toll, key, dir, bypassRes, highwayRes);
       });
 
       // EXIT sign marker — anchored on the off-ramp itself
@@ -667,7 +667,7 @@ function openSidePanel(toll) {
   }
 
   // Update the comparison stats inline in the side panel after OSRM returns
-  function updateDirStats(tollId, dirKey, bypassRes, highwayRes) {
+  function updateDirStats(toll, dirKey, dir, bypassRes, highwayRes) {
     const el = document.querySelector(`.sp-dir[data-dir-key="${dirKey}"] [data-stats="${dirKey}"]`);
     if (!el) return;
     const fmt = (n, suffix) => n != null ? `${n.toFixed(1)} ${suffix}` : '—';
@@ -675,6 +675,7 @@ function openSidePanel(toll) {
     const bp = el.querySelector('[data-bypass-vals]');
     const hw = el.querySelector('[data-highway-vals]');
     const df = el.querySelector('[data-diff-vals]');
+    const pd = el.querySelector('[data-price-diff]');
 
     if (bypassRes && bp) {
       bp.textContent = `${fmt(bypassRes.distanceKm, 'km')} · ${fmt(bypassRes.durationMin, t('bar.time.label2'))}`;
@@ -693,6 +694,35 @@ function openSidePanel(toll) {
       const distSign = distDiff >= 0 ? '+' : '';
       const timeSign = timeDiff >= 0 ? '+' : '';
       df.innerHTML = `${t('compare.diff')}: <strong>${distSign}${distDiff.toFixed(1)} km</strong> · <strong>${timeSign}${Math.round(timeDiff)} ${t('bar.time.label2')}</strong>`;
+    }
+
+    // Per-vehicle price diff: bypass price minus highway price for each of the 4
+    // categories. Highway price is the frontal toll. Bypass price is the sum of
+    // any side tolls billable at the bypass off_ramp/on_ramp endpoints.
+    //   diff < 0 → bypass cheaper (savings, green)
+    //   diff = 0 → no difference
+    //   diff > 0 → bypass costlier (rare; happens when side tolls exceed frontal)
+    if (pd && toll && dir && typeof window.bypassSideTollCost === 'function') {
+      const sideInfo = window.bypassSideTollCost(toll, dirKey, dir);
+      const cats = [
+        { key: 'cat1', emoji: '🏍', labelKey: 'sp.motorcycle' },
+        { key: 'cat2', emoji: '🚗', labelKey: 'sp.car' },
+        { key: 'cat3', emoji: '🚐', labelKey: 'sp.van' },
+        { key: 'cat4', emoji: '🚛', labelKey: 'sp.truck' },
+      ];
+      const rows = cats.map(({ key, emoji, labelKey }) => {
+        const frontal = toll[key] || 0;
+        const side    = sideInfo.totals[key] || 0;
+        const diff    = side - frontal;     // negative = bypass cheaper
+        const sign    = diff > 0 ? '+' : (diff < 0 ? '−' : '');
+        const cls     = diff < 0 ? 'savings' : (diff > 0 ? 'cost' : 'zero');
+        const abs     = Math.abs(diff).toFixed(2);
+        return `<div class="sp-cmp-pd-row">
+          <span class="sp-cmp-pd-veh"><span class="sp-cmp-pd-emoji">${emoji}</span>${t(labelKey)}</span>
+          <span class="sp-cmp-pd-val ${cls}">${sign}€${abs}</span>
+        </div>`;
+      }).join('');
+      pd.innerHTML = rows;
     }
   }
 
@@ -799,6 +829,7 @@ function openSidePanel(toll) {
               <span class="sp-cmp-vals" data-highway-vals>${t('compare.loading')}</span>
             </div>
             <div class="sp-cmp-diff" data-diff-vals>—</div>
+            <div class="sp-cmp-price-diff" data-price-diff></div>
           </div>
         </div>`;
     });
