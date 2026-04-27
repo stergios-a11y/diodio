@@ -2549,6 +2549,19 @@ input[type="range"]::-moz-range-track {
   body.panel-open #legend { display: none; }
   body.panel-open .map-floating-toggle { display: none; }
 
+  /* On mobile the bottom bar wraps to ~116px (matches #map-container bottom
+     override below), so the floating pill needs to sit higher than its
+     desktop anchor at calc(var(--bar-h) + 14px) to stay above the bar
+     instead of overlapping the analyse button. */
+  .map-floating-toggle {
+    bottom: 130px;
+  }
+  /* Also override the pushed-state offset so the pill stays put when the
+     side panel is open (it's hidden anyway on mobile, but be safe). */
+  #legend.pushed ~ .map-floating-toggle {
+    right: 12px;
+  }
+
   /* Tighter side panel content on mobile so more fits in the smaller sheet */
   .sp-header { padding: 9px 14px; padding-top: 14px; }
   .sp-header-inner { padding: 14px 16px 12px; }
