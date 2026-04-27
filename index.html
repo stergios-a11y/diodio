@@ -68,8 +68,8 @@
           "priceCurrency": "EUR"
         },
         "featureList": [
-          "Interactive map of all 50 toll booths",
-          "City-to-city route cost calculator",
+          "Interactive map of 50 main toll booths plus 11 side toll booths",
+          "City-to-city route cost calculator across 16 cities",
           "Bypass advisor with time-vs-money slider",
           "Sortable table of all toll prices",
           "Greek and English UI"
@@ -100,7 +100,7 @@
         },
         "temporalCoverage": "2026/..",
         "datePublished": "2026-01-01",
-        "dateModified": "2026-04-26",
+        "dateModified": "2026-04-27",
         "creator": {
           "@type": "Person",
           "name": "mydiodia"
@@ -185,14 +185,14 @@
         <span class="flag-option flag-en" data-lang="en">🇬🇧</span>
       </button>
       <a class="btn-ghost btn-feedback-top" href="mailto:stergiosgousios@gmail.com?subject=mydiodia%20Feedback" data-i18n-title="btn.feedback.title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
         <span data-i18n="btn.feedback.short">Σχόλια</span>
       </a>
       <button class="btn-ghost" id="legend-toggle" data-i18n="btn.legend.show">Υπόμνημα</button>
       <button class="btn-ghost btn-help" id="help-btn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="10"/>
           <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
           <line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -200,7 +200,7 @@
         <span data-i18n="btn.help">Οδηγίες χρήσης</span>
       </button>
       <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
           <line x1="4" y1="7" x2="20" y2="7"/>
           <line x1="4" y1="12" x2="20" y2="12"/>
           <line x1="4" y1="17" x2="20" y2="17"/>
@@ -225,13 +225,13 @@
       <div class="mobile-drawer-divider"></div>
       <div class="mobile-drawer-actions">
         <a class="mobile-drawer-action" href="mailto:stergiosgousios@gmail.com?subject=mydiodia%20Feedback">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
           <span data-i18n="btn.feedback.short">Σχόλια</span>
         </a>
         <button class="mobile-drawer-action" id="mobile-help-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10"/>
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
             <line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -331,12 +331,12 @@
 
   <div id="bottom-bar">
     <span class="bar-label" data-i18n="bar.from">Από</span>
-    <input class="bar-input" id="origin" value="Αθήνα" autocomplete="off" style="flex:1;max-width:150px" />
+    <input class="bar-input" id="origin" value="Αθήνα" autocomplete="off" data-i18n-aria-label="aria.origin" style="flex:1;max-width:150px" />
     <button class="swap-btn" id="swap-btn" data-i18n-title="bar.swap" title="Αντιστροφή διαδρομής">⇄</button>
     <span class="bar-label" data-i18n="bar.to">Προς</span>
-    <input class="bar-input" id="dest" value="Λάρισα" autocomplete="off" style="flex:1;max-width:150px" />
+    <input class="bar-input" id="dest" value="Λάρισα" autocomplete="off" data-i18n-aria-label="aria.dest" style="flex:1;max-width:150px" />
     <div class="bar-sep"></div>
-    <select class="bar-select" id="vehicle">
+    <select class="bar-select" id="vehicle" data-i18n-aria-label="aria.vehicle">
       <option value="motorcycle" data-i18n="bar.moto">🏍 Μοτο</option>
       <option value="car" selected data-i18n="bar.car">🚗 Αυτοκίνητο</option>
       <option value="lighttruck" data-i18n="bar.van">🚐 Βαν</option>
@@ -354,7 +354,7 @@
         <span class="lbl lbl-suffix tv-desktop" data-i18n="bar.time.suffix">επιπλέον λεπτά για να γλιτώσω €1 σε διόδια</span>
         <span class="lbl lbl-suffix tv-mobile" data-i18n="bar.time.short.suffix">λεπ. ανά €1</span>
       </div>
-      <input type="range" id="tv-slider" min="2" max="15" value="10" step="1" />
+      <input type="range" id="tv-slider" min="2" max="15" value="10" step="1" data-i18n-aria-label="aria.time.slider" />
     </div>
     <div class="bar-sep"></div>
     <button class="analyse-btn" id="analyse-btn" onclick="analyze()">
@@ -372,7 +372,7 @@
         <p class="page-subtitle" data-i18n="routes.subtitle">Συνολικό κόστος διοδίων και χρόνος για κάθε διαδρομή.</p>
       </div>
       <div class="page-toolbar">
-        <label class="page-toolbar-label" data-i18n="routes.vehicle">Όχημα</label>
+        <label class="page-toolbar-label" for="routes-vehicle" data-i18n="routes.vehicle">Όχημα</label>
         <select id="routes-vehicle" class="bar-select">
           <option value="cat1" data-i18n="bar.moto">🏍 Μοτο</option>
           <option value="cat2" selected data-i18n="bar.car">🚗 Αυτοκίνητο</option>
@@ -404,8 +404,8 @@
         <p class="page-subtitle" data-i18n="tolls.subtitle">Τιμές, αυτοκινητόδρομος, και χρόνος παράκαμψης ανά κατεύθυνση.</p>
       </div>
       <div class="page-toolbar tolls-toolbar">
-        <input id="tolls-search" type="text" class="bar-input" placeholder="" data-i18n-placeholder="tolls.search" />
-        <select id="tolls-highway-filter" class="bar-select">
+        <input id="tolls-search" type="text" class="bar-input" placeholder="" data-i18n-placeholder="tolls.search" data-i18n-aria-label="aria.search.tolls" />
+        <select id="tolls-highway-filter" class="bar-select" data-i18n-aria-label="aria.highway.filter">
           <option value="" data-i18n="tolls.allhighways">Όλοι οι αυτοκινητόδρομοι</option>
         </select>
         <span class="toolbar-divider" aria-hidden="true"></span>
@@ -466,7 +466,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260427-0300"></script>
+  <script src="js/i18n.js?v=20260427-0600"></script>
   <script src="data/tolls.js?v=20260427-0300"></script>
   <script src="data/routes.js?v=20260427-0400"></script>
   <script src="js/map.js?v=20260427-0300"></script>

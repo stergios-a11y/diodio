@@ -150,6 +150,13 @@ const STRINGS = {
     'bypass.via.local':        'Μέσω τοπικού δρόμου',
     'bypass.via.highway':      'Μέσω αυτοκινητοδρόμου',
     'lang.toggle':             'EN',
+    // Accessible names for unlabeled controls (used via data-i18n-aria-label)
+    'aria.origin':             'Πόλη αφετηρίας',
+    'aria.dest':               'Πόλη προορισμού',
+    'aria.vehicle':            'Επιλογή οχήματος',
+    'aria.time.slider':        'Ανοχή παράκαμψης σε λεπτά ανά ευρώ',
+    'aria.search.tolls':       'Αναζήτηση διοδίων',
+    'aria.highway.filter':     'Φίλτρο αυτοκινητοδρόμου',
     // Legend group labels
     'hwy.A1':                  'ΠΑΘΕ (A1)',
     'hwy.A1.sub':              'Αφίδνες → Μάλγαρα',
@@ -318,6 +325,12 @@ const STRINGS = {
     'bypass.via.local':        'Via local road',
     'bypass.via.highway':      'Via motorway',
     'lang.toggle':             'EL',
+    'aria.origin':             'Origin city',
+    'aria.dest':               'Destination city',
+    'aria.vehicle':            'Vehicle type',
+    'aria.time.slider':        'Bypass tolerance in minutes per euro',
+    'aria.search.tolls':       'Search tolls',
+    'aria.highway.filter':     'Highway filter',
     'hwy.A1':                  'PATHE (A1)',
     'hwy.A1.sub':              'Afidnes → Malgara',
     'hwy.A2':                  'Egnatia Odos (A2)',
@@ -381,6 +394,11 @@ function applyTranslations() {
   // Elements with data-i18n-placeholder (input placeholders)
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+
+  // Elements with data-i18n-aria-label (screen-reader names for unlabeled controls)
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+    el.setAttribute('aria-label', t(el.dataset.i18nAriaLabel));
   });
 
   // Legend toggle button — state-dependent
