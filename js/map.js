@@ -608,17 +608,17 @@ function openSidePanel(toll) {
     // Map known patterns to translation keys
     const patterns = [
       { re: /^Both directions$/i,                          key: 'dir.both' },
-      { re: /^Northbound \(towards (.+)\)$/i,              key: 'dir.north.to' },
-      { re: /^Southbound \(towards (.+)\)$/i,              key: 'dir.south.to' },
-      { re: /^Eastbound \(towards (.+)\)$/i,               key: 'dir.east.to' },
-      { re: /^Westbound \(towards (.+)\)$/i,               key: 'dir.west.to' },
-      { re: /^Northbound$/i,                               key: 'dir.north' },
-      { re: /^Southbound$/i,                               key: 'dir.south' },
-      { re: /^Eastbound$/i,                                key: 'dir.east' },
-      { re: /^Westbound$/i,                                key: 'dir.west' },
-      { re: /^Westbound only\. Eastbound is FREE\.$/i,     key: 'dir.west.free' },
-      { re: /^Southbound \(entering Greece from (.+)\)$/i, key: 'dir.south.border' },
-      { re: /^Westbound \(entering Greece from (.+)\)$/i,  key: 'dir.west.border' },
+      { re: /^Northbound \(towards (.+)\)$/i,              key: 'dir.northbound.to' },
+      { re: /^Southbound \(towards (.+)\)$/i,              key: 'dir.southbound.to' },
+      { re: /^Eastbound \(towards (.+)\)$/i,               key: 'dir.eastbound.to' },
+      { re: /^Westbound \(towards (.+)\)$/i,               key: 'dir.westbound.to' },
+      { re: /^Northbound$/i,                               key: 'dir.northbound' },
+      { re: /^Southbound$/i,                               key: 'dir.southbound' },
+      { re: /^Eastbound$/i,                                key: 'dir.eastbound' },
+      { re: /^Westbound$/i,                                key: 'dir.westbound' },
+      { re: /^Westbound only\. Eastbound is FREE\.$/i,     key: 'dir.westbound.free' },
+      { re: /^Southbound \(entering Greece from (.+)\)$/i, key: 'dir.southbound.border' },
+      { re: /^Westbound \(entering Greece from (.+)\)$/i,  key: 'dir.westbound.border' },
       { re: /^Exit — towards (.+)$/i,                      key: 'dir.exit.to' },
       { re: /^Pay once on entry — covers full traverse$/i, key: 'dir.entry.once' },
     ];
@@ -697,7 +697,7 @@ function openSidePanel(toll) {
   }
 
   // Show only the selected direction's lines + signs, or both
-  function setDirectionFilter(activeKey /* 'north' | 'south' | 'both' */) {
+  function setDirectionFilter(activeKey /* 'northbound' | 'southbound' | 'eastbound' | 'westbound' | 'both' */) {
     inspectLayers.forEach(layer => {
       if (!layer._dirKey) return;
       const visible = activeKey === 'both' || layer._dirKey === activeKey;

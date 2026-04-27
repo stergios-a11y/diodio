@@ -198,14 +198,15 @@ function tollsOnRoute(coords, threshold = 0.025) {
 }
 
 // ── Detect travel direction from route geometry ───────────
-// Returns 'north','south','east','west' based on overall movement
+// Returns 'northbound','southbound','eastbound','westbound' based on overall movement.
+// Must match the bypass_directions key naming in data/tolls.js.
 function detectDirection(fromCoord, toCoord) {
   const dlat = toCoord.lat - fromCoord.lat;
   const dlng = toCoord.lng - fromCoord.lng;
   if (Math.abs(dlat) > Math.abs(dlng)) {
-    return dlat > 0 ? 'north' : 'south';
+    return dlat > 0 ? 'northbound' : 'southbound';
   } else {
-    return dlng > 0 ? 'east' : 'west';
+    return dlng > 0 ? 'eastbound' : 'westbound';
   }
 }
 

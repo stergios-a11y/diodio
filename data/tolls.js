@@ -34,11 +34,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Nea Odos",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.1764690, lng: 23.8546228,
     cat1: 2.70, cat2: 3.90, cat3: 9.75, cat4: 13.70,
     notes: "Northern Attica. First toll heading north from Athens.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Αγ. Στεφάνου", entry_name: "Πολυδενδρίου",
         pre_exit:   { lat: 38.13631451771822, lng: 23.841738538691523 },
@@ -49,7 +50,7 @@ const TOLL_DATA = [
         via: [{ lat: 38.13840, lng: 23.86445 },{ lat: 38.155, lng: 23.862 },{ lat: 38.176, lng: 23.855 },{ lat: 38.21485, lng: 23.86310 }],
         confidence: "verified"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Athens)",
         exit_name: "Πολυδενδρίου", entry_name: "Αγ. Στεφάνου",
         pre_exit:   { lat: 38.20627367700232, lng: 23.85497115527781 },
@@ -69,11 +70,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Nea Odos",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.3708752, lng: 23.2868636,
     cat1: 3.20, cat2: 4.55, cat3: 11.45, cat4: 16.00,
     notes: "North of Thiva / Thebes.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Ριτσώνας", entry_name: "Θήβας",
         pre_exit:   { lat: 38.365991, lng: 23.331733 },
@@ -84,7 +86,7 @@ const TOLL_DATA = [
         via: [{ lat: 38.40685, lng: 23.51860 },{ lat: 38.390, lng: 23.450 },{ lat: 38.371, lng: 23.380 },{ lat: 38.35825, lng: 23.33640 }],
         confidence: "auto"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Athens)",
         exit_name: "Θήβας", entry_name: "Ριτσώνας",
         pre_exit:   { lat: 38.405441, lng: 23.219123 },
@@ -104,11 +106,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Nea Odos",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.6174740, lng: 23.1434298,
     cat1: 3.15, cat2: 4.55, cat3: 11.40, cat4: 15.95,
     notes: "Between Thiva and Kamena Vourla.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Κάστρου", entry_name: "Λιβανατών",
         pre_exit:   { lat: 38.571955247833486, lng: 23.19585429040776 },
@@ -119,7 +122,7 @@ const TOLL_DATA = [
         via: [{ lat: 38.49755, lng: 23.16145 },{ lat: 38.560, lng: 23.130 },{ lat: 38.617, lng: 23.100 },{ lat: 38.660, lng: 23.070 },{ lat: 38.71150, lng: 23.03740 }],
         confidence: "verified"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Athens)",
         exit_name: "Λιβανατών", entry_name: "Κάστρου",
         pre_exit:   { lat: 38.62267234322968, lng: 23.120105534694485 },
@@ -139,11 +142,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Nea Odos",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.8087016, lng: 22.6025569,
     cat1: 1.45, cat2: 2.10, cat3: 5.25, cat4: 7.35,
     notes: "Near ferry port for Sporades islands.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Μώλου", entry_name: "Θερμοπυλών",
         pre_exit:   { lat: 38.80092992897871, lng: 22.653421150540826 },
@@ -154,7 +158,7 @@ const TOLL_DATA = [
         via: [{ lat: 38.80955, lng: 22.64730 },{ lat: 38.809, lng: 22.620 },{ lat: 38.800, lng: 22.580 },{ lat: 38.79785, lng: 22.53585 }],
         confidence: "verified"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Athens)",
         exit_name: "Θερμοπυλών", entry_name: "Μώλου",
         pre_exit:   { lat: 38.80095331249726, lng: 22.505496133170862 },
@@ -174,11 +178,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Nea Odos",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.9040600, lng: 22.5276697,
     cat1: 1.55, cat2: 2.25, cat3: 5.65, cat4: 7.90,
     notes: "Zone boundary station near Kamena Vourla.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Λαμίας", entry_name: "Αγ. Μαρίνας",
         pre_exit:   { lat: 38.86690865730291, lng: 22.459566047881285 },
@@ -189,7 +194,7 @@ const TOLL_DATA = [
         via: [{ lat: 38.87855, lng: 22.45425 },{ lat: 38.882, lng: 22.500 },{ lat: 38.890, lng: 22.540 },{ lat: 38.89555, lng: 22.58435 }],
         confidence: "verified"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Athens)",
         exit_name: "Αγ. Μαρίνας", entry_name: "Λαμίας",
         pre_exit:   { lat: 38.9044727354293, lng: 22.573705862773096 },
@@ -209,11 +214,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Kentriki Odos",
     operator: "Kentriki Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.9203273, lng: 22.8462812,
     cat1: 2.90, cat2: 4.10, cat3: 10.20, cat4: 14.30,
     notes: "Highest-priced station on Kentriki Odos section.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound",
         pre_exit:   { lat: 38.886498, lng: 22.785763 },
         off_ramp:   { lat: 38.887596, lng: 22.789512 },
@@ -223,7 +229,7 @@ const TOLL_DATA = [
         via: [],
         confidence: "verified"
       },
-      south: {
+      southbound: {
         label: "Southbound",
         pre_exit:   { lat: 38.951746, lng: 22.877312 },
         off_ramp:   { lat: 38.949418, lng: 22.875670 },
@@ -307,11 +313,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Kentriki Odos",
     operator: "Kentriki Odos",
     type: "frontal", direction_label: "Exit — towards Volos / Larissa east",
+    axis: "NS",
     lat: 39.5227965, lng: 22.5567985,
     cat1: 1.30, cat2: 2.60, cat3: 5.20, cat4: 7.80,
     notes: "Lateral exit ramp towards Volos and eastern Larissa.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Κιλελέρ", entry_name: "Νίκαιας",
         exit:  { lat: 39.46785, lng: 22.53425 },
@@ -320,7 +327,7 @@ const TOLL_DATA = [
         via: [{ lat: 39.46785, lng: 22.53425 },{ lat: 39.500, lng: 22.520 },{ lat: 39.523, lng: 22.510 },{ lat: 39.56945, lng: 22.46310 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound",
         pre_exit:   { lat: 39.583333, lng: 22.483724 },
         off_ramp:   { lat: 39.581018, lng: 22.482136 },
@@ -365,11 +372,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 39.8044068, lng: 22.5028431,
     cat1: 2.10, cat2: 3.00, cat3: 7.50, cat4: 10.50,
     notes: "Entry to Aegean Motorway concession north of Larissa.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Ευαγγελισμού", entry_name: "Γυρτώνης",
         pre_exit:   { lat: 39.840195, lng: 22.514041 },
@@ -380,7 +388,7 @@ const TOLL_DATA = [
         via: [{ lat: 39.84565, lng: 22.52135 },{ lat: 39.820, lng: 22.510 },{ lat: 39.800, lng: 22.500 },{ lat: 39.74235, lng: 22.47655 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Athens)",
         exit_name: "Γυρτώνης", entry_name: "Ευαγγελισμού",
         pre_exit:   { lat: 39.751257, lng: 22.474875 },
@@ -426,18 +434,31 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 40.0357339, lng: 22.5698233,
     cat1: 2.60, cat2: 3.80, cat3: 9.40, cat4: 13.10,
     notes: "Highest toll — covers Tempi Valley tunnel. Old road via Stomio coastal village.",
     bypass_directions: {
-      north: {
-        label: "Northbound",
-        pre_exit:   { lat: 39.977605, lng: 22.631418 },
-        off_ramp:   { lat: 39.981732, lng: 22.62513 },
-        on_ramp:    { lat: 40.045095, lng: 22.565317 },
-        post_merge: { lat: 40.046458, lng: 22.564234 },
-        minutes: 10,
-        via: [],
+      northbound: {
+        label: "Northbound (towards Thessaloniki)",
+        exit_name: "Πλαταμώνα", entry_name: "Λεπτοκαρυάς",
+        pre_exit:   { lat: 39.976419, lng: 22.634363 },
+        off_ramp:   { lat: 39.979837, lng: 22.623542 },
+        on_ramp:    { lat: 40.045795, lng: 22.564413 },
+        post_merge: { lat: 40.053832, lng: 22.559135 },
+        minutes: 35,
+        via: [{ lat: 39.99245, lng: 22.62415 },{ lat: 40.000, lng: 22.610 },{ lat: 40.020, lng: 22.592 },{ lat: 40.036, lng: 22.575 },{ lat: 40.06255, lng: 22.55835 }],
+        confidence: "verified"
+      },
+      southbound: {
+        label: "Southbound (towards Athens)",
+        exit_name: "Λεπτοκαρυάς", entry_name: "Πλαταμώνα",
+        pre_exit:   { lat: 40.053744, lng: 22.558919 },
+        off_ramp:   { lat: 40.045795, lng: 22.564413 },
+        on_ramp:    { lat: 39.979837, lng: 22.623542 },
+        post_merge: { lat: 39.976292, lng: 22.634301 },
+        minutes: 35,
+        via: [{ lat: 40.06255, lng: 22.55835 },{ lat: 40.036, lng: 22.575 },{ lat: 40.020, lng: 22.592 },{ lat: 40.000, lng: 22.610 },{ lat: 39.99245, lng: 22.62415 }],
         confidence: "verified"
       },
     },
@@ -449,11 +470,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Exit — towards Aeginio / Pieria coast",
+    axis: "NS",
     lat: 40.5196328, lng: 22.5727432,
     cat1: 0.85, cat2: 1.70, cat3: 3.40, cat4: 5.10,
     notes: "Lateral exit ramp towards Aeginio and Pieria coast.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound",
         exit_name: "Αιγινίου", entry_name: "Κολινδρού",
         pre_exit:   { lat: 40.504365, lng: 22.567625 },
@@ -464,7 +486,7 @@ const TOLL_DATA = [
         via: [{ lat: 40.50125, lng: 22.52845 },{ lat: 40.490, lng: 22.550 },{ lat: 40.47855, lng: 22.58745 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound",
         exit_name: "Κολινδρού", entry_name: "Αιγινίου",
         pre_exit:   { lat: 40.483208, lng: 22.567485 },
@@ -484,11 +506,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 40.6023898, lng: 22.6982629,
     cat1: 0.80, cat2: 1.15, cat3: 2.90, cat4: 4.10,
     notes: "Thessaloniki ring junction. Northern terminus of PATHE.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Thessaloniki)",
         exit_name: "Χαλάστρας", entry_name: "Μαλγάρων",
         pre_exit:   { lat: 40.605881, lng: 22.723272 },
@@ -499,7 +522,7 @@ const TOLL_DATA = [
         via: [{ lat: 40.62345, lng: 22.72155 },{ lat: 40.618, lng: 22.706 },{ lat: 40.61255, lng: 22.67425 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Athens)",
         exit_name: "Μαλγάρων", entry_name: "Χαλάστρας",
         pre_exit:   { lat: 40.601839, lng: 22.693580 },
@@ -519,11 +542,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 40.7068507, lng: 23.1915236,
     cat1: 2.00, cat2: 2.90, cat3: 7.25, cat4: 10.20,
     notes: "North of Thessaloniki towards Kavala / Halkidiki junction.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Kavala)",
         exit_name: "Προφήτη", entry_name: "Λαγκαδά",
         exit:  { lat: 40.684178, lng: 23.257014 },
@@ -532,7 +556,7 @@ const TOLL_DATA = [
         via: [{ lat: 40.6854, lng: 23.2584 },{ lat: 40.700, lng: 23.220 },{ lat: 40.720, lng: 23.170 },{ lat: 40.7512, lng: 23.0584 }],
         confidence: "auto"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Thessaloniki)",
         exit_name: "Λαγκαδά", entry_name: "Προφήτη",
         exit:  { lat: 40.739312, lng: 23.018035 },
@@ -550,11 +574,12 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 40.8582573, lng: 24.1623607,
     cat1: 1.85, cat2: 2.65, cat3: 6.70, cat4: 9.40,
     notes: "Between Kavala and Drama junctions.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Kavala/Drama)",
         exit_name: "Γαληψού", entry_name: "Μουσθένης",
         exit:  { lat: 40.786484, lng: 23.960474 },
@@ -563,7 +588,7 @@ const TOLL_DATA = [
         via: [{ lat: 40.8542, lng: 23.9542 },{ lat: 40.856, lng: 24.000 },{ lat: 40.860, lng: 24.060 },{ lat: 40.8654, lng: 24.1254 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Thessaloniki)",
         exit_name: "Μουσθένης", entry_name: "Γαληψού",
         exit:  { lat: 40.8654, lng: 24.1254 },
@@ -581,6 +606,7 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 40.7264289, lng: 23.6937403,
     cat1: 0.95, cat2: 1.40, cat3: 3.50, cat4: 4.90,
     notes: "Popular summer exit for Asprovalta beach.",
@@ -593,6 +619,7 @@ const TOLL_DATA = [
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Southbound (entering Greece from N. Macedonia)",
+    axis: "NS",
     lat: 41.1086804, lng: 22.5585932,
     cat1: 2.05, cat2: 2.95, cat3: 7.40, cat4: 10.40,
     notes: "Greek–North Macedonian border. No bypass.",
@@ -610,11 +637,12 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 39.5402028, lng: 20.6743451,
     cat1: 2.35, cat2: 3.35, cat3: 8.45, cat4: 11.85,
     notes: "Western terminus of Egnatia.",
     bypass_directions: {
-      east: {
+      eastbound: {
         label: "Eastbound (towards Ioannina)",
         exit_name: "Δωδώνης", entry_name: "Σελλών",
         pre_exit:   { lat: 39.555673, lng: 20.761349 },
@@ -625,7 +653,7 @@ const TOLL_DATA = [
         via: [{ lat: 39.5482, lng: 20.7854 },{ lat: 39.535, lng: 20.740 },{ lat: 39.520, lng: 20.700 },{ lat: 39.5125, lng: 20.6584 }],
         confidence: "approximate"
       },
-      west: {
+      westbound: {
         label: "Westbound (towards Igoumenitsa)",
         exit_name: "Σελλών", entry_name: "Δωδώνης",
         pre_exit:   { lat: 39.535778, lng: 20.703250 },
@@ -645,11 +673,12 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 39.6188630, lng: 20.9475803,
     cat1: 1.35, cat2: 1.95, cat3: 4.90, cat4: 6.85,
     notes: "Ioannina bypass. Named after Pamvotida lake.",
     bypass_directions: {
-      east: {
+      eastbound: {
         label: "Eastbound (towards Thessaloniki)",
         exit_name: "Αράχθου", entry_name: "Ιωαννίνων",
         exit:  { lat: 39.6125, lng: 20.9854 },
@@ -658,7 +687,7 @@ const TOLL_DATA = [
         via: [{ lat: 39.6125, lng: 20.9854 },{ lat: 39.625, lng: 20.960 },{ lat: 39.640, lng: 20.920 },{ lat: 39.6584, lng: 20.8542 }],
         confidence: "approximate"
       },
-      west: {
+      westbound: {
         label: "Westbound (towards Igoumenitsa)",
         exit_name: "Ιωαννίνων", entry_name: "Αράχθου",
         exit:  { lat: 39.6584, lng: 20.8542 },
@@ -676,11 +705,12 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 39.7895825, lng: 21.2666618,
     cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35,
     notes: "Mountain tunnel through Pindus range. Old road via Metsovo village.",
     bypass_directions: {
-      east: {
+      eastbound: {
         label: "Eastbound (towards Thessaloniki)",
         exit_name: "Μετσόβου", entry_name: "Παναγιάς",
         pre_exit:   { lat: 39.754925, lng: 21.159824 },
@@ -691,7 +721,7 @@ const TOLL_DATA = [
         via: [{ lat: 39.7854, lng: 21.1854 },{ lat: 39.782, lng: 21.220 },{ lat: 39.786, lng: 21.270 },{ lat: 39.7985, lng: 21.3254 }],
         confidence: "auto"
       },
-      west: {
+      westbound: {
         label: "Westbound (towards Ioannina)",
         exit_name: "Παναγιάς", entry_name: "Μετσόβου",
         pre_exit:   { lat: 39.800792, lng: 21.309623 },
@@ -711,11 +741,12 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 40.2565339, lng: 21.6329808,
     cat1: 1.65, cat2: 2.40, cat3: 6.00, cat4: 8.40,
     notes: "",
     bypass_directions: {
-      east: {
+      eastbound: {
         label: "Eastbound (towards Thessaloniki)",
         exit_name: "Σιάτιστας", entry_name: "Κοζάνης",
         pre_exit:   { lat: 40.219947, lng: 21.543025 },
@@ -726,7 +757,7 @@ const TOLL_DATA = [
         via: [{ lat: 40.2584, lng: 21.5214 },{ lat: 40.268, lng: 21.620 },{ lat: 40.280, lng: 21.700 },{ lat: 40.3012, lng: 21.7854 }],
         confidence: "auto"
       },
-      west: {
+      westbound: {
         label: "Westbound (towards Ioannina)",
         exit_name: "Κοζάνης", entry_name: "Σιάτιστας",
         pre_exit:   { lat: 40.358108, lng: 21.814906 },
@@ -746,11 +777,12 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 40.3671958, lng: 22.0602089,
     cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35,
     notes: "",
     bypass_directions: {
-      east: {
+      eastbound: {
         label: "Eastbound (towards Thessaloniki)",
         exit_name: "Βέροιας", entry_name: "Πολυμύλου",
         exit:  { lat: 40.5284, lng: 22.1854 },
@@ -759,7 +791,7 @@ const TOLL_DATA = [
         via: [{ lat: 40.5284, lng: 22.1854 },{ lat: 40.480, lng: 22.150 },{ lat: 40.430, lng: 22.110 },{ lat: 40.3854, lng: 22.0542 }],
         confidence: "approximate"
       },
-      west: {
+      westbound: {
         label: "Westbound (towards Kozani)",
         exit_name: "Πολυμύλου", entry_name: "Βέροιας",
         exit:  { lat: 40.368681, lng: 22.053816 },
@@ -777,6 +809,7 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90) — branch",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 40.5745294, lng: 21.0614475,
     cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15,
     notes: "Branch spur of Egnatia towards Kastoria / Albanian border.",
@@ -789,6 +822,7 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 40.6961219, lng: 22.895877,
     cat1: 0.45, cat2: 0.65, cat3: 1.70, cat4: 2.35,
     notes: "Western Thessaloniki bypass.",
@@ -801,6 +835,7 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90) — branch",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 41.0435183, lng: 23.2952374,
     cat1: 1.60, cat2: 2.35, cat3: 5.85, cat4: 8.20,
     notes: "Branch spur north of Thessaloniki ring.",
@@ -813,6 +848,7 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 40.9598127, lng: 24.4724027,
     cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15,
     notes: "Frontal toll on Egnatia mainline near Kavala.",
@@ -825,11 +861,12 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 41.120383, lng: 25.0801406,
     cat1: 1.60, cat2: 2.25, cat3: 5.70, cat4: 8.00,
     notes: "",
     bypass_directions: {
-      east: {
+      eastbound: {
         label: "Eastbound (towards Komotini)",
         exit_name: "ΒΙΠΕ Κομοτηνής", entry_name: "Ιάσμου",
         pre_exit:   { lat: 41.122146, lng: 25.310027 },
@@ -840,7 +877,7 @@ const TOLL_DATA = [
         via: [{ lat: 41.1254, lng: 25.3254 },{ lat: 41.127, lng: 25.250 },{ lat: 41.130, lng: 25.200 },{ lat: 41.1325, lng: 25.1254 }],
         confidence: "approximate"
       },
-      west: {
+      westbound: {
         label: "Westbound (towards Kavala)",
         exit_name: "Ιάσμου", entry_name: "ΒΙΠΕ Κομοτηνής",
         pre_exit:   { lat: 41.116075, lng: 25.190151 },
@@ -860,6 +897,7 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 41.0134933, lng: 25.5333695,
     cat1: 1.90, cat2: 2.75, cat3: 6.90, cat4: 9.65,
     notes: "",
@@ -872,6 +910,7 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90)",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 40.9445389, lng: 26.2051426,
     cat1: 1.40, cat2: 2.00, cat3: 5.00, cat4: 7.00,
     notes: "Eastern terminus of main Egnatia line.",
@@ -884,6 +923,7 @@ const TOLL_DATA = [
     highway: "A2", highway_name: "Egnatia Odos (A2/E90) — branch",
     operator: "Egnatia Odos",
     type: "frontal", direction_label: "Westbound (entering Greece from Bulgaria)",
+    axis: "NS",
     lat: 41.3642659, lng: 23.3567653,
     cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.30,
     notes: "Greek–Bulgarian border spur.",
@@ -901,11 +941,12 @@ const TOLL_DATA = [
     highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.3592412, lng: 21.6565418,
     cat1: 2.50, cat2: 3.55, cat3: 8.90, cat4: 12.50,
     notes: "First toll northbound from Antirrio.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Ioannina)",
         exit_name: "Γαβρολίμνης", entry_name: "Μεσολογγίου",
         exit:  { lat: 38.3951, lng: 21.6582 },
@@ -914,7 +955,7 @@ const TOLL_DATA = [
         via: [{ lat: 38.3951, lng: 21.6582 },{ lat: 38.398, lng: 21.580 },{ lat: 38.401, lng: 21.510 },{ lat: 38.4021, lng: 21.4325 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Antirrio)",
         exit_name: "Μεσολογγίου", entry_name: "Γαβρολίμνης",
         exit:  { lat: 38.378905, lng: 21.501744 },
@@ -932,11 +973,12 @@ const TOLL_DATA = [
     highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.5494744, lng: 21.2723798,
     cat1: 2.90, cat2: 4.20, cat3: 10.50, cat4: 14.70,
     notes: "Zone 2 (Chaliki – Amfilochia).",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Ioannina)",
         exit_name: "Χαλικίου", entry_name: "Αγγελοκάστρου",
         pre_exit:   { lat: 38.512796, lng: 21.309039 },
@@ -947,7 +989,7 @@ const TOLL_DATA = [
         via: [{ lat: 38.5142, lng: 21.2854 },{ lat: 38.535, lng: 21.290 },{ lat: 38.555, lng: 21.298 },{ lat: 38.5684, lng: 21.3012 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Antirrio)",
         exit_name: "Αγγελοκάστρου", entry_name: "Χαλικίου",
         pre_exit:   { lat: 38.545701, lng: 21.274602 },
@@ -967,11 +1009,12 @@ const TOLL_DATA = [
     highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.9898946, lng: 21.1709225,
     cat1: 2.50, cat2: 3.55, cat3: 8.95, cat4: 12.50,
     notes: "Arta–Ioannina section.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Ioannina)",
         exit_name: "Κουβαρά", entry_name: "Αμφιλοχίας",
         exit:  { lat: 38.7452, lng: 21.1542 },
@@ -980,7 +1023,7 @@ const TOLL_DATA = [
         via: [{ lat: 38.7452, lng: 21.1542 },{ lat: 38.780, lng: 21.158 },{ lat: 38.820, lng: 21.164 },{ lat: 38.8654, lng: 21.1754 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Arta)",
         exit_name: "Αμφιλοχίας", entry_name: "Κουβαρά",
         exit:  { lat: 38.8654, lng: 21.1754 },
@@ -998,11 +1041,12 @@ const TOLL_DATA = [
     highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 39.4252460, lng: 20.9053087,
     cat1: 2.55, cat2: 3.70, cat3: 9.25, cat4: 12.95,
     notes: "Near Arta. Northern terminus of Nea Odos A5 section.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Ioannina)",
         exit_name: "Αμμοτόπου", entry_name: "Αβγού",
         pre_exit:   { lat: 39.256196, lng: 20.926479 },
@@ -1013,7 +1057,7 @@ const TOLL_DATA = [
         via: [{ lat: 39.2654, lng: 20.9542 },{ lat: 39.320, lng: 20.935 },{ lat: 39.375, lng: 20.910 },{ lat: 39.4254, lng: 20.8854 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Antirrio)",
         exit_name: "Αβγού", entry_name: "Αμμοτόπου",
         pre_exit:   { lat: 39.433936, lng: 20.905357 },
@@ -1038,11 +1082,12 @@ const TOLL_DATA = [
     highway: "A8", highway_name: "Olympia Odos (A8/E94)",
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 38.0422442, lng: 23.4958076,
     cat1: 1.70, cat2: 2.50, cat3: 6.30, cat4: 8.90,
     notes: "Western Athens gateway. Junction with A6 Attiki Odos.",
     bypass_directions: {
-      west: {
+      westbound: {
         label: "Westbound (towards Patras)",
         exit_name: "Παραλία Ελευσίνας", entry_name: "Νέα Πέραμος",
         pre_exit:   { lat: 38.048204, lng: 23.554602 },
@@ -1053,7 +1098,7 @@ const TOLL_DATA = [
         via: [{ lat: 38.0381, lng: 23.5245 },{ lat: 38.025, lng: 23.490 },{ lat: 38.010, lng: 23.450 },{ lat: 37.9972, lng: 23.4182 }],
         confidence: "verified"
       },
-      east: {
+      eastbound: {
         label: "Eastbound (towards Athens)",
         exit_name: "Νέα Πέραμος", entry_name: "Παραλία Ελευσίνας",
         pre_exit:   { lat: 38.014679, lng: 23.416593 },
@@ -1073,18 +1118,31 @@ const TOLL_DATA = [
     highway: "A8", highway_name: "Olympia Odos (A8/E94)",
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 37.9249719, lng: 23.0325365,
     cat1: 1.50, cat2: 2.10, cat3: 5.40, cat4: 7.60,
     notes: "At the Corinth Canal. Iconic crossing point into the Peloponnese.",
     bypass_directions: {
-      east: {
-        label: "Eastbound",
-        pre_exit:   { lat: 37.920258, lng: 22.986832 },
-        off_ramp:   { lat: 37.921405, lng: 22.990528 },
-        on_ramp:    { lat: 37.92198, lng: 23.119537 },
-        post_merge: { lat: 37.92457, lng: 23.122353 },
-        minutes: 10,
-        via: [],
+      westbound: {
+        label: "Westbound (towards Peloponnese)",
+        exit_name: "Αγ. Θεόδωροι", entry_name: "Λουτράκι",
+        pre_exit:   { lat: 37.929372, lng: 23.129453 },
+        off_ramp:   { lat: 37.923720, lng: 23.120585 },
+        on_ramp:    { lat: 37.924557, lng: 23.001337 },
+        post_merge: { lat: 37.922206, lng: 22.991073 },
+        minutes: 13,
+        via: [{ lat: 37.9254, lng: 23.1368 },{ lat: 37.920, lng: 23.080 },{ lat: 37.916, lng: 23.040 },{ lat: 37.9145, lng: 22.9854 }],
+        confidence: "verified"
+      },
+      eastbound: {
+        label: "Eastbound (towards Athens)",
+        exit_name: "Λουτράκι", entry_name: "Αγ. Θεόδωροι",
+        pre_exit:   { lat: 37.921986, lng: 22.990992 },
+        off_ramp:   { lat: 37.924557, lng: 23.001337 },
+        on_ramp:    { lat: 37.923720, lng: 23.120585 },
+        post_merge: { lat: 37.929256, lng: 23.129571 },
+        minutes: 13,
+        via: [{ lat: 37.9145, lng: 22.9854 },{ lat: 37.916, lng: 23.040 },{ lat: 37.920, lng: 23.080 },{ lat: 37.9254, lng: 23.1368 }],
         confidence: "verified"
       },
     },
@@ -1122,21 +1180,11 @@ const TOLL_DATA = [
     highway: "A8", highway_name: "Olympia Odos (A8/E94)",
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 37.996686833044144, lng: 22.735416380916327,
     cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.60,
     notes: "Frontal toll on Olympia Odos near Kiato.",
-    bypass_directions: {
-      west: {
-        label: "Westbound",
-        pre_exit:   { lat: 37.927329, lng: 22.793321 },
-        off_ramp:   { lat: 37.931497, lng: 22.787935 },
-        on_ramp:    { lat: 38.00777, lng: 22.733325 },
-        post_merge: { lat: 38.010805, lng: 22.733535 },
-        minutes: 10,
-        via: [],
-        confidence: "verified"
-      },
-    },
+    bypass_directions: null,
   },
   {
     id: "olympia_aigio",
@@ -1145,30 +1193,31 @@ const TOLL_DATA = [
     highway: "A8", highway_name: "Olympia Odos (A8/E94)",
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 38.1907754, lng: 22.1654464,
     cat1: 2.70, cat2: 3.80, cat3: 9.70, cat4: 13.60,
     notes: "Halfway Athens–Patras. Old coastal road available.",
     bypass_directions: {
-      west: {
-        label: "Westbound",
+      westbound: {
+        label: "Westbound (towards Patras)",
         exit_name: "Δερβένι", entry_name: "Αίγιο",
-        pre_exit:   { lat: 38.174479, lng: 22.247465 },
-        off_ramp:   { lat: 38.174723, lng: 22.239268 },
-        on_ramp:    { lat: 38.222268, lng: 22.101381 },
-        post_merge: { lat: 38.223465, lng: 22.098666 },
-        minutes: 10,
-        via: [],
+        pre_exit:   { lat: 38.129532, lng: 22.417006 },
+        off_ramp:   { lat: 38.130865, lng: 22.405909 },
+        on_ramp:    { lat: 38.222162, lng: 22.100968 },
+        post_merge: { lat: 38.227085, lng: 22.091390 },
+        minutes: 20,
+        via: [{ lat: 38.1285, lng: 22.4185 },{ lat: 38.155, lng: 22.340 },{ lat: 38.180, lng: 22.250 },{ lat: 38.200, lng: 22.180 },{ lat: 38.2341, lng: 22.0912 }],
         confidence: "verified"
       },
-      east: {
-        label: "Eastbound",
+      eastbound: {
+        label: "Eastbound (towards Athens)",
         exit_name: "Αίγιο", entry_name: "Δερβένι",
-        pre_exit:   { lat: 38.223107, lng: 22.09901 },
-        off_ramp:   { lat: 38.220009, lng: 22.103859 },
-        on_ramp:    { lat: 38.174694, lng: 22.239692 },
-        post_merge: { lat: 38.174748, lng: 22.243393 },
-        minutes: 10,
-        via: [],
+        pre_exit:   { lat: 38.226971, lng: 22.091295 },
+        off_ramp:   { lat: 38.222162, lng: 22.100968 },
+        on_ramp:    { lat: 38.130865, lng: 22.405909 },
+        post_merge: { lat: 38.129376, lng: 22.416956 },
+        minutes: 20,
+        via: [{ lat: 38.2341, lng: 22.0912 },{ lat: 38.200, lng: 22.180 },{ lat: 38.180, lng: 22.250 },{ lat: 38.155, lng: 22.340 },{ lat: 38.1285, lng: 22.4185 }],
         confidence: "verified"
       },
     },
@@ -1180,31 +1229,32 @@ const TOLL_DATA = [
     highway: "A8", highway_name: "Olympia Odos (A8/E94)",
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 38.3164492, lng: 21.8300325,
     cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.50,
     notes: "Near Rio ferry landing and bridge approach.",
     bypass_directions: {
-      west: {
-        label: "Westbound",
+      westbound: {
+        label: "Westbound (towards Rio/Bridge)",
         exit_name: "Δρέπανο", entry_name: "Ρίο",
-        pre_exit:   { lat: 38.32384, lng: 21.860293 },
-        off_ramp:   { lat: 38.324951, lng: 21.858045 },
-        on_ramp:    { lat: 38.284071, lng: 21.776863 },
-        post_merge: { lat: 38.283465, lng: 21.778274 },
-        minutes: 10,
-        via: [],
-        confidence: "verified"
+        pre_exit:   { lat: 38.324589, lng: 21.865335 },
+        off_ramp:   { lat: 38.324251, lng: 21.854032 },
+        on_ramp:    { lat: 38.298500, lng: 21.785400 },
+        post_merge: { lat: 38.290444, lng: 21.778628 },
+        minutes: 12,
+        via: [{ lat: 38.3185, lng: 21.8485 },{ lat: 38.310, lng: 21.820 },{ lat: 38.2985, lng: 21.7854 }],
+        confidence: "approximate"
       },
-      east: {
-        label: "Eastbound",
+      eastbound: {
+        label: "Eastbound (towards Aigio)",
         exit_name: "Ρίο", entry_name: "Δρέπανο",
-        pre_exit:   { lat: 38.295469, lng: 21.788045 },
-        off_ramp:   { lat: 38.296938, lng: 21.793002 },
-        on_ramp:    { lat: 38.325186, lng: 21.857965 },
-        post_merge: { lat: 38.323697, lng: 21.860266 },
-        minutes: 10,
-        via: [],
-        confidence: "verified"
+        pre_exit:   { lat: 38.290226, lng: 21.778829 },
+        off_ramp:   { lat: 38.298500, lng: 21.785400 },
+        on_ramp:    { lat: 38.324251, lng: 21.854032 },
+        post_merge: { lat: 38.324461, lng: 21.865334 },
+        minutes: 12,
+        via: [{ lat: 38.2985, lng: 21.7854 },{ lat: 38.310, lng: 21.820 },{ lat: 38.3185, lng: 21.8485 }],
+        confidence: "approximate"
       },
     },
   },
@@ -1215,6 +1265,7 @@ const TOLL_DATA = [
     highway: "A8", highway_name: "Olympia Odos (A8/E94)",
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "EW",
     lat: 38.1449493, lng: 21.6191570,
     cat1: 2.50, cat2: 3.60, cat3: 9.00, cat4: 12.70,
     notes: "Eastern approach to Patras.",
@@ -1227,6 +1278,7 @@ const TOLL_DATA = [
     highway: "A8", highway_name: "Olympia Odos (A8/E94)",
     operator: "Olympia Odos",
     type: "frontal", direction_label: "Exit — towards Pyrgos / Ancient Olympia",
+    axis: "EW",
     lat: 37.7525508, lng: 21.3585639,
     cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
     notes: "Southern terminus of Olympia Odos.",
@@ -1244,6 +1296,7 @@ const TOLL_DATA = [
     highway: "E65", highway_name: "Kentriki Odos (E65)",
     operator: "Kentriki Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 38.9148821, lng: 22.3487648,
     cat1: 1.40, cat2: 2.05, cat3: 5.15, cat4: 7.20,
     notes: "Southern terminus of Kentriki Odos. Near Lamia, junction with A1.",
@@ -1256,11 +1309,12 @@ const TOLL_DATA = [
     highway: "E65", highway_name: "Kentriki Odos (E65)",
     operator: "Kentriki Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 39.2570470, lng: 22.0831457,
     cat1: 2.60, cat2: 3.70, cat3: 9.30, cat4: 13.00,
     notes: "",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Trikala)",
         exit_name: "Ανάβρας", entry_name: "Σοφάδων",
         pre_exit:   { lat: 39.198475, lng: 22.077141 },
@@ -1270,7 +1324,7 @@ const TOLL_DATA = [
         minutes: 15,
         confidence: "verified"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Lamia)",
         exit_name: "Σοφάδων", entry_name: "Ανάβρας",
         pre_exit:   { lat: 39.318130, lng: 22.057871 },
@@ -1289,11 +1343,12 @@ const TOLL_DATA = [
     highway: "E65", highway_name: "Kentriki Odos (E65)",
     operator: "Kentriki Odos",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 39.5204295, lng: 21.8322372,
     cat1: 2.25, cat2: 3.25, cat3: 8.10, cat4: 11.40,
     notes: "Northern terminus of Kentriki Odos.",
     bypass_directions: {
-      north: {
+      northbound: {
         label: "Northbound (towards Trikala city)",
         exit_name: "Καρδίτσας", entry_name: "Τρικάλων",
         pre_exit:   { lat: 39.483472, lng: 21.870440 },
@@ -1304,7 +1359,7 @@ const TOLL_DATA = [
         via: [{ lat: 39.4854, lng: 21.8542 },{ lat: 39.510, lng: 21.830 },{ lat: 39.5584, lng: 21.7854 }],
         confidence: "approximate"
       },
-      south: {
+      southbound: {
         label: "Southbound (towards Karditsa)",
         exit_name: "Τρικάλων", entry_name: "Καρδίτσας",
         exit:  { lat: 39.568233, lng: 21.814494 },
@@ -1356,6 +1411,7 @@ const TOLL_DATA = [
     highway: "A6", highway_name: "Attiki Odos (A6)",
     operator: "Attikes Diadromes",
     type: "frontal", direction_label: "Pay once on entry — covers full traverse",
+    axis: "EW",
     lat: 38.0620135, lng: 23.7495232,
     cat1: 1.28, cat2: 2.55, cat3: 4.70, cat4: 7.00,
     notes: "Flat-rate toll. Urban motorway — bypass via city streets adds 35+ min.",
@@ -1373,6 +1429,7 @@ const TOLL_DATA = [
     highway: "A7", highway_name: "Moreas (A7)",
     operator: "Moreas SA",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 37.8359076, lng: 22.8079391,
     cat1: 2.00, cat2: 2.95, cat3: 7.45, cat4: 10.45,
     notes: "Start of Moreas motorway south of Corinth.",
@@ -1385,6 +1442,7 @@ const TOLL_DATA = [
     highway: "A7", highway_name: "Moreas (A7)",
     operator: "Moreas SA",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 37.6007682, lng: 22.4464524,
     cat1: 1.90, cat2: 2.80, cat3: 7.10, cat4: 9.95,
     notes: "Near ancient Mycenae. Exit for Nafplio.",
@@ -1397,6 +1455,7 @@ const TOLL_DATA = [
     highway: "A7", highway_name: "Moreas (A7)",
     operator: "Moreas SA",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 37.2988500, lng: 22.2102678,
     cat1: 2.40, cat2: 3.45, cat3: 8.60, cat4: 12.10,
     notes: "Arcadian plateau. Junction for Sparta branch.",
@@ -1409,6 +1468,7 @@ const TOLL_DATA = [
     highway: "A7", highway_name: "Moreas (A7)",
     operator: "Moreas SA",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 37.3450082, lng: 22.1103072,
     cat1: 1.05, cat2: 2.10, cat3: 4.20, cat4: 6.30,
     notes: "Frontal toll on the A7 Lefktro branch.",
@@ -1421,6 +1481,7 @@ const TOLL_DATA = [
     highway: "A7", highway_name: "Moreas (A7)",
     operator: "Moreas SA",
     type: "frontal", direction_label: "Both directions",
+    axis: "NS",
     lat: 37.1368508, lng: 22.0379627,
     cat1: 1.50, cat2: 2.25, cat3: 5.65, cat4: 7.90,
     notes: "Southern terminus of Moreas motorway.",

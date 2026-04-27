@@ -33,18 +33,17 @@
     .toll-info .toll-status.null-bypass { color: #b8502d; }
     .toll-info .toll-status.verified-bypass { color: #2d7a3a; }
 
-    .dir-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
-    .dir-tab { flex: 1; padding: 8px; border: 1px solid #c5cdd6; background: white; border-radius: 5px; cursor: pointer; font-weight: 500; }
-    .dir-tab.active { background: #2a6b9e; color: white; border-color: #2a6b9e; }
-    .dir-tab .dir-progress { font-size: 10px; opacity: 0.85; }
+    .dir-section { border: 1px solid #d8dde2; border-radius: 6px; padding: 10px; margin-bottom: 10px; background: white; }
+    .dir-section.notworth { background: #fff8ec; border-color: #e3c068; }
+    .dir-section .dir-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .dir-section .dir-title { font-weight: 600; font-size: 13px; color: #1a2530; letter-spacing: 0.02em; }
+    .dir-section .dir-progress { font-size: 11px; color: #6a7785; font-family: ui-monospace, monospace; }
+    .dir-section .dir-progress.complete { color: #2d7a3a; font-weight: 600; }
+    .dir-section .dir-progress.notworth { color: #b8860b; font-weight: 600; }
 
-    .dir-toggle-row { display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
-    .dir-toggle-row label { display: flex; align-items: center; gap: 4px; font-size: 11.5px; cursor: pointer; padding: 4px 8px; background: white; border: 1px solid #c5cdd6; border-radius: 4px; }
-    .dir-toggle-row label input { margin: 0; }
+    .pick-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
 
-    .pick-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-
-    .name-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+    .name-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
     .name-fields label { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: #6a7785; }
     .name-fields input { padding: 6px 8px; border: 1px solid #c5cdd6; border-radius: 4px; font: inherit; font-size: 12px; }
     .name-fields input:focus { border-color: #2a6b9e; outline: none; }
@@ -54,11 +53,14 @@
     .pick-btn .pick-btn-coord.empty { color: #b8502d; }
     .pick-btn.armed { border-color: #2a6b9e; background: #eaf3fa; box-shadow: 0 0 0 3px rgba(42,107,158,0.15); }
     .pick-btn.filled { border-color: #2d7a3a; }
+    .pick-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .json-out { width: 100%; min-height: 200px; padding: 8px; font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 11px; border: 1px solid #c5cdd6; border-radius: 6px; background: #fafbfc; resize: vertical; }
     .btn-row { display: flex; gap: 6px; margin-top: 8px; }
     .btn-row button { flex: 1; padding: 8px; border: 1px solid #c5cdd6; background: white; border-radius: 5px; cursor: pointer; font-weight: 500; }
     .btn-row button.primary { background: #2a6b9e; color: white; border-color: #2a6b9e; }
+    .btn-row button.warn { background: #c8902a; color: white; border-color: #c8902a; }
+    .btn-row button.warn.active { background: #fff8ec; color: #8a5e10; border-color: #c8902a; }
     .btn-row button.danger { background: #b8502d; color: white; border-color: #b8502d; }
     .btn-row button:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -70,12 +72,14 @@
     .map-armed .leaflet-grab { cursor: crosshair !important; }
     .map-armed .leaflet-grab:active { cursor: crosshair !important; }
 
-    /* Custom marker styles */
-    .pick-marker { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: white; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.4); border-radius: 50%; width: 22px; height: 22px; }
+    /* Custom marker styles. Step color (pre/off/on/post) + direction letter (N/S/E/W) as badge text. */
+    .pick-marker { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: white; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.4); border-radius: 50%; width: 24px; height: 24px; letter-spacing: -0.5px; }
     .pick-marker.pre   { background: #2a6b9e; }
     .pick-marker.off   { background: #b8502d; }
     .pick-marker.on    { background: #b8860b; }
     .pick-marker.post  { background: #2d7a3a; }
+    /* Faint outline ring for direction-2 markers so 1N vs 1S read at a glance even before reading the letter. */
+    .pick-marker.dir2 { box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.4); }
     .toll-marker { width: 14px; height: 14px; border-radius: 50%; background: #1a2530; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
 
     .hint { font-size: 11px; color: #6a7785; line-height: 1.45; padding: 8px; background: #fff8e6; border-radius: 4px; border-left: 3px solid #b8860b; margin-bottom: 12px; }
@@ -183,25 +187,14 @@
       <div id="toll-area" style="display: none;">
         <div class="toll-info" id="toll-info"></div>
 
-        <h2>Directions</h2>
-        <div class="dir-toggle-row" id="dir-toggle-row"></div>
-
-        <div class="dir-tabs" id="dir-tabs"></div>
-
         <div class="hint">
-          Click a button below to arm it, then click on the map to place that point. The 4 ramp coords define the bypass for this direction.
+          Click a numbered button below to arm it, then click on the map to place that point. Pick all 4 in each direction, or mark a direction as "Not worth skipping" if no useful bypass exists.
         </div>
 
-        <div class="name-fields" id="name-fields"></div>
-
-        <div class="pick-btn-row" id="pick-btn-row"></div>
-
-        <div class="btn-row" style="margin-top: 4px;">
-          <button id="clear-dir-btn">Clear this direction</button>
-        </div>
+        <div id="dir-sections"></div>
 
         <h2>Output (paste into data/tolls.js)</h2>
-        <textarea class="json-out" id="json-out" readonly placeholder="Pick the 4 points to see the JSON…"></textarea>
+        <textarea class="json-out" id="json-out" readonly placeholder="Pick the points in each direction to see the JSON…"></textarea>
         <div class="btn-row">
           <button id="copy-btn">Copy JSON</button>
           <button class="primary" id="save-btn">Save & next →</button>
@@ -226,10 +219,13 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     // ── Config ────────────────────────────────────────────────
+    // Default motorway axis (overridable per-toll via toll.axis in data/tolls.js).
     const HIGHWAY_AXIS = {
       A1: 'NS', A2: 'EW', A5: 'NS', A6: 'EW', A7: 'NS', A8: 'EW', E65: 'NS', BRIDGE: 'NS',
     };
-    // Tolls that override the default axis (branches off the main alignment)
+    // Legacy fallback for tolls whose data file hasn't been updated with `axis:` yet.
+    // Once every toll record in data/tolls.js carries its own `axis` field this map
+    // becomes redundant and can be removed.
     const TOLL_AXIS_OVERRIDE = {
       egnatia_ieropigi:   'NS',  // branch toward Albanian border
       egnatia_promahonas: 'NS',  // branch toward Bulgarian border
@@ -240,6 +236,22 @@
       off_ramp:   { num: 2, label: 'Off-ramp',   short: 'off',  hint: 'First turn off the motorway' },
       on_ramp:    { num: 3, label: 'On-ramp',    short: 'on',   hint: 'Last turn back onto the motorway' },
       post_merge: { num: 4, label: 'Post-merge', short: 'post', hint: 'First point on motorway after on-ramp' },
+    };
+
+    // Direction-axis mapping. Both directions of a toll are always shown
+    // simultaneously; the picker derives the pair from the toll's axis.
+    const AXIS_DIRS = {
+      NS: ['northbound', 'southbound'],
+      EW: ['eastbound',  'westbound'],
+    };
+    // Single-letter direction badge used on map markers and pick-button labels:
+    // 1N / 2N / 1S / 2S / 1E / 1W etc.
+    const DIR_LETTER = {
+      northbound: 'N', southbound: 'S', eastbound: 'E', westbound: 'W',
+    };
+    // Migration map for v1 sessions that stored short keys.
+    const LEGACY_DIR_MAP = {
+      north: 'northbound', south: 'southbound', east: 'eastbound', west: 'westbound',
     };
 
     // ── Identify pickable tolls ───────────────────────────────
@@ -265,9 +277,6 @@
     // ── Map setup ─────────────────────────────────────────────
     const map = L.map('map', { center: [38.5, 22.5], zoom: 7, zoomControl: true });
 
-    // The page may initialize while the gate is still hiding #app, in which
-    // case Leaflet sees a 0x0 container. Refresh sizing once we're unlocked
-    // (or immediately, on the next frame, if the user was already unlocked).
     function refreshMapSize() {
       requestAnimationFrame(() => map.invalidateSize());
     }
@@ -299,11 +308,9 @@
       btn.addEventListener('click', () => {
         const mode = btn.dataset.mode;
         if (mode === basemapMode) return;
-        // Remove existing
         if (basemapMode === 'streets') map.removeLayer(STREET_LAYER);
         if (basemapMode === 'satellite' || basemapMode === 'hybrid') map.removeLayer(SATELLITE_LAYER);
         if (basemapMode === 'hybrid') map.removeLayer(SATELLITE_LABELS);
-        // Add new
         if (mode === 'streets') STREET_LAYER.addTo(map);
         if (mode === 'satellite') SATELLITE_LAYER.addTo(map);
         if (mode === 'hybrid') { SATELLITE_LAYER.addTo(map); SATELLITE_LABELS.addTo(map); }
@@ -313,37 +320,54 @@
     });
 
     // ── State ─────────────────────────────────────────────────
-    // Storage schema (current):
+    // Storage schema (v2):
     //   session[tollId] = {
-    //     workData:   { north: {pre_exit, off_ramp, on_ramp, post_merge, __names}, south: {...} },
-    //     activeDirs: ['north', 'south'],
-    //     output:     '<the JSON snippet shown in the textarea>'
+    //     version: 2,
+    //     workData: {
+    //       northbound: { pre_exit, off_ramp, on_ramp, post_merge, __names, notWorth? },
+    //       southbound: { ... }
+    //     },
+    //     activeDirs: ['northbound','southbound'] | ['eastbound','westbound'],
+    //     output: '<JSON snippet shown in the textarea>'
     //   }
     //
-    // Older sessions (pre-fix) stored `__activeDirs` and `__output` as keys
-    // *inside* the workData object alongside the direction keys, which then
-    // leaked back into `activeDirs` on reload and corrupted further saves.
-    // We detect and discard any such legacy entries on load so corrupted
-    // state doesn't persist.
+    // v1 sessions used short keys (north/south/east/west) and a slightly different
+    // shape; we migrate them on load instead of discarding so in-progress work isn't
+    // lost across the v1→v2 picker upgrade.
     let session = {};
     try {
       const raw = JSON.parse(localStorage.getItem('rampPicker.session') || '{}');
       Object.entries(raw).forEach(([id, val]) => {
-        if (val && typeof val === 'object' && val.workData && Array.isArray(val.activeDirs)) {
-          session[id] = val;  // current schema, OK
+        if (!val || typeof val !== 'object') return;
+        if (val.version === 2 && val.workData && Array.isArray(val.activeDirs)) {
+          session[id] = val;
+          return;
         }
-        // Anything else (legacy) is silently dropped. Re-pick if needed.
+        // v1 migration: rename short keys to long form.
+        if (val.workData && Array.isArray(val.activeDirs)) {
+          const newWork = {};
+          Object.entries(val.workData).forEach(([k, v]) => {
+            const longKey = LEGACY_DIR_MAP[k] || k;
+            newWork[longKey] = v;
+          });
+          const newDirs = val.activeDirs.map(d => LEGACY_DIR_MAP[d] || d);
+          session[id] = { version: 2, workData: newWork, activeDirs: newDirs, output: val.output || '' };
+        }
+        // Any other shape: silently dropped.
       });
+      // Persist the migrated form back so subsequent loads are fast.
+      localStorage.setItem('rampPicker.session', JSON.stringify(session));
     } catch {
       session = {};
     }
+
     let currentToll = null;
-    let currentDir = null; // 'north' | 'south' | 'east' | 'west'
-    let armedField = null; // 'pre_exit' | 'off_ramp' | 'on_ramp' | 'post_merge' | null
-    let activeDirs = []; // for current toll, e.g. ['north','south']
-    let workData = {}; // { dirKey: { pre_exit: {lat,lng}, off_ramp: {...}, ... } }
+    let armedDir = null;       // 'northbound' | 'southbound' | 'eastbound' | 'westbound' | null
+    let armedField = null;     // 'pre_exit' | 'off_ramp' | 'on_ramp' | 'post_merge' | null
+    let activeDirs = [];       // exactly two for the current toll
+    let workData = {};         // { dirKey: { pre_exit, off_ramp, on_ramp, post_merge, __names, notWorth } }
     let tollMarker = null;
-    let pickMarkers = {}; // { dirKey: { pre_exit: marker, ... } }
+    let pickMarkers = {};      // { dirKey: { fieldKey: marker } }
 
     function persistSession() {
       localStorage.setItem('rampPicker.session', JSON.stringify(session));
@@ -366,7 +390,7 @@
         const status = getTollStatus(t);
         opt.textContent = `${isDone ? '✓ ' : ''}${t.id} — ${t.name_en} ${STATUS_LABELS[status]}`;
         if (isDone) opt.className = 'done';
-        else if (status === 'null')   opt.className = 'partial';  // CSS hook for "needs work"
+        else if (status === 'null')   opt.className = 'partial';
         sel.appendChild(opt);
       });
     }
@@ -382,73 +406,77 @@
       if (tollMarker) { map.removeLayer(tollMarker); tollMarker = null; }
       clearAllPickMarkers();
       currentToll = null;
-      currentDir = null;
+      armedDir = null;
       armedField = null;
       workData = {};
     }
 
     // ── Direction inference ───────────────────────────────────
+    // The toll's `axis` field (when present) is authoritative. Otherwise we fall
+    // back to TOLL_AXIS_OVERRIDE (legacy ad-hoc per-toll overrides) and finally
+    // the highway-default axis from HIGHWAY_AXIS.
     function getDefaultAxis(toll) {
+      if (toll.axis === 'NS' || toll.axis === 'EW') return toll.axis;
       return TOLL_AXIS_OVERRIDE[toll.id] || HIGHWAY_AXIS[toll.highway] || 'NS';
     }
-    function getDefaultDirs(toll) {
-      const axis = getDefaultAxis(toll);
-      return axis === 'NS' ? ['north', 'south'] : ['east', 'west'];
+    function getDirsForToll(toll) {
+      return AXIS_DIRS[getDefaultAxis(toll)].slice();
     }
-    const ALL_DIRS = ['north', 'south', 'east', 'west'];
 
     // ── Load a toll ───────────────────────────────────────────
     function loadToll(id) {
       const toll = inScope.find(t => t.id === id);
       if (!toll) return;
       currentToll = toll;
+      armedDir = null;
       armedField = null;
+      document.body.classList.remove('map-armed');
       clearAllPickMarkers();
 
-      // Pre-load any in-progress work from localStorage session
-      const saved = session[id];
-      workData = saved ? JSON.parse(JSON.stringify(saved.workData)) : {};
-      activeDirs = saved && saved.activeDirs.length ? saved.activeDirs.slice() : getDefaultDirs(toll);
+      // Active directions are determined entirely by the toll's axis. The user
+      // does not toggle directions on/off — both always render simultaneously.
+      activeDirs = getDirsForToll(toll);
 
-      // If we have NO localStorage state for this toll, seed workData from the
-      // existing bypass_directions in tolls.js. That way an already-verified
-      // toll loads with its current 4 points pre-placed on the map, and you
-      // can refine them or just resave. Session state, when present, always
-      // wins — never overwrite picks you've made.
-      if (!saved && toll.bypass_directions) {
-        const existingDirs = Object.keys(toll.bypass_directions);
-        // Honor whatever direction set the existing record uses (could be
-        // ['north','south'] or ['east','west'] or even just ['both']) instead
-        // of imposing the default axis.
-        if (existingDirs.length) activeDirs = existingDirs.slice();
-        existingDirs.forEach(d => {
-          const src = toll.bypass_directions[d];
-          if (!src) return;
-          // The runtime normalizer in map.js upgrades 2-point legacy data
-          // (exit/entry only) by aliasing pre_exit ← off_ramp ← exit and
-          // post_merge ← on_ramp ← entry. We mirror that here so the picker
-          // sees pre-placed markers regardless of which schema the source uses.
-          const off = src.off_ramp   || src.exit;
-          const on  = src.on_ramp    || src.entry;
-          const pre = src.pre_exit   || off;
-          const post= src.post_merge || on;
-          if (!pre || !off || !on || !post) return;
-          workData[d] = {
-            pre_exit:   { lat: pre.lat,  lng: pre.lng },
-            off_ramp:   { lat: off.lat,  lng: off.lng },
-            on_ramp:    { lat: on.lat,   lng: on.lng },
-            post_merge: { lat: post.lat, lng: post.lng },
-          };
-          if (src.exit_name || src.entry_name) {
-            workData[d].__names = {
-              exit_name:  src.exit_name  || '',
-              entry_name: src.entry_name || '',
+      // Pre-load any in-progress session work; otherwise seed from existing
+      // bypass_directions in tolls.js so verified/approximate tolls open with
+      // markers already placed.
+      const saved = session[id];
+      if (saved && saved.workData) {
+        workData = JSON.parse(JSON.stringify(saved.workData));
+      } else {
+        workData = {};
+        if (toll.bypass_directions) {
+          Object.entries(toll.bypass_directions).forEach(([rawKey, src]) => {
+            if (!src) return;
+            // Accept both old short keys and new long keys when seeding from data.
+            const key = LEGACY_DIR_MAP[rawKey] || rawKey;
+            // Only seed directions that match this toll's axis. Anything else
+            // is data the picker can't render under the new 2-direction model;
+            // it stays untouched in tolls.js because the picker won't write it.
+            if (!activeDirs.includes(key)) return;
+            // Mirror the runtime normalizer: 2-point legacy → 4-point.
+            const off = src.off_ramp   || src.exit;
+            const on  = src.on_ramp    || src.entry;
+            const pre = src.pre_exit   || off;
+            const post= src.post_merge || on;
+            if (!pre || !off || !on || !post) return;
+            workData[key] = {
+              pre_exit:   { lat: pre.lat,  lng: pre.lng },
+              off_ramp:   { lat: off.lat,  lng: off.lng },
+              on_ramp:    { lat: on.lat,   lng: on.lng },
+              post_merge: { lat: post.lat, lng: post.lng },
             };
-          }
-        });
+            if (src.exit_name || src.entry_name) {
+              workData[key].__names = {
+                exit_name:  src.exit_name  || '',
+                entry_name: src.entry_name || '',
+              };
+            }
+          });
+        }
       }
 
-      // Toll info
+      // Toll info card.
       const status = getTollStatus(toll);
       const statusText = {
         'null':     'No bypass yet',
@@ -459,21 +487,18 @@
       const statusClass = status === 'null' ? 'null-bypass'
                         : status === 'verified' ? 'verified-bypass'
                         : '';
+      const axisLabel = getDefaultAxis(toll) === 'NS' ? 'NS axis' : 'EW axis';
       document.getElementById('toll-info').innerHTML = `
         <div class="toll-id">${toll.id}</div>
         <div class="toll-name">${toll.name_en}</div>
-        <div class="toll-coord">${toll.lat.toFixed(6)}, ${toll.lng.toFixed(6)} · ${toll.highway}</div>
+        <div class="toll-coord">${toll.lat.toFixed(6)}, ${toll.lng.toFixed(6)} · ${toll.highway} · ${axisLabel}</div>
         <div class="toll-status ${statusClass}">${statusText}</div>
       `;
 
-      renderDirectionToggles();
-      currentDir = activeDirs[0];
-      renderDirTabs();
-      renderPickButtons();
-      renderNameFields();
+      renderDirectionSections();
       updateJSONOutput();
 
-      // Show the area, fly to the toll
+      // Show area, fly to toll.
       document.getElementById('toll-area').style.display = 'block';
       if (tollMarker) map.removeLayer(tollMarker);
       tollMarker = L.marker([toll.lat, toll.lng], {
@@ -481,9 +506,10 @@
       }).addTo(map);
       map.flyTo([toll.lat, toll.lng], 14, { duration: 0.6 });
 
-      // Restore any pick markers from previous session
+      // Restore pick markers (all directions at once).
       activeDirs.forEach(d => {
         if (!workData[d]) return;
+        if (workData[d].notWorth) return;
         POINT_KEYS.forEach(k => {
           if (workData[d][k]) {
             placePickMarker(d, k, workData[d][k].lat, workData[d][k].lng);
@@ -492,127 +518,151 @@
       });
     }
 
-    // ── Direction toggle row ──────────────────────────────────
-    function renderDirectionToggles() {
-      const row = document.getElementById('dir-toggle-row');
-      row.innerHTML = '';
-      ALL_DIRS.forEach(d => {
-        const lbl = document.createElement('label');
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.checked = activeDirs.includes(d);
-        cb.addEventListener('change', () => {
-          if (cb.checked) {
-            if (!activeDirs.includes(d)) activeDirs.push(d);
-          } else {
-            activeDirs = activeDirs.filter(x => x !== d);
-            // Clear data and markers for this direction
-            delete workData[d];
-            if (pickMarkers[d]) {
-              Object.values(pickMarkers[d]).forEach(m => map.removeLayer(m));
-              delete pickMarkers[d];
-            }
-          }
-          if (!activeDirs.includes(currentDir)) currentDir = activeDirs[0] || null;
-          renderDirTabs();
-          renderPickButtons();
-          renderNameFields();
-          updateJSONOutput();
-        });
-        lbl.appendChild(cb);
-        lbl.appendChild(document.createTextNode(' ' + d));
-        row.appendChild(lbl);
-      });
-    }
+    // ── Direction sections (both rendered simultaneously) ─────
+    // Each direction lives in its own card with: title, progress chip,
+    // 4 numbered pick buttons (e.g. 1N / 2N / 3N / 4N), name fields,
+    // and a "Not worth skipping" toggle.
+    function renderDirectionSections() {
+      const root = document.getElementById('dir-sections');
+      root.innerHTML = '';
+      activeDirs.forEach((dir, dirIdx) => {
+        const section = document.createElement('div');
+        section.className = 'dir-section';
+        const dd = workData[dir] || {};
+        const isNotWorth = !!dd.notWorth;
+        if (isNotWorth) section.classList.add('notworth');
 
-    // ── Direction tabs ────────────────────────────────────────
-    function renderDirTabs() {
-      const tabs = document.getElementById('dir-tabs');
-      tabs.innerHTML = '';
-      activeDirs.forEach(d => {
-        const filled = workData[d] ? POINT_KEYS.filter(k => workData[d][k]).length : 0;
-        const tab = document.createElement('div');
-        tab.className = 'dir-tab' + (d === currentDir ? ' active' : '');
-        tab.innerHTML = `${d} <span class="dir-progress">${filled}/4</span>`;
-        tab.addEventListener('click', () => {
-          currentDir = d;
-          armedField = null;
-          renderDirTabs();
-          renderPickButtons();
-          renderNameFields();
-        });
-        tabs.appendChild(tab);
-      });
-    }
+        const filled = isNotWorth ? 0 : POINT_KEYS.filter(k => dd[k]).length;
+        const progressClass = isNotWorth ? 'notworth'
+                            : filled === 4 ? 'complete'
+                            : '';
+        const progressText = isNotWorth ? 'not worth skipping'
+                           : `${filled}/4`;
 
-    // ── Name fields (exit_name, entry_name) ───────────────────
-    function renderNameFields() {
-      const wrap = document.getElementById('name-fields');
-      wrap.innerHTML = '';
-      if (!currentDir) return;
-      const names = (workData[currentDir] && workData[currentDir].__names) || {};
-      ['exit_name', 'entry_name'].forEach(field => {
-        const lbl = document.createElement('label');
-        const labelText = field === 'exit_name' ? 'Exit name (optional)' : 'Entry name (optional)';
-        lbl.innerHTML = `<span>${labelText}</span>`;
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = field === 'exit_name' ? 'e.g. Ριτσώνας' : 'e.g. Θήβας';
-        input.value = names[field] || '';
-        input.addEventListener('input', e => {
-          if (!workData[currentDir]) workData[currentDir] = {};
-          if (!workData[currentDir].__names) workData[currentDir].__names = {};
-          workData[currentDir].__names[field] = e.target.value.trim();
-          updateJSONOutput();
-        });
-        lbl.appendChild(input);
-        wrap.appendChild(lbl);
-      });
-    }
-
-    // ── Pick buttons ──────────────────────────────────────────
-    function renderPickButtons() {
-      const row = document.getElementById('pick-btn-row');
-      row.innerHTML = '';
-      if (!currentDir) return;
-      const dirData = workData[currentDir] || {};
-      POINT_KEYS.forEach(k => {
-        const btn = document.createElement('button');
-        const filled = !!dirData[k];
-        const armed = armedField === k;
-        btn.className = 'pick-btn' + (armed ? ' armed' : '') + (filled ? ' filled' : '');
-        const coordStr = filled ? `${dirData[k].lat.toFixed(5)}, ${dirData[k].lng.toFixed(5)}` : 'click to arm';
-        btn.innerHTML = `
-          <div class="pick-btn-label">${POINT_LABELS[k].num}. ${POINT_LABELS[k].label}</div>
-          <div class="pick-btn-coord ${filled ? '' : 'empty'}">${coordStr}</div>
+        const titleText = dir.charAt(0).toUpperCase() + dir.slice(1);
+        section.innerHTML = `
+          <div class="dir-header">
+            <span class="dir-title">${titleText}</span>
+            <span class="dir-progress ${progressClass}">${progressText}</span>
+          </div>
         `;
-        btn.title = POINT_LABELS[k].hint;
-        btn.addEventListener('click', () => {
-          armedField = (armedField === k) ? null : k;
-          renderPickButtons();
-          document.body.classList.toggle('map-armed', !!armedField);
+
+        // Pick button grid (hidden when notWorth)
+        const grid = document.createElement('div');
+        grid.className = 'pick-btn-row';
+        const letter = DIR_LETTER[dir];
+        POINT_KEYS.forEach(k => {
+          const btn = document.createElement('button');
+          const isFilled = !isNotWorth && !!dd[k];
+          const isArmed = !isNotWorth && armedDir === dir && armedField === k;
+          btn.className = 'pick-btn' + (isArmed ? ' armed' : '') + (isFilled ? ' filled' : '');
+          btn.disabled = isNotWorth;
+          const coordStr = isFilled ? `${dd[k].lat.toFixed(5)}, ${dd[k].lng.toFixed(5)}` : 'click to arm';
+          btn.innerHTML = `
+            <div class="pick-btn-label">${POINT_LABELS[k].num}${letter}. ${POINT_LABELS[k].label}</div>
+            <div class="pick-btn-coord ${isFilled ? '' : 'empty'}">${coordStr}</div>
+          `;
+          btn.title = POINT_LABELS[k].hint;
+          btn.addEventListener('click', () => {
+            if (isNotWorth) return;
+            if (armedDir === dir && armedField === k) {
+              armedDir = null; armedField = null;
+            } else {
+              armedDir = dir; armedField = k;
+            }
+            renderDirectionSections();
+            document.body.classList.toggle('map-armed', !!armedField);
+          });
+          grid.appendChild(btn);
         });
-        row.appendChild(btn);
+        section.appendChild(grid);
+
+        // Name fields (hidden when notWorth)
+        if (!isNotWorth) {
+          const names = (dd.__names) || {};
+          const nameWrap = document.createElement('div');
+          nameWrap.className = 'name-fields';
+          [['exit_name', 'Exit name (opt.)', 'e.g. Ριτσώνας'],
+           ['entry_name','Entry name (opt.)','e.g. Θήβας']].forEach(([field, label, ph]) => {
+            const lbl = document.createElement('label');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = ph;
+            input.value = names[field] || '';
+            input.addEventListener('input', e => {
+              if (!workData[dir]) workData[dir] = {};
+              if (!workData[dir].__names) workData[dir].__names = {};
+              workData[dir].__names[field] = e.target.value.trim();
+              updateJSONOutput();
+            });
+            lbl.innerHTML = `<span>${label}</span>`;
+            lbl.appendChild(input);
+            nameWrap.appendChild(lbl);
+          });
+          section.appendChild(nameWrap);
+        }
+
+        // Not-worth-skipping toggle row.
+        const toggleRow = document.createElement('div');
+        toggleRow.className = 'btn-row';
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'warn' + (isNotWorth ? ' active' : '');
+        toggleBtn.textContent = isNotWorth
+          ? `✓ Not worth skipping ${letter} — click to undo`
+          : `Not worth skipping ${letter}`;
+        toggleBtn.title = isNotWorth
+          ? 'This direction is currently marked as having no useful bypass. Click to clear that mark and start picking again.'
+          : 'Mark this direction as having no useful bypass. Clears the 4 picks and omits this direction in the export.';
+        toggleBtn.addEventListener('click', () => toggleNotWorth(dir));
+        toggleRow.appendChild(toggleBtn);
+        section.appendChild(toggleRow);
+
+        root.appendChild(section);
       });
+    }
+
+    function toggleNotWorth(dir) {
+      const cur = workData[dir] || {};
+      if (cur.notWorth) {
+        // Undo: clear flag, leave picks empty (we deleted them when setting it).
+        delete cur.notWorth;
+        // If the object is now empty other than absent fields, drop it entirely.
+        if (Object.keys(cur).length === 0) delete workData[dir];
+      } else {
+        // Mark as not-worth: clear all picks and markers for this direction.
+        if (pickMarkers[dir]) {
+          Object.values(pickMarkers[dir]).forEach(m => map.removeLayer(m));
+          delete pickMarkers[dir];
+        }
+        workData[dir] = { notWorth: true };
+        if (armedDir === dir) {
+          armedDir = null;
+          armedField = null;
+          document.body.classList.remove('map-armed');
+        }
+      }
+      renderDirectionSections();
+      updateJSONOutput();
     }
 
     // ── Map click → place point ───────────────────────────────
     map.on('click', e => {
-      if (!armedField || !currentDir) return;
+      if (!armedField || !armedDir) return;
       const { lat, lng } = e.latlng;
-      // Round to 6 decimals (sub-meter)
       const latR = Math.round(lat * 1e6) / 1e6;
       const lngR = Math.round(lng * 1e6) / 1e6;
-      if (!workData[currentDir]) workData[currentDir] = {};
-      workData[currentDir][armedField] = { lat: latR, lng: lngR };
-      placePickMarker(currentDir, armedField, latR, lngR);
-      // Auto-advance to next unfilled field
+      if (!workData[armedDir]) workData[armedDir] = {};
+      // Placing a point implicitly clears any "not worth" flag on this direction.
+      if (workData[armedDir].notWorth) delete workData[armedDir].notWorth;
+      workData[armedDir][armedField] = { lat: latR, lng: lngR };
+      placePickMarker(armedDir, armedField, latR, lngR);
+      // Auto-advance to next unfilled field within the same direction.
       const idx = POINT_KEYS.indexOf(armedField);
-      const nextField = POINT_KEYS.slice(idx + 1).find(k => !workData[currentDir][k]);
+      const nextField = POINT_KEYS.slice(idx + 1).find(k => !workData[armedDir][k]);
       armedField = nextField || null;
+      if (!armedField) armedDir = null;
       document.body.classList.toggle('map-armed', !!armedField);
-      renderPickButtons();
-      renderDirTabs();
+      renderDirectionSections();
       updateJSONOutput();
     });
 
@@ -620,11 +670,16 @@
       if (!pickMarkers[dir]) pickMarkers[dir] = {};
       if (pickMarkers[dir][field]) map.removeLayer(pickMarkers[dir][field]);
       const labelInfo = POINT_LABELS[field];
+      const letter = DIR_LETTER[dir];
+      // Mark direction-2 markers (second of activeDirs) with .dir2 so the
+      // outline ring distinguishes them from direction-1 at a glance.
+      const dirIdx = activeDirs.indexOf(dir);
+      const dir2Class = dirIdx === 1 ? ' dir2' : '';
       const marker = L.marker([lat, lng], {
         icon: L.divIcon({
           className: '',
-          html: `<div class="pick-marker ${labelInfo.short}">${labelInfo.num}</div>`,
-          iconSize: [22, 22], iconAnchor: [11, 11],
+          html: `<div class="pick-marker ${labelInfo.short}${dir2Class}">${labelInfo.num}${letter}</div>`,
+          iconSize: [24, 24], iconAnchor: [12, 12],
         }),
         zIndexOffset: 200,
       }).addTo(map);
@@ -639,21 +694,39 @@
     }
 
     // ── JSON output ───────────────────────────────────────────
+    // Renders a paste-ready snippet that always reflects the current state.
+    // Rules:
+    //  - If both directions are notWorth → `bypass_directions: null,`
+    //  - Otherwise → bypass_directions: { ...complete dirs only... }
+    //    Incomplete-and-not-flagged directions render as a `// incomplete` comment
+    //    so the user sees the gap. They will not pass save validation.
     function updateJSONOutput() {
       const ta = document.getElementById('json-out');
       if (!currentToll || activeDirs.length === 0) { ta.value = ''; return; }
+
+      const bothNotWorth = activeDirs.every(d => workData[d] && workData[d].notWorth);
+      if (bothNotWorth) {
+        ta.value = 'bypass_directions: null,';
+        return;
+      }
+
       const lines = ['bypass_directions: {'];
-      activeDirs.forEach((d, i) => {
+      activeDirs.forEach(d => {
         const dd = workData[d] || {};
-        const filled = POINT_KEYS.every(k => dd[k]);
-        if (!filled) {
-          lines.push(`  // ${d}: incomplete (${POINT_KEYS.filter(k => dd[k]).length}/4 picked)`);
+        if (dd.notWorth) {
+          // Direction explicitly omitted in export.
           return;
         }
-        const dirLabelMap = { north: 'Northbound', south: 'Southbound', east: 'Eastbound', west: 'Westbound' };
+        const filled = POINT_KEYS.every(k => dd[k]);
+        if (!filled) {
+          const have = POINT_KEYS.filter(k => dd[k]).length;
+          lines.push(`  // ${d}: incomplete (${have}/4 picked) — pick remaining or mark "Not worth skipping"`);
+          return;
+        }
+        const labelText = d.charAt(0).toUpperCase() + d.slice(1);
         const names = dd.__names || {};
         lines.push(`  ${d}: {`);
-        lines.push(`    label: "${dirLabelMap[d]}",`);
+        lines.push(`    label: "${labelText}",`);
         if (names.exit_name || names.entry_name) {
           lines.push(`    exit_name: "${(names.exit_name || '').replace(/"/g, '\\"')}", entry_name: "${(names.entry_name || '').replace(/"/g, '\\"')}",`);
         }
@@ -670,23 +743,6 @@
       ta.value = lines.join('\n');
     }
 
-    // ── Clear current direction ───────────────────────────────
-    document.getElementById('clear-dir-btn').addEventListener('click', () => {
-      if (!currentDir) return;
-      if (!confirm(`Clear all 4 picks for ${currentDir}?`)) return;
-      delete workData[currentDir];
-      if (pickMarkers[currentDir]) {
-        Object.values(pickMarkers[currentDir]).forEach(m => map.removeLayer(m));
-        delete pickMarkers[currentDir];
-      }
-      armedField = null;
-      document.body.classList.remove('map-armed');
-      renderPickButtons();
-      renderDirTabs();
-      renderNameFields();
-      updateJSONOutput();
-    });
-
     // ── Copy ──────────────────────────────────────────────────
     document.getElementById('copy-btn').addEventListener('click', () => {
       const ta = document.getElementById('json-out');
@@ -699,15 +755,25 @@
     });
 
     // ── Save & next ───────────────────────────────────────────
+    // Each direction must be either fully picked (4/4) or marked notWorth.
+    // Partial directions block the save and show which ones are incomplete.
     document.getElementById('save-btn').addEventListener('click', () => {
       if (!currentToll) return;
-      // Validate: at least one direction fully filled
-      const completed = activeDirs.filter(d => POINT_KEYS.every(k => workData[d] && workData[d][k]));
-      if (completed.length === 0) {
-        alert('Need at least 1 complete direction (4/4 points) before saving.');
+      const incomplete = [];
+      activeDirs.forEach(d => {
+        const dd = workData[d] || {};
+        if (dd.notWorth) return;
+        const filled = POINT_KEYS.filter(k => dd[k]).length;
+        if (filled !== 4) {
+          incomplete.push(`${d}: ${filled}/4 points — pick all 4 or mark "Not worth skipping ${DIR_LETTER[d]}"`);
+        }
+      });
+      if (incomplete.length) {
+        alert('Cannot save:\n\n' + incomplete.join('\n'));
         return;
       }
       session[currentToll.id] = {
+        version: 2,
         workData: JSON.parse(JSON.stringify(workData)),
         activeDirs: activeDirs.slice(),
         output: document.getElementById('json-out').value
@@ -715,7 +781,7 @@
       persistSession();
       renderDropdown();
       renderSessionLog();
-      // Advance to next un-saved toll
+      // Advance to next un-saved toll.
       const idx = inScope.findIndex(t => t.id === currentToll.id);
       const next = inScope.slice(idx + 1).find(t => !session[t.id]) || inScope.find(t => !session[t.id]);
       if (next) {
@@ -738,7 +804,14 @@
       }
       log.innerHTML = entries.map(id => {
         const t = tolls.find(x => x.id === id);
-        return `<span class="log-toll done">✓ ${id} — ${t ? t.name_en : '(missing)'}</span>`;
+        const data = session[id];
+        const label = t ? t.name_en : '(missing)';
+        // Detect "all directions marked notWorth" entries for a distinct icon.
+        const dirs = data && data.workData ? Object.values(data.workData) : [];
+        const allNotWorth = dirs.length > 0 && dirs.every(d => d && d.notWorth);
+        const icon = allNotWorth ? '⊘' : '✓';
+        const title = allNotWorth ? 'All directions marked as not worth skipping' : '';
+        return `<span class="log-toll done"${title ? ` title="${title}"` : ''}>${icon} ${id} — ${label}</span>`;
       }).join('');
     }
     renderSessionLog();

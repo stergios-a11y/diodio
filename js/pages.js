@@ -273,10 +273,10 @@ function buildTollsTable() {
 
   // Render rows
   const dirArrow = (key) =>
-    key === 'north' ? '↑' :
-    key === 'south' ? '↓' :
-    key === 'east'  ? '→' :
-    key === 'west'  ? '←' : key;
+    key === 'northbound' ? '↑' :
+    key === 'southbound' ? '↓' :
+    key === 'eastbound'  ? '→' :
+    key === 'westbound'  ? '←' : key;
 
   let html = '';
   rows.forEach(({ toll, verdicts }) => {
