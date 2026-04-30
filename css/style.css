@@ -3316,3 +3316,16 @@ input[type="range"]::-moz-range-track {
 .toll-marker-ferry-pier:hover {
   transform: scale(1.5);
 }
+
+/* ══════════════════════════════════════
+   BUMPED SIDE-TOLL MARKER
+   When a toll's side panel is open AND its bypass bills a side toll
+   that's at the same lat/lng as a ramp pillar, we swap the small 11px
+   side-toll dot for this 16px ringed marker, visually offset up-and-left
+   so it pops out from behind the green RE-ENTER / blue EXIT pillar.
+   The icon's geo anchor still points at the actual toll coord; only the
+   visual is shifted. Reverted to the regular dot on panel close.
+   ══════════════════════════════════════ */
+.toll-marker-bumped {
+  width: 16px; height: 16px;
+}

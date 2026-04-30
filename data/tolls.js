@@ -1390,7 +1390,7 @@ const TOLL_DATA = [
     type: "bridge", direction_label: "Both directions",
     lat: 38.3337794, lng: 21.7660189,
     cat1: 2.50, cat2: 15.90, cat3: 24.70, cat4: 50.90,
-    notes: "Charilaos Trikoupis Bridge. Single-crossing toll (2026): motorbikes €2.50, cars €15.90, trucks 2-axle €24.70, trucks 4+ axle €50.90. Buses and disability cards have separate tariffs. Discounts: Aller-Retour (5h roundtrip), 30-trip cards, e-Pass.",
+    notes: "Charilaos Trikoupis Bridge. Discounts available: Aller-Retour (5h roundtrip), 30-trip cards, e-Pass.",
     // Ferry bypass: the only practical alternative to the bridge is the
     // Rio–Antirrio ferry. Treated as a special-mode bypass (mode: "ferry")
     // so the side panel renders ferry-specific UI: schedule + fare instead

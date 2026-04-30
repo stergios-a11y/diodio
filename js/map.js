@@ -330,10 +330,23 @@ function closeSidePanel() {
   document.body.classList.remove('panel-open');
   clearInspectLayers();
   restoreAll();
-  // Reset any side-toll z-index bumps applied by openSidePanel for
-  // this toll's bypass-billed side tolls (default zIndexOffset for
-  // side markers is 100; ramp signs are 600; we used 700 to elevate).
-  sideMarkers.forEach(({ marker }) => marker.setZIndexOffset(100));
+  // Revert any side-toll icon swaps + z-index bumps applied by openSidePanel
+  // for this toll's bypass-billed side tolls. Default zIndexOffset for
+  // side markers is 100; ramp signs are 600; we used 700 to elevate.
+  // Ferry pier markers (R31) have id pattern *_ferry_pier_* and their own
+  // icon class — leave those alone.
+  sideMarkers.forEach(({ toll, marker }) => {
+    marker.setZIndexOffset(100);
+    if (marker._bumped) {
+      // Only ferry-pier ids contain "_ferry_pier_"; those weren't bumped
+      // (bypassSideTollCost can't find them), so this branch only fires
+      // for real side tolls and the regular icon is correct.
+      if (!String(toll.id).includes('_ferry_pier_')) {
+        marker.setIcon(makeRegularSideIcon());
+      }
+      marker._bumped = false;
+    }
+  });
   sidePanelOpen = false;
   currentTollOpen = null;
   if (typeof setActiveTollLabel === 'function') setActiveTollLabel(null);
@@ -427,6 +440,36 @@ function makeEntryIcon(placeName) {
   });
 }
 
+// Bumped side-toll icon — used for side tolls billed on the currently-open
+// toll's bypass. Larger than the regular 11px side-toll dot, with a strong
+// amber ring, AND visually offset up-and-left from the geo coord so it
+// doesn't sit underneath the EXIT/RE-ENTER ramp pillar (which usually
+// shares the same lat/lng). The marker's onclick still uses the geo coord
+// so behavior is unchanged — only the visual is offset.
+//
+// Math: 16×16 icon with iconAnchor [32, 32] places the icon's interior
+// 16px up-and-left of the geo coord, well clear of the ramp pillar
+// which extends down-and-right from its own anchor.
+function makeBumpedSideIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div class="toll-marker toll-marker-side toll-marker-bypass-side toll-marker-bumped" style="background:${SIDE_TOLL_COLOR}"></div>`,
+    iconSize:   [16, 16],
+    iconAnchor: [32, 32],
+  });
+}
+
+// Regular side-toll icon, used to restore a marker after un-bumping.
+// Mirrors the inline icon definition in the TOLL_DATA.forEach loop.
+function makeRegularSideIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div class="toll-marker toll-marker-side" style="background:${SIDE_TOLL_COLOR}"></div>`,
+    iconSize:   [11, 11],
+    iconAnchor: [5.5, 5.5],
+  });
+}
+
 // ── Side-toll display-name cleaner ────────────────────────
 // Side-toll names in the data are deliberately verbose so the dataset is
 // self-describing — e.g. "Πλευρικά Καπανδρίτι — Βόρεια είσοδος" /
@@ -463,11 +506,19 @@ function openSidePanel(toll) {
   // Auto-dismiss the first-visit tip — user took the hint, don't show again.
   if (typeof window.dismissFirstTip === 'function') window.dismissFirstTip();
   clearInspectLayers();
-  // Reset z-index of any side-toll markers a previous panel may have
-  // bumped (when transitioning panel→panel without closing). Default
-  // for side markers is 100; we'll re-elevate this toll's billed
+  // Reset z-index + icon swap of any side-toll markers a previous panel
+  // may have bumped (when transitioning panel→panel without closing).
+  // Default for side markers is 100; we re-elevate this toll's billed
   // side tolls below.
-  sideMarkers.forEach(({ marker }) => marker.setZIndexOffset(100));
+  sideMarkers.forEach(({ toll: sideToll, marker }) => {
+    marker.setZIndexOffset(100);
+    if (marker._bumped) {
+      if (!String(sideToll.id).includes('_ferry_pier_')) {
+        marker.setIcon(makeRegularSideIcon());
+      }
+      marker._bumped = false;
+    }
+  });
   sidePanelOpen = true;
   sidePanelOpenedAt = Date.now();
   currentTollOpen = toll;
@@ -499,10 +550,17 @@ function openSidePanel(toll) {
   if (myMarker) myMarker.marker.setOpacity(1);
 
   // Side tolls billed on any of this toll's bypasses should remain
-  // visible AND sit above the EXIT/RE-ENTER ramp signs (z-offset 600)
-  // so the user can see exactly where they'll pay. Without this,
-  // dimAll() drops them to 0.07 opacity and the ramp signs cover them.
-  // We track the elevated markers to revert them on close.
+  // visible AND sit clearly above/beside the EXIT/RE-ENTER ramp signs
+  // (which usually share the same lat/lng). Without this, dimAll() drops
+  // them to 0.07 opacity and the visually-larger ramp pillars completely
+  // cover the small 11px side-toll dots even with z-index priority.
+  //
+  // Three-part fix:
+  //   1. Restore opacity to 1
+  //   2. Bump z-index above ramp signs (which sit at 600)
+  //   3. Swap to a larger icon offset up-and-left so it pops out of
+  //      the ramp pillar's footprint
+  // All reverted on close (or at start of next openSidePanel).
   if (toll.bypass_directions && typeof window.bypassSideTollCost === 'function') {
     Object.entries(toll.bypass_directions).forEach(([dirKey, dir]) => {
       if (!dir) return;
@@ -513,7 +571,10 @@ function openSidePanel(toll) {
         const sm = allMarkers.find(am => am.toll.id === sideToll.id);
         if (sm) {
           sm.marker.setOpacity(1);
-          sm.marker.setZIndexOffset(700);  // above ramp signs (600)
+          sm.marker.setZIndexOffset(700);
+          sm.marker.setIcon(makeBumpedSideIcon());
+          // Mark so closeSidePanel knows to revert.
+          sm.marker._bumped = true;
         }
       });
     });
@@ -757,14 +818,13 @@ function openSidePanel(toll) {
       if (!sideTollsVisible && typeof window.bypassSideTollCost === 'function') {
         const sideInfo = window.bypassSideTollCost(toll, key, dir);
         sideInfo.items.forEach(({ toll: sideToll, role }) => {
-          const sideIcon = L.divIcon({
-            className: '',
-            html: `<div class="toll-marker toll-marker-side toll-marker-bypass-side" style="background:${SIDE_TOLL_COLOR}"></div>`,
-            iconSize: [13, 13], iconAnchor: [6.5, 6.5],
-          });
+          // Use the same bumped icon as the global-toggle path: 16px
+          // ringed marker offset up-and-left so it pops out from behind
+          // the green RE-ENTER / blue EXIT pillar that usually shares
+          // the same lat/lng. Without the offset, the dot is invisible.
           const sideMarker = L.marker([sideToll.lat, sideToll.lng], {
-            icon: sideIcon,
-            zIndexOffset: 550,  // above bypass line, below ramp signs
+            icon: makeBumpedSideIcon(),
+            zIndexOffset: 700,  // above ramp signs (600)
           });
           // Tooltip mirrors the side-panel callout — name + role.
           const lang = getCurrentLang();
