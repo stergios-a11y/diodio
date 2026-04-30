@@ -413,6 +413,8 @@ function makeEntryIcon(placeName) {
 }
 
 function openSidePanel(toll) {
+  // Auto-dismiss the first-visit tip — user took the hint, don't show again.
+  if (typeof window.dismissFirstTip === 'function') window.dismissFirstTip();
   clearInspectLayers();
   sidePanelOpen = true;
   sidePanelOpenedAt = Date.now();
@@ -1378,3 +1380,55 @@ if (basemapMobBtn) basemapMobBtn.addEventListener('click', window.cycleBaseLayer
 // Initial label paint + re-paint on language change
 window.updateBasemapButtonLabels();
 window.addEventListener('langchange', window.updateBasemapButtonLabels);
+
+// ── First-visit tip ────────────────────────────────────────────────
+// Reveals a small "Tap any toll to see if it's worth paying or
+// bypassing" card on first visit. Auto-dismisses on first toll click
+// (so users who took the hint don't see it again next page load).
+// Persists dismiss state in localStorage as `mydiodia.tip.bypass.v1`.
+//
+// Exposes `window.dismissFirstTip()` which `openSidePanel` calls directly.
+// (We can't monkey-patch openSidePanel from out here — marker click
+// handlers reference the lexically-scoped declaration, not the global.)
+(function initFirstTip() {
+  const STORAGE_KEY = 'mydiodia.tip.bypass.v1';
+  const tipEl = document.getElementById('first-tip');
+  if (!tipEl) {
+    // No DOM element — expose a no-op so openSidePanel's call site is safe.
+    window.dismissFirstTip = function() {};
+    return;
+  }
+
+  // localStorage can throw in incognito / restricted contexts. Default to
+  // "already dismissed" so the tip never blocks anything when storage fails.
+  let dismissed = true;
+  try {
+    dismissed = localStorage.getItem(STORAGE_KEY) === 'dismissed';
+  } catch (e) { /* ignore */ }
+
+  function persistDismiss() {
+    try { localStorage.setItem(STORAGE_KEY, 'dismissed'); }
+    catch (e) { /* ignore quota / disabled */ }
+  }
+
+  function dismiss() {
+    if (tipEl.hidden) return;
+    persistDismiss();
+    tipEl.classList.add('is-leaving');
+    // Match the CSS animation duration (250ms).
+    setTimeout(() => {
+      tipEl.hidden = true;
+      tipEl.classList.remove('is-leaving');
+    }, 260);
+  }
+  window.dismissFirstTip = dismiss;
+
+  if (dismissed) return;
+
+  // Show now (the CSS keyframes handle the fade-in delay).
+  tipEl.hidden = false;
+
+  // Close-button click.
+  const closeBtn = document.getElementById('first-tip-close');
+  if (closeBtn) closeBtn.addEventListener('click', dismiss);
+})();

@@ -1945,6 +1945,7 @@ input[type="range"]::-moz-range-track {
 #page-map:not(.page-active) #results-panel,
 #page-map:not(.page-active) #bottom-bar,
 #page-map:not(.page-active) .map-floating-toggle,
+#page-map:not(.page-active) #first-tip,
 #page-map:not(.page-active) #map-container { display: none; }
 #page-routes,
 #page-tolls {
@@ -2993,4 +2994,87 @@ input[type="range"]::-moz-range-track {
   .site-footer { padding: 14px 16px; font-size: 0.68rem; }
   .site-footer-inner { flex-direction: column; gap: 3px; }
   .site-footer .footer-sep { display: none; }
+}
+
+/* ══════════════════════════════════════
+   FIRST-VISIT TIP
+   Floating card centered near the top of the map page that tells new
+   visitors the site's primary action: tap a toll to see if it's worth
+   paying or bypassing. Auto-dismisses on first toll click. Persists
+   dismissed state in localStorage as `mydiodia.tip.bypass.v1`.
+   Wired up by map.js. Toggled via [hidden] attribute, so anything
+   that needs to hide it can do so without removing it from the DOM.
+   ══════════════════════════════════════ */
+.first-tip {
+  position: fixed;
+  top: calc(var(--topbar-h) + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 920;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(540px, calc(100vw - 24px));
+  padding: 10px 12px 10px 16px;
+  background: var(--paper);
+  border: 1px solid var(--aegean-lt);
+  border-left: 3px solid var(--aegean);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--ink);
+  /* Fade in slightly delayed so it doesn't compete with map tile loading */
+  animation: first-tip-in 0.4s var(--ease-out) 0.4s backwards;
+}
+.first-tip[hidden] { display: none; }
+.first-tip.is-leaving {
+  animation: first-tip-out 0.25s var(--ease) forwards;
+}
+.first-tip-body {
+  flex: 1;
+  /* Keep emoji baseline aligned with text */
+  display: inline-block;
+}
+.first-tip-close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.first-tip-close:hover {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+.first-tip-close:focus-visible {
+  outline: 2px solid var(--aegean);
+  outline-offset: 1px;
+}
+@keyframes first-tip-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes first-tip-out {
+  to { opacity: 0; transform: translate(-50%, -8px); }
+}
+/* Mobile: tighten padding/font, allow it to span the screen with margin */
+@media (max-width: 640px) {
+  .first-tip {
+    top: calc(var(--topbar-h) + 8px);
+    padding: 9px 10px 9px 13px;
+    font-size: 0.8rem;
+    gap: 8px;
+    max-width: calc(100vw - 16px);
+  }
 }
