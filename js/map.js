@@ -815,8 +815,20 @@ function openSidePanel(toll) {
         <div class="sp-dir${isActive ? ' active' : ''}" data-dir-key="${key}">
           <div class="sp-dir-label">${translateDirectionLabel(dir.label)}</div>
           <div class="sp-dir-exits">
-            <span class="sp-exit-tag">${t('sp.exit.tag')}${dir.exit_name}</span>
-            <span class="sp-entry-tag">${t('sp.entry.tag')}${dir.entry_name}</span>
+            <span class="sp-exit-tag">
+              <svg class="sp-tag-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="17" y1="7" x2="7" y2="17"/>
+                <polyline points="16 17 7 17 7 8"/>
+              </svg>
+              <span class="sp-tag-text">${t('sp.exit.tag')}${dir.exit_name}</span>
+            </span>
+            <span class="sp-entry-tag">
+              <svg class="sp-tag-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="7" y1="17" x2="17" y2="7"/>
+                <polyline points="8 7 17 7 17 16"/>
+              </svg>
+              <span class="sp-tag-text">${t('sp.entry.tag')}${dir.entry_name}</span>
+            </span>
           </div>
           ${confHTML}
           <div class="sp-dir-compare" data-stats="${key}">

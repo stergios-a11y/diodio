@@ -578,7 +578,7 @@ function renderResults(a) {
   html += '<div class="rp-chips">';
   results.forEach(r => {
     const bypassInfo = r.dir
-      ? `${t('sp.exit.tag').replace('↙ ', '')}${r.dir.exit_name} · ${t('sp.entry.tag').replace('↗ ', '')}${r.dir.entry_name} · +${r.dir.minutes} ${t('bar.time.label2')}`
+      ? `${t('sp.exit.tag')}${r.dir.exit_name} · ${t('sp.entry.tag')}${r.dir.entry_name} · +${r.dir.minutes} ${t('bar.time.label2')}`
       : t('verdict.no.bypass.short');
     const verdictLabel = t(`verdict.${r.verdict.toLowerCase().replace('_', '.')}`);
     const tollName = stripTollPrefix(lang === 'el' ? r.toll.name_gr : r.toll.name_en);

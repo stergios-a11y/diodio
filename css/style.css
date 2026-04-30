@@ -1070,10 +1070,18 @@ body {
   font-size: 0.76rem;
   padding: 5px 11px;
   border-radius: var(--radius);
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 7px;
   font-family: var(--font-body);
   letter-spacing: -0.005em;
   background: var(--paper);
+}
+.sp-tag-icon {
+  flex-shrink: 0;
+  /* Stroke inherits each tag's text color via currentColor on the SVG */
+}
+.sp-tag-text {
+  /* Flex item that wraps cleanly when ramp names are long */
+  min-width: 0;
 }
 .sp-exit-tag {
   color: var(--aegean-dark);
