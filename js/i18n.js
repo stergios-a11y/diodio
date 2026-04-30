@@ -162,7 +162,7 @@ const STRINGS = {
     'bypass.via.highway':      'Μέσω αυτοκινητοδρόμου',
     'bypass.via.ferry':        'Με πορθμείο',
     // Ferry-mode bypass (Rio-Antirrio bridge): schedule + fare info
-    'sp.bypass.ferry.title':       '⛴ Εναλλακτική: πορθμείο',
+    'sp.bypass.ferry.title':       '⛴ Πορθμείο',
     'sp.bypass.ferry.frequency':   'Κάθε {n} λεπτά',
     'sp.bypass.ferry.crossing':    '{n} λεπτά διαδρομή',
     'sp.bypass.ferry.fare':        'Τιμές ναύλου ανά όχημα',
@@ -354,7 +354,7 @@ const STRINGS = {
     'bypass.via.highway':      'Via motorway',
     'bypass.via.ferry':        'By ferry',
     // Ferry-mode bypass (Rio-Antirrio bridge): schedule + fare info
-    'sp.bypass.ferry.title':       '⛴ Alternative: ferry',
+    'sp.bypass.ferry.title':       '⛴ Ferry',
     'sp.bypass.ferry.frequency':   'Every {n} min',
     'sp.bypass.ferry.crossing':    '{n} min crossing',
     'sp.bypass.ferry.fare':        'Fare per vehicle',
