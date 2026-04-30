@@ -1068,8 +1068,8 @@ const TOLL_DATA = [
   },
   {
     id: "ionia_terovos",
-    name_gr: "Διόδια Τέροβου / Άρτας",
-    name_en: "Terovos / Arta",
+    name_gr: "Διόδια Τέροβου",
+    name_en: "Terovos",
     highway: "A5", highway_name: "Nea Odos (A5)",
     operator: "Nea Odos",
     type: "frontal", direction_label: "Both directions",
@@ -1081,24 +1081,24 @@ const TOLL_DATA = [
       northbound: {
         label: "Northbound (towards Ioannina)",
         exit_name: "Αμμοτόπου", entry_name: "Αβγού",
-        pre_exit:   { lat: 39.256196, lng: 20.926479 },
-        off_ramp:   { lat: 39.264823, lng: 20.926189 },
-        on_ramp:    { lat: 39.425400, lng: 20.885400 },
-        post_merge: { lat: 39.432939, lng: 20.905487 },
+        pre_exit:   { lat: 39.32884810189222,  lng: 20.913221748178632 },
+        off_ramp:   { lat: 39.33244023319273,  lng: 20.91578215332612 },
+        on_ramp:    { lat: 39.44098463960422,  lng: 20.90580029504028 },
+        post_merge: { lat: 39.44257859256024,  lng: 20.905611899060904 },
         minutes: 20,
-        via: [{ lat: 39.2654, lng: 20.9542 },{ lat: 39.320, lng: 20.935 },{ lat: 39.375, lng: 20.910 },{ lat: 39.4254, lng: 20.8854 }],
-        confidence: "approximate"
+        via: [],
+        confidence: "verified"
       },
       southbound: {
         label: "Southbound (towards Antirrio)",
         exit_name: "Αβγού", entry_name: "Αμμοτόπου",
-        pre_exit:   { lat: 39.433936, lng: 20.905357 },
-        off_ramp:   { lat: 39.425400, lng: 20.885400 },
-        on_ramp:    { lat: 39.264823, lng: 20.926189 },
-        post_merge: { lat: 39.256120, lng: 20.926279 },
+        pre_exit:   { lat: 39.442661241129045, lng: 20.905417214717183 },
+        off_ramp:   { lat: 39.44066731903605,  lng: 20.905130603566185 },
+        on_ramp:    { lat: 39.33230090509521,  lng: 20.914246215007925 },
+        post_merge: { lat: 39.32849699549517,  lng: 20.912509193594186 },
         minutes: 20,
-        via: [{ lat: 39.4254, lng: 20.8854 },{ lat: 39.375, lng: 20.910 },{ lat: 39.320, lng: 20.935 },{ lat: 39.2654, lng: 20.9542 }],
-        confidence: "approximate"
+        via: [],
+        confidence: "verified"
       },
     },
   },
