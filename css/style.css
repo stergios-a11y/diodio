@@ -260,6 +260,10 @@ body {
   flex-direction: column;
   gap: 1px;
 }
+/* The HTML `hidden` attribute applies `display: none` via the UA stylesheet,
+   but our `.veh-menu { display: flex }` overrides that. Force hidden to win
+   when it's set on this element (open/close is toggled via menu.hidden). */
+.veh-menu[hidden] { display: none; }
 .veh-option {
   display: flex;
   align-items: center;
