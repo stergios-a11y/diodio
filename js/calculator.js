@@ -67,6 +67,16 @@ window.addEventListener('langchange', () => {
   }
 });
 
+// Re-render results when the user picks a different vehicle.
+// We update lastAnalysis.catKey to the newly-selected category so the
+// summary reflects the new totals immediately.
+window.addEventListener('vehiclechange', () => {
+  if (lastAnalysis && resultsPanel.classList.contains('open')) {
+    lastAnalysis.catKey = window.getVehicleCat();
+    renderResults(lastAnalysis);
+  }
+});
+
 function setLoading(on) {
   analyseBtn.disabled = on;
   analyseBtn.classList.toggle('loading', on);
@@ -616,7 +626,7 @@ function renderResults(a) {
 async function analyze() {
   const origin    = document.getElementById('origin').value.trim();
   const dest      = document.getElementById('dest').value.trim();
-  const vehicle   = document.getElementById('vehicle').value;
+  const vehicle   = window.getVehicleCat ? window.getVehicleCat() : 'cat2';
   const timeValue = parseInt(slider.value);
 
   if (!origin || !dest) { showError(t('err.missing')); return; }
@@ -655,10 +665,9 @@ async function analyze() {
       return;
     }
 
-    // 6. Resolve vehicle category and stash inputs for re-render on lang toggle
-    const catKey = {
-      motorcycle: 'cat1', car: 'cat2', lighttruck: 'cat3', heavytruck: 'cat4',
-    }[vehicle];
+    // 6. Stash inputs for re-render on lang toggle. `vehicle` is already a catKey
+    //    ('cat1'..'cat4') as returned by window.getVehicleCat().
+    const catKey = vehicle;
 
     lastAnalysis = { origin, dest, matchedTolls, catKey, timeValue, travelDir };
 

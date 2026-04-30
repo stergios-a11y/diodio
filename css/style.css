@@ -194,6 +194,53 @@ body {
 }
 
 /* ══════════════════════════════════════
+   VEHICLE TOGGLE — top-right global mode
+   Sits next to the language flag. Same visual language: pill group
+   with one active stop. The selected vehicle drives every price
+   display on the site (hover popup, side panel, bypass diff).
+   ══════════════════════════════════════ */
+.veh-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 1px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.veh-toggle:hover {
+  border-color: var(--aegean);
+  box-shadow: 0 0 0 3px var(--aegean-lt);
+}
+.veh-pill {
+  padding: 4px 7px 3px;
+  font-size: 0.95rem;
+  line-height: 1;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  transition: all 0.2s var(--ease);
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  filter: grayscale(0.6) opacity(0.55);
+}
+.veh-pill:hover { filter: grayscale(0) opacity(1); }
+.veh-pill.active {
+  background: var(--aegean-lt);
+  filter: grayscale(0) opacity(1);
+  box-shadow: 0 1px 4px rgba(42,107,158,0.18);
+  transform: scale(1.05);
+}
+.veh-emoji {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* ══════════════════════════════════════
    MAP
    ══════════════════════════════════════ */
 #map-container {
@@ -2700,6 +2747,11 @@ input[type="range"]::-moz-range-track {
   #legend-toggle { display: none; } /* legend has its own scrolling, hide button on mobile */
   .btn-help span { display: none; }
   .btn-help { padding: 6px 9px; }
+
+  /* Vehicle toggle: tighter on mobile but keep all 4 pills visible — */
+  /* vehicle selection is essential, not optional like feedback/help. */
+  .veh-toggle { padding: 2px; }
+  .veh-pill { padding: 3px 5px 2px; font-size: 0.85rem; }
 
   .toll-tooltip { min-width: 220px; max-width: calc(100vw - 20px); }
 }

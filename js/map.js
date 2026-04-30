@@ -23,6 +23,59 @@ window.openSidePanelById = function(id) {
   if (toll && typeof openSidePanel === 'function') openSidePanel(toll);
 };
 
+// ── Global vehicle selection ───────────────────────────────────────────
+//
+// The vehicle the user has chosen is a global UI mode (like language) —
+// it filters every price display on the site to just that vehicle's row.
+// State lives in localStorage under "diodio.vehicle"; default is car.
+// Renderers read via window.getVehicleCat(). When the user clicks a
+// different pill, we save + dispatch a "vehiclechange" event; modules
+// re-render whatever they have currently displayed (open panel, hover
+// tooltip, analyze results).
+const VEHICLE_META = {
+  cat1: { emoji: '🏍', labelKey: 'sp.motorcycle' },
+  cat2: { emoji: '🚗', labelKey: 'sp.car' },
+  cat3: { emoji: '🚐', labelKey: 'sp.van' },
+  cat4: { emoji: '🚛', labelKey: 'sp.truck' },
+};
+let _currentVehicleCat = (() => {
+  try {
+    const stored = localStorage.getItem('diodio.vehicle');
+    if (stored && VEHICLE_META[stored]) return stored;
+  } catch (e) {}
+  return 'cat2';
+})();
+window.getVehicleCat = () => _currentVehicleCat;
+window.getVehicleMeta = () => VEHICLE_META[_currentVehicleCat] || VEHICLE_META.cat2;
+window.setVehicleCat = function(cat) {
+  if (!VEHICLE_META[cat] || cat === _currentVehicleCat) return;
+  _currentVehicleCat = cat;
+  try { localStorage.setItem('diodio.vehicle', cat); } catch (e) {}
+  // Sync the toggle UI
+  document.querySelectorAll('#vehicle-toggle .veh-pill').forEach(el => {
+    el.classList.toggle('active', el.dataset.cat === cat);
+  });
+  // Notify renderers
+  window.dispatchEvent(new Event('vehiclechange'));
+};
+// Wire up the toggle once DOM is ready. Scripts load at end of <body>, so
+// DOM is usually already parsed by the time we get here; readyState check
+// handles the rare race where DOMContentLoaded has not yet fired.
+function _initVehicleToggle() {
+  const grp = document.getElementById('vehicle-toggle');
+  if (!grp) return;
+  // Apply initial active state from stored value
+  grp.querySelectorAll('.veh-pill').forEach(el => {
+    el.classList.toggle('active', el.dataset.cat === _currentVehicleCat);
+    el.addEventListener('click', () => window.setVehicleCat(el.dataset.cat));
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initVehicleToggle);
+} else {
+  _initVehicleToggle();
+}
+
 // ── Bypass schema normalizer ───────────────────────────────────────────
 //
 // Each direction object should have four ramp-related coords:
@@ -262,16 +315,8 @@ function buildHoverTooltip(toll) {
     </div>
     <div class="tt-prices">
       <div class="price-cell">
-        <span class="vehicle-icon">🏍</span>
-        <span class="price-val"><span class="eur">€</span>${toll.cat1.toFixed(2)}</span>
-      </div>
-      <div class="price-cell">
-        <span class="vehicle-icon">🚗</span>
-        <span class="price-val"><span class="eur">€</span>${toll.cat2.toFixed(2)}</span>
-      </div>
-      <div class="price-cell">
-        <span class="vehicle-icon">🚐</span>
-        <span class="price-val"><span class="eur">€</span>${toll.cat3.toFixed(2)}</span>
+        <span class="vehicle-icon">${window.getVehicleMeta().emoji}</span>
+        <span class="price-val"><span class="eur">€</span>${toll[window.getVehicleCat()].toFixed(2)}</span>
       </div>
     </div>
     ${notes}`;
@@ -314,6 +359,7 @@ let inspectLayers = [];
 let sidePanelOpen = false;
 let sidePanelOpenedAt = 0;
 let currentTollOpen = null;
+let _hoveredToll = null;  // tracked for vehicle-change re-render
 const legendEl    = document.getElementById('legend');
 
 function clearInspectLayers() {
@@ -970,25 +1016,18 @@ function openSidePanel(toll) {
     if (pd && toll && dir && typeof window.bypassSideTollCost === 'function') {
       const isFerry = dir.mode === 'ferry' && dir.fare;
       const sideInfo = isFerry ? null : window.bypassSideTollCost(toll, dirKey, dir);
-      const cats = [
-        { key: 'cat1', emoji: '🏍', labelKey: 'sp.motorcycle' },
-        { key: 'cat2', emoji: '🚗', labelKey: 'sp.car' },
-        { key: 'cat3', emoji: '🚐', labelKey: 'sp.van' },
-        { key: 'cat4', emoji: '🚛', labelKey: 'sp.truck' },
-      ];
-      const rows = cats.map(({ key, emoji, labelKey }) => {
-        const frontal = toll[key] || 0;
-        const side    = isFerry ? (dir.fare[key] || 0) : (sideInfo.totals[key] || 0);
-        const diff    = side - frontal;     // negative = bypass cheaper
-        const sign    = diff > 0 ? '+' : (diff < 0 ? '−' : '');
-        const cls     = diff < 0 ? 'savings' : (diff > 0 ? 'cost' : 'zero');
-        const abs     = Math.abs(diff).toFixed(2);
-        return `<div class="sp-cmp-pd-row">
-          <span class="sp-cmp-pd-veh"><span class="sp-cmp-pd-emoji">${emoji}</span>${t(labelKey)}</span>
-          <span class="sp-cmp-pd-val ${cls}">${sign}€${abs}</span>
-        </div>`;
-      }).join('');
-      pd.innerHTML = rows;
+      const key     = window.getVehicleCat();
+      const meta    = window.getVehicleMeta();
+      const frontal = toll[key] || 0;
+      const side    = isFerry ? (dir.fare[key] || 0) : (sideInfo.totals[key] || 0);
+      const diff    = side - frontal;     // negative = bypass cheaper
+      const sign    = diff > 0 ? '+' : (diff < 0 ? '−' : '');
+      const cls     = diff < 0 ? 'savings' : (diff > 0 ? 'cost' : 'zero');
+      const abs     = Math.abs(diff).toFixed(2);
+      pd.innerHTML = `<div class="sp-cmp-pd-row">
+        <span class="sp-cmp-pd-veh"><span class="sp-cmp-pd-emoji">${meta.emoji}</span>${t(meta.labelKey)}</span>
+        <span class="sp-cmp-pd-val ${cls}">${sign}€${abs}</span>
+      </div>`;
     }
   }
 
@@ -1066,20 +1105,13 @@ function openSidePanel(toll) {
       let sideTollsHTML = '';
       if (dir.mode === 'ferry' && dir.fare) {
         const lang = getCurrentLang();
-        const cats = [
-          { key: 'cat1', emoji: '🏍', labelKey: 'sp.motorcycle' },
-          { key: 'cat2', emoji: '🚗', labelKey: 'sp.car' },
-          { key: 'cat3', emoji: '🚐', labelKey: 'sp.van' },
-          { key: 'cat4', emoji: '🚛', labelKey: 'sp.truck' },
-        ];
-        const fareRows = cats.map(({ key, emoji, labelKey }) => {
-          const fare = dir.fare[key];
-          if (fare == null) return '';
-          return `<li class="sp-ferry-fare-item">
-            <span class="sp-ferry-fare-veh"><span class="sp-ferry-fare-emoji">${emoji}</span>${t(labelKey)}</span>
+        const key  = window.getVehicleCat();
+        const meta = window.getVehicleMeta();
+        const fare = dir.fare[key];
+        const fareRows = (fare == null) ? '' : `<li class="sp-ferry-fare-item">
+            <span class="sp-ferry-fare-veh"><span class="sp-ferry-fare-emoji">${meta.emoji}</span>${t(meta.labelKey)}</span>
             <span class="sp-ferry-fare-val">€${fare.toFixed(2)}</span>
           </li>`;
-        }).join('');
         const freq = dir.frequency_min;
         const cross = dir.crossing_min;
         sideTollsHTML = `<div class="sp-bypass-sidetolls sp-bypass-ferry">
@@ -1179,10 +1211,7 @@ function openSidePanel(toll) {
       <div class="sp-name-gr">${secondaryName}</div>
     </div>
     <div class="sp-prices">
-      <div class="sp-price-row"><span><span class="sp-emoji">🏍</span><span class="sp-vlabel">${t('sp.motorcycle')}</span></span><strong>€${toll.cat1.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span><span class="sp-emoji">🚗</span><span class="sp-vlabel">${t('sp.car')}</span></span><strong>€${toll.cat2.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span><span class="sp-emoji">🚐</span><span class="sp-vlabel">${t('sp.van')}</span></span><strong>€${toll.cat3.toFixed(2)}</strong></div>
-      <div class="sp-price-row"><span><span class="sp-emoji">🚛</span><span class="sp-vlabel">${t('sp.truck')}</span></span><strong>€${toll.cat4.toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span><span class="sp-emoji">${window.getVehicleMeta().emoji}</span><span class="sp-vlabel">${t(window.getVehicleMeta().labelKey)}</span></span><strong>€${toll[window.getVehicleCat()].toFixed(2)}</strong></div>
     </div>
     ${
       // Hide Direction section when it's redundant — frontal toll charges both directions
@@ -1252,12 +1281,13 @@ TOLL_DATA.forEach(toll => {
   const marker = L.marker([toll.lat, toll.lng], { icon, zIndexOffset: 100 });
 
   marker.on('mouseover', function(e) {
+    _hoveredToll = toll;
     tooltipEl.innerHTML = buildHoverTooltip(toll);
     tooltipEl.style.display = 'block';
     positionTooltip(e.originalEvent);
   });
   marker.on('mousemove', function(e) { positionTooltip(e.originalEvent); });
-  marker.on('mouseout',  function()  { tooltipEl.style.display = 'none'; });
+  marker.on('mouseout',  function()  { _hoveredToll = null; tooltipEl.style.display = 'none'; });
   marker.on('click', function(e) {
     L.DomEvent.stopPropagation(e);
     tooltipEl.style.display = 'none';
@@ -1580,12 +1610,13 @@ function buildTollNameMarkers() {
       openSidePanel(toll);
     });
     m.on('mouseover', function(e) {
+      _hoveredToll = toll;
       tooltipEl.innerHTML = buildHoverTooltip(toll);
       tooltipEl.style.display = 'block';
       positionTooltip(e.originalEvent);
     });
     m.on('mousemove', function(e) { positionTooltip(e.originalEvent); });
-    m.on('mouseout',  function()  { tooltipEl.style.display = 'none'; });
+    m.on('mouseout',  function()  { _hoveredToll = null; tooltipEl.style.display = 'none'; });
     tollNameMarkers.push({ marker: m, toll });
   });
 }
@@ -1818,3 +1849,19 @@ window.addEventListener('langchange', window.updateBasemapButtonLabels);
   const closeBtn = document.getElementById('first-tip-close');
   if (closeBtn) closeBtn.addEventListener('click', dismiss);
 })();
+
+// ── Re-render UI when the user changes vehicle ────────────────────────
+//
+// Hover tooltip pulls fresh content from buildHoverTooltip on every
+// mouseover, so it auto-reflects the current vehicle without a listener.
+// What we DO need to refresh:
+//   - The side panel if open: re-run openSidePanel for the active toll.
+//   - All-Tolls page table: it has its own re-render; let it subscribe.
+window.addEventListener('vehiclechange', () => {
+  if (sidePanelOpen && currentTollOpen && typeof openSidePanel === 'function') {
+    openSidePanel(currentTollOpen);
+  }
+  if (tooltipEl && tooltipEl.style.display === 'block' && _hoveredToll) {
+    tooltipEl.innerHTML = buildHoverTooltip(_hoveredToll);
+  }
+});

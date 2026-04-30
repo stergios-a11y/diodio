@@ -116,7 +116,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260430-2000" />
+  <link rel="stylesheet" href="css/style.css?v=20260430-2100" />
 </head>
 <body>
 
@@ -180,6 +180,12 @@
       <a class="nav-link" data-page="tolls" data-i18n="nav.tolls">Διόδια</a>
     </nav>
     <div class="topbar-right">
+      <div class="veh-toggle" id="vehicle-toggle" role="group" data-i18n-aria-label="aria.vehicle">
+        <button class="veh-pill" data-cat="cat1" data-i18n-title="bar.moto" title="🏍 Μοτο"><span class="veh-emoji">🏍</span></button>
+        <button class="veh-pill active" data-cat="cat2" data-i18n-title="bar.car" title="🚗 Αυτοκίνητο"><span class="veh-emoji">🚗</span></button>
+        <button class="veh-pill" data-cat="cat3" data-i18n-title="bar.van" title="🚐 Βαν"><span class="veh-emoji">🚐</span></button>
+        <button class="veh-pill" data-cat="cat4" data-i18n-title="bar.truck" title="🚛 Φορτηγό"><span class="veh-emoji">🚛</span></button>
+      </div>
       <button class="btn-lang-flag" id="lang-toggle" title="Switch language / Αλλαγή γλώσσας">
         <span class="flag-option flag-el" data-lang="el">🇬🇷</span>
         <span class="flag-option flag-en" data-lang="en">🇬🇧</span>
@@ -360,13 +366,6 @@
     <span class="bar-label" data-i18n="bar.to">Προς</span>
     <input class="bar-input" id="dest" placeholder="πχ Λάρισα" autocomplete="off" data-i18n-aria-label="aria.dest" data-i18n-placeholder="bar.dest.placeholder" style="flex:1;max-width:150px" />
     <div class="bar-sep"></div>
-    <select class="bar-select" id="vehicle" data-i18n-aria-label="aria.vehicle">
-      <option value="motorcycle" data-i18n="bar.moto">🏍 Μοτο</option>
-      <option value="car" selected data-i18n="bar.car">🚗 Αυτοκίνητο</option>
-      <option value="lighttruck" data-i18n="bar.van">🚐 Βαν</option>
-      <option value="heavytruck" data-i18n="bar.truck">🚛 Φορτηγό</option>
-    </select>
-    <div class="bar-sep"></div>
     <div class="tv-compact">
       <div class="tv-compact-sentence">
         <span class="lbl tv-desktop" data-i18n="bar.time.prefix">Θα οδηγούσα</span>
@@ -493,8 +492,8 @@
   <script src="js/i18n.js?v=20260430-1900"></script>
   <script src="data/tolls.js?v=20260430-3600"></script>
   <script src="data/routes.js?v=20260427-0700"></script>
-  <script src="js/map.js?v=20260430-3300"></script>
-  <script src="js/calculator.js?v=20260430-1900"></script>
+  <script src="js/map.js?v=20260430-3400"></script>
+  <script src="js/calculator.js?v=20260430-2000"></script>
   <script src="js/pages.js?v=20260427-0800"></script>
 </body>
 </html>
