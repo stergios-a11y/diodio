@@ -1339,39 +1339,49 @@ const SIDE_TOLL_COLOR = '#f4c430';  // light yellow
 let sideTollsVisible = true;
 const sideMarkers    = [];  // { toll, marker } for side tolls only
 
+// Zoom threshold above which frontal tolls render as perpendicular pills.
+// Below this, they render as small dots (matches the visual hierarchy of
+// other zoom-aware features: ramps appear at zoom 10, names at 9, pills at 11).
+// At Greece-wide overview the pills would clutter; at street level they
+// convey "this is a barrier across the road."
+const ZOOM_THRESHOLD_FRONTAL_PILL = 11;
+
 // Build the divIcon for a toll marker. Frontals get a pill shape oriented
-// perpendicular to the highway they sit on (using the toll's `axis` field:
-// NS = horizontal pill across an N–S road, EW = vertical pill across an
-// E–W road). The pill visually reads as a "barrier across the road,"
-// matching how a real toll plaza looks. Side tolls keep the small yellow
-// dot (they're booths attached to ramps, not main-line plazas). Bridges
-// stay as circles for now — their geographic spot is the bridge midspan,
-// not a "barrier across the road."
+// perpendicular to the actual highway bearing (using each toll's `bearing`
+// field, computed from the bypass pre_exit→post_merge line). At low zoom
+// they revert to the same small circle as side tolls so the overview is
+// not crowded. Side tolls always render as yellow dots (booths on ramps,
+// not main-line plazas). Bridges stay as circles — they sit at midspan
+// and the "barrier across the road" metaphor doesn't apply.
 function makeTollMarkerIcon(toll, isActive) {
-  const isSide   = toll.type === 'side';
+  const isSide    = toll.type === 'side';
   const isFrontal = toll.type === 'frontal';
   const color   = isSide
     ? SIDE_TOLL_COLOR
     : (isActive ? '#1f5828' : (HIGHWAY_COLORS[toll.highway] || '#888'));
 
-  if (isFrontal) {
-    // Pill perpendicular to the highway. Sized so the long axis is ~26px
-    // (clearly larger than the old 11px circle, but doesn't dwarf the map
-    // at typical zoom). Active state grows by ~15%.
+  // Frontal pills only appear when the user has zoomed in far enough to
+  // see road geometry. At lower zooms, fall through to the dot rendering.
+  const showAsPill = isFrontal && map.getZoom() >= ZOOM_THRESHOLD_FRONTAL_PILL;
+
+  if (showAsPill) {
     const longSide  = isActive ? 30 : 26;
     const shortSide = isActive ? 12 : 10;
-    const orient    = toll.axis === 'EW' ? 'ew' : 'ns';
-    const w = orient === 'ns' ? longSide : shortSide;
-    const h = orient === 'ns' ? shortSide : longSide;
+    const bearing = (typeof toll.bearing === 'number') ? toll.bearing : 0;
+    const rot = bearing % 180;
+    // Container is a square sized to the longSide so the rotated pill
+    // never clips, regardless of bearing. Inner div is centered and
+    // rotated. Anchor at center so it sits exactly on the toll's coord.
+    const cw = longSide + 4;
     return L.divIcon({
       className: '',
-      html: `<div class="toll-marker toll-marker-frontal toll-marker-frontal-${orient}${isActive ? ' active' : ''}" style="background:${color}"></div>`,
-      iconSize:   [w, h],
-      iconAnchor: [w / 2, h / 2],
+      html: `<div class="toll-marker toll-marker-frontal${isActive ? ' active' : ''}" style="background:${color};width:${longSide}px;height:${shortSide}px;left:50%;top:50%;transform:translate(-50%,-50%) rotate(${rot}deg)"></div>`,
+      iconSize:   [cw, cw],
+      iconAnchor: [cw / 2, cw / 2],
     });
   }
 
-  // Side & bridge: the original 11/14 px circle.
+  // Side, bridge, or low-zoom frontal: original 11/14 px circle.
   const size = isActive ? 14 : 11;
   return L.divIcon({
     className: '',
@@ -1619,6 +1629,24 @@ function updateTollNamesVisibility() {
 map.on('zoomend', () => {
   updateRampsVisibility();
   updateTollNamesVisibility();
+  // Re-render frontal markers — at the zoom threshold they swap between
+  // dots and pills. We only need to refresh frontals; side tolls and
+  // bridges are zoom-invariant.
+  if (typeof allMarkers !== 'undefined') {
+    const z = map.getZoom();
+    allMarkers.forEach(({ toll, marker }) => {
+      if (toll.type !== 'frontal') return;
+      const isActive = currentTollOpen && currentTollOpen.id === toll.id;
+      // Only rebuild if the dot/pill state actually changed for this zoom.
+      // We track last-rendered shape on the marker for cheap idempotency.
+      const wantPill = z >= ZOOM_THRESHOLD_FRONTAL_PILL;
+      if (marker._lastFrontalShape === (wantPill ? 'pill' : 'dot')
+          && marker._lastFrontalActive === !!isActive) return;
+      marker.setIcon(makeTollMarkerIcon(toll, isActive));
+      marker._lastFrontalShape  = wantPill ? 'pill' : 'dot';
+      marker._lastFrontalActive = !!isActive;
+    });
+  }
 });
 
 document.getElementById('legend-ramps-btn').addEventListener('click', function() {
@@ -1708,7 +1736,7 @@ function buildTollNameMarkers() {
     const icon = L.divIcon({
       className: '',
       html: buildLabelHtml(toll),
-      iconSize: [null, null], iconAnchor: [0, -10],
+      iconSize: [null, null], iconAnchor: [0, -18],
     });
     const m = L.marker([toll.lat, toll.lng], { icon, zIndexOffset: 30 });
     m.on('click', function(e) {
@@ -1735,7 +1763,7 @@ function updateTollNameLabels() {
     marker.setIcon(L.divIcon({
       className: '',
       html: buildLabelHtml(toll),
-      iconSize: [null, null], iconAnchor: [0, -10],
+      iconSize: [null, null], iconAnchor: [0, -18],
     }));
   });
 }
@@ -1751,7 +1779,7 @@ function setActiveTollLabel(activeTollId) {
     marker.setIcon(L.divIcon({
       className: '',
       html: `<div class="toll-name-label${isActive ? ' active' : ''}">${short}</div>`,
-      iconSize: [null, null], iconAnchor: [0, -10],
+      iconSize: [null, null], iconAnchor: [0, -18],
     }));
   });
   // Update dot markers — turn the active one green, restore others to highway color

@@ -359,35 +359,40 @@ body {
 }
 
 /* ══════════════════════════════════════
-   FRONTAL TOLL PILLS
+   FRONTAL TOLL PILLS — perpendicular to the highway
+
    Frontal tolls are main-line plazas that block ALL traffic on the
    highway. The pill shape (rounded rectangle, oriented perpendicular
-   to the highway) reads as a "barrier across the road" — matching how
-   a real toll plaza looks from above. The orientation comes from the
-   toll's `axis` field: NS axis (highway runs N–S) → horizontal pill;
-   EW axis (highway runs E–W) → vertical pill. The visual is bigger
-   than the side-toll dot, signaling its higher significance.
+   to the road) reads as a "barrier across the road" — matching how a
+   real toll plaza looks from above.
+
+   Each frontal toll has a `bearing` field (compass degrees) computed
+   from its bypass pre_exit→post_merge geometry. JS sets the rotation
+   inline as `transform: translate(-50%,-50%) rotate(<bearing>deg)`.
+   The Leaflet icon container is sized as a square ≥ the pill long
+   side so the rotated bounding box never clips.
+
+   Pills only appear at zoom ≥ ZOOM_THRESHOLD_FRONTAL_PILL (currently
+   11). Below that, frontals revert to the same circle as bridges.
    ══════════════════════════════════════ */
 .toll-marker-frontal {
-  /* fill the icon container set by makeTollMarkerIcon (26×10 normal,
-     30×12 active); the explicit dimensions on .toll-marker do not
-     apply because we overrode with 100%/100% here */
-  width: 100%; height: 100%;
+  /* Size is set inline in JS (longSide × shortSide); the inner div is
+     absolutely positioned at center of the icon container so rotation
+     happens around the toll's geographic point. */
+  position: absolute;
   border-radius: var(--radius);
   border: 1.5px solid var(--paper);
   box-shadow: 0 1px 3px rgba(26,31,46,0.35), 0 0 0 0.5px rgba(0,0,0,0.06);
+  transition: filter 0.18s var(--ease);
 }
 .toll-marker-frontal:hover {
-  /* Slightly less aggressive than the 1.7x scale on circles —
-     pills are already much larger so a smaller jump still reads. */
-  transform: scale(1.18);
+  /* Subtle brightening on hover (we can't apply scale because rotation
+     is already on transform; scale would compound and look weird). */
+  filter: brightness(1.12) drop-shadow(0 2px 4px rgba(26,31,46,0.4));
+  z-index: 9999 !important;
 }
 .toll-marker-frontal.active {
-  /* Active state — keep pill geometry, swap to green via inline
-     background, add a glowing ring matching the circle-active style. */
-  width: 100%; height: 100%;
   border: 2px solid #ffffff;
-  border-radius: var(--radius);
   box-shadow:
     0 0 0 2px rgba(31,88,40,0.28),
     0 0 0 6px rgba(31,88,40,0.14),
