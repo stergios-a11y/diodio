@@ -1019,20 +1019,24 @@ const TOLL_DATA = [
       northbound: {
         label: "Northbound (towards Ioannina)",
         exit_name: "Κουβαρά", entry_name: "Αμφιλοχίας",
-        exit:  { lat: 38.7452, lng: 21.1542 },
-        entry: { lat: 38.8654, lng: 21.1754 },
+        pre_exit:   { lat: 38.905433890432214, lng: 21.183335276149535 },
+        off_ramp:   { lat: 38.90737845161539,  lng: 21.183858721078604 },
+        on_ramp:    { lat: 39.160583375045306, lng: 21.01130356789189 },
+        post_merge: { lat: 39.16199293508674,  lng: 21.009178110153147 },
         minutes: 25,
-        via: [{ lat: 38.7452, lng: 21.1542 },{ lat: 38.780, lng: 21.158 },{ lat: 38.820, lng: 21.164 },{ lat: 38.8654, lng: 21.1754 }],
-        confidence: "approximate"
+        via: [],
+        confidence: "verified"
       },
       southbound: {
         label: "Southbound (towards Arta)",
         exit_name: "Αμφιλοχίας", entry_name: "Κουβαρά",
-        exit:  { lat: 38.8654, lng: 21.1754 },
-        entry: { lat: 38.7452, lng: 21.1542 },
+        pre_exit:   { lat: 39.16168499775257,  lng: 21.009384828054756 },
+        off_ramp:   { lat: 39.15877476327325,  lng: 21.012390766119545 },
+        on_ramp:    { lat: 38.905603447062596, lng: 21.182104054331138 },
+        post_merge: { lat: 38.90189123238402,  lng: 21.183150160737963 },
         minutes: 25,
-        via: [{ lat: 38.8654, lng: 21.1754 },{ lat: 38.820, lng: 21.164 },{ lat: 38.780, lng: 21.158 },{ lat: 38.7452, lng: 21.1542 }],
-        confidence: "approximate"
+        via: [],
+        confidence: "verified"
       },
     },
   },
