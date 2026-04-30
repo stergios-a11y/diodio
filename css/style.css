@@ -44,7 +44,7 @@
   --topbar-h:   54px;
   --bar-h:      72px;
   --panel-h:    320px;
-  --sp-w:       380px;
+  --sp-w:       440px;
   --radius-sm:  3px;   /* scrollbars, tiny chips, internal corners */
   --radius:     5px;   /* default control & card corner */
   --radius-lg:  10px;  /* prominent panels, modals */
@@ -194,50 +194,100 @@ body {
 }
 
 /* ══════════════════════════════════════
-   VEHICLE TOGGLE — top-right global mode
-   Sits next to the language flag. Same visual language: pill group
-   with one active stop. The selected vehicle drives every price
-   display on the site (hover popup, side panel, bypass diff).
+   VEHICLE DROPDOWN — top-right global mode
+   Sits next to the language flag. The trigger button shows the
+   currently-selected vehicle (emoji + full name + caret); clicking it
+   reveals a menu with the four options. The selected vehicle drives
+   every price display on the site.
    ══════════════════════════════════════ */
 .veh-toggle {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-body);
+}
+.veh-current {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   background: var(--paper-2);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
-  padding: 3px;
-  gap: 1px;
+  padding: 5px 10px 5px 12px;
+  font-size: 0.86rem;
+  color: var(--ink);
   cursor: pointer;
-  font-family: var(--font-body);
   transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
 }
-.veh-toggle:hover {
+.veh-current:hover,
+.veh-current[aria-expanded="true"] {
   border-color: var(--aegean);
   box-shadow: 0 0 0 3px var(--aegean-lt);
 }
-.veh-pill {
-  padding: 4px 7px 3px;
-  font-size: 0.95rem;
+.veh-current .veh-emoji {
+  font-size: 1rem;
   line-height: 1;
-  border-radius: var(--radius-pill);
-  border: none;
-  background: transparent;
-  transition: all 0.2s var(--ease);
-  display: inline-flex;
+}
+.veh-current .veh-label {
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.veh-caret {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-left: 2px;
+  transform: translateY(-1px);
+  transition: transform 0.18s var(--ease);
+}
+.veh-current[aria-expanded="true"] .veh-caret {
+  transform: translateY(-1px) rotate(180deg);
+}
+
+/* Menu panel — anchored below the trigger, right-aligned so it doesn't
+   overflow the topbar on narrow viewports. */
+.veh-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 170px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(26,31,46,0.12), 0 2px 6px rgba(26,31,46,0.06);
+  padding: 4px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.veh-option {
+  display: flex;
   align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-family: var(--font-body);
+  color: var(--ink);
+  text-align: left;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  filter: grayscale(0.6) opacity(0.55);
+  transition: background 0.12s var(--ease);
 }
-.veh-pill:hover { filter: grayscale(0) opacity(1); }
-.veh-pill.active {
+.veh-option:hover {
   background: var(--aegean-lt);
-  filter: grayscale(0) opacity(1);
-  box-shadow: 0 1px 4px rgba(42,107,158,0.18);
-  transform: scale(1.05);
 }
-.veh-emoji {
-  display: inline-block;
+.veh-option.active {
+  background: var(--aegean-lt);
+  font-weight: 600;
+}
+.veh-option .veh-emoji {
+  font-size: 1.05rem;
   line-height: 1;
+}
+.veh-option .veh-label {
+  line-height: 1.2;
 }
 
 /* ══════════════════════════════════════
@@ -942,7 +992,7 @@ body {
   font-weight: 500;
   font-size: 0.74rem;
   color: var(--aegean);
-  padding: 22px 26px 8px;
+  padding: 14px 26px 6px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -958,17 +1008,16 @@ body {
   opacity: 0.7;
 }
 
-/* Prices — cleaner table */
+/* Prices — single-vehicle row, no longer a multi-row table.
+   Tightened bottom padding since there's no list of variants below. */
 .sp-prices {
-  padding: 4px 26px 20px;
+  padding: 4px 26px 8px;
 }
 .sp-price-row {
   display: flex; justify-content: space-between; align-items: baseline;
-  padding: 9px 0;
-  font-size: 0.88rem;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  padding: 6px 0;
+  font-size: 0.95rem;
 }
-.sp-price-row:last-child { border-bottom: none; }
 .sp-price-row > span {
   color: var(--ink-2);
   font-family: var(--font-body);
@@ -2784,10 +2833,11 @@ input[type="range"]::-moz-range-track {
   .btn-help span { display: none; }
   .btn-help { padding: 6px 9px; }
 
-  /* Vehicle toggle: tighter on mobile but keep all 4 pills visible — */
-  /* vehicle selection is essential, not optional like feedback/help. */
-  .veh-toggle { padding: 2px; }
-  .veh-pill { padding: 3px 5px 2px; font-size: 0.85rem; }
+  /* Vehicle dropdown: tighter padding on mobile. The full label stays */
+  /* visible — vehicle selection is essential, not optional like feedback. */
+  .veh-current { padding: 4px 8px 4px 10px; font-size: 0.82rem; }
+  .veh-current .veh-label { display: none; } /* show emoji only on mobile */
+  .veh-menu { min-width: 150px; }
 
   .toll-tooltip { min-width: 220px; max-width: calc(100vw - 20px); }
 }

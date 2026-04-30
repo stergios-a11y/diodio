@@ -9,7 +9,7 @@ const STRINGS = {
     'title':                   'mydiodia — Οδηγός Διοδίων Ελλάδας',
     'btn.legend.hide':         'Απόκρυψη',
     'btn.legend.show':         'Υπόμνημα',
-    'btn.help':                'Οδηγίες χρήσης',
+    'btn.help':                'Οδηγίες',
     'btn.basemap.title':       'Στυλ χάρτη',
     'btn.basemap.streets':     'Χάρτης',
     'btn.basemap.satellite':   'Δορυφόρος',
@@ -41,6 +41,12 @@ const STRINGS = {
     'sp.car':                  'Αυτοκίνητο',
     'sp.van':                  'Ελαφρύ φορτηγό / Βαν',
     'sp.truck':                'Βαρύ φορτηγό',
+    /* Compact full names for the topbar vehicle dropdown — these need
+       to fit inside the trigger button without crowding the topbar. */
+    'veh.full.cat1':           'Μοτοσικλέτα',
+    'veh.full.cat2':           'Αυτοκίνητο',
+    'veh.full.cat3':           'Βαν',
+    'veh.full.cat4':           'Φορτηγό',
     'sp.exit.tag':             'Έξοδος: ',
     'sp.entry.tag':            'Επανείσοδος: ',
     'sp.detour':               '+{n} λεπτά',
@@ -233,6 +239,12 @@ const STRINGS = {
     'sp.car':                  'Car',
     'sp.van':                  'Light truck / Van',
     'sp.truck':                'Heavy truck',
+    /* Compact full names for the topbar vehicle dropdown — these need
+       to fit inside the trigger button without crowding the topbar. */
+    'veh.full.cat1':           'Motorcycle',
+    'veh.full.cat2':           'Car',
+    'veh.full.cat3':           'Van',
+    'veh.full.cat4':           'Truck',
     'sp.exit.tag':             'Exit: ',
     'sp.entry.tag':            'Re-enter: ',
     'sp.detour':               '+{n} min',

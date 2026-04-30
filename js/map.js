@@ -33,10 +33,10 @@ window.openSidePanelById = function(id) {
 // re-render whatever they have currently displayed (open panel, hover
 // tooltip, analyze results).
 const VEHICLE_META = {
-  cat1: { emoji: '🏍', labelKey: 'sp.motorcycle' },
-  cat2: { emoji: '🚗', labelKey: 'sp.car' },
-  cat3: { emoji: '🚐', labelKey: 'sp.van' },
-  cat4: { emoji: '🚛', labelKey: 'sp.truck' },
+  cat1: { emoji: '🏍', labelKey: 'sp.motorcycle', fullKey: 'veh.full.cat1' },
+  cat2: { emoji: '🚗', labelKey: 'sp.car',        fullKey: 'veh.full.cat2' },
+  cat3: { emoji: '🚐', labelKey: 'sp.van',        fullKey: 'veh.full.cat3' },
+  cat4: { emoji: '🚛', labelKey: 'sp.truck',      fullKey: 'veh.full.cat4' },
 };
 let _currentVehicleCat = (() => {
   try {
@@ -51,24 +51,91 @@ window.setVehicleCat = function(cat) {
   if (!VEHICLE_META[cat] || cat === _currentVehicleCat) return;
   _currentVehicleCat = cat;
   try { localStorage.setItem('diodio.vehicle', cat); } catch (e) {}
-  // Sync the toggle UI
-  document.querySelectorAll('#vehicle-toggle .veh-pill').forEach(el => {
+  // Sync the trigger button face (emoji + label) and active option mark
+  _syncVehicleTrigger();
+  document.querySelectorAll('#veh-menu .veh-option').forEach(el => {
     el.classList.toggle('active', el.dataset.cat === cat);
   });
   // Notify renderers
   window.dispatchEvent(new Event('vehiclechange'));
 };
+
+// Update the trigger button's emoji + label to match _currentVehicleCat,
+// honouring the current language. Called on init, on vehicle change, and
+// also on language change (the label is i18n'd).
+function _syncVehicleTrigger() {
+  const meta = VEHICLE_META[_currentVehicleCat];
+  if (!meta) return;
+  const emojiEl = document.getElementById('veh-current-emoji');
+  const labelEl = document.getElementById('veh-current-label');
+  if (emojiEl) emojiEl.textContent = meta.emoji;
+  if (labelEl) {
+    labelEl.setAttribute('data-i18n', meta.fullKey);
+    labelEl.textContent = (typeof t === 'function') ? t(meta.fullKey) : labelEl.textContent;
+  }
+}
+
+// Open / close the dropdown menu.
+function _openVehMenu() {
+  const menu = document.getElementById('veh-menu');
+  const btn  = document.getElementById('veh-current-btn');
+  if (!menu || !btn) return;
+  menu.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+  // Close on outside click — defer one tick so the click that opened
+  // the menu doesn't immediately close it.
+  setTimeout(() => {
+    document.addEventListener('click', _closeOnOutside, { once: true });
+    document.addEventListener('keydown', _closeOnEscape, { once: true });
+  }, 0);
+}
+function _closeVehMenu() {
+  const menu = document.getElementById('veh-menu');
+  const btn  = document.getElementById('veh-current-btn');
+  if (!menu || !btn) return;
+  menu.hidden = true;
+  btn.setAttribute('aria-expanded', 'false');
+}
+function _closeOnOutside(e) {
+  const grp = document.getElementById('vehicle-toggle');
+  if (grp && !grp.contains(e.target)) _closeVehMenu();
+  else {
+    // Click was inside; re-arm the listener.
+    document.addEventListener('click', _closeOnOutside, { once: true });
+  }
+}
+function _closeOnEscape(e) {
+  if (e.key === 'Escape') _closeVehMenu();
+  else document.addEventListener('keydown', _closeOnEscape, { once: true });
+}
+
 // Wire up the toggle once DOM is ready. Scripts load at end of <body>, so
 // DOM is usually already parsed by the time we get here; readyState check
 // handles the rare race where DOMContentLoaded has not yet fired.
 function _initVehicleToggle() {
   const grp = document.getElementById('vehicle-toggle');
   if (!grp) return;
-  // Apply initial active state from stored value
-  grp.querySelectorAll('.veh-pill').forEach(el => {
+  _syncVehicleTrigger();
+  // Trigger toggles menu visibility.
+  const trigger = document.getElementById('veh-current-btn');
+  if (trigger) {
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const menu = document.getElementById('veh-menu');
+      if (menu && menu.hidden) _openVehMenu();
+      else _closeVehMenu();
+    });
+  }
+  // Each option sets the vehicle and closes the menu.
+  grp.querySelectorAll('.veh-option').forEach(el => {
     el.classList.toggle('active', el.dataset.cat === _currentVehicleCat);
-    el.addEventListener('click', () => window.setVehicleCat(el.dataset.cat));
+    el.addEventListener('click', () => {
+      window.setVehicleCat(el.dataset.cat);
+      _closeVehMenu();
+    });
   });
+  // The trigger button label is i18n'd — re-sync on language toggle.
+  window.addEventListener('langchange', _syncVehicleTrigger);
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', _initVehicleToggle);
@@ -1024,8 +1091,11 @@ function openSidePanel(toll) {
       const sign    = diff > 0 ? '+' : (diff < 0 ? '−' : '');
       const cls     = diff < 0 ? 'savings' : (diff > 0 ? 'cost' : 'zero');
       const abs     = Math.abs(diff).toFixed(2);
+      // Vehicle context is set by the topbar selector — the row only needs
+      // an emoji as a glance reminder, not the full label (which appears
+      // again at top of the panel and would be redundant here).
       pd.innerHTML = `<div class="sp-cmp-pd-row">
-        <span class="sp-cmp-pd-veh"><span class="sp-cmp-pd-emoji">${meta.emoji}</span>${t(meta.labelKey)}</span>
+        <span class="sp-cmp-pd-veh"><span class="sp-cmp-pd-emoji">${meta.emoji}</span></span>
         <span class="sp-cmp-pd-val ${cls}">${sign}€${abs}</span>
       </div>`;
     }
