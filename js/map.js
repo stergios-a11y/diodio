@@ -416,46 +416,53 @@ function makeDirectionArrow(bearing, colorClass) {
 }
 
 
-// EXIT sign icon — auto-sized so any language fits, includes place name
-function makeExitIcon(placeName) {
+// EXIT sign icon — auto-sized so any language fits, includes place name.
+// `offsetDown` (px) shifts the sign visually below the geo anchor — used
+// when a side-toll dot sits at the same coord, so the dot stays visible
+// at its real position and the sign clears below it.
+function makeExitIcon(placeName, offsetDown) {
   const nameHtml = placeName
     ? `<span class="ramp-sign-name">${placeName}</span>`
     : '';
+  // iconAnchor [0, 8] is the default — sign sits with its top 8px above
+  // geo coord. Negate offsetDown so that adding 16 here pushes the sign
+  // 16px BELOW its default position (i.e. coord ends up 16+8 = 24px
+  // above the sign's top edge, leaving clear space for the side-toll dot).
+  const anchorY = (offsetDown ? -offsetDown : 8);
   return L.divIcon({
     className: 'ramp-icon-wrap',
     html: `<div class="ramp-sign ramp-sign-exit">${t('ramp.exit.label')}${nameHtml}</div>`,
-    iconSize: [null, null], iconAnchor: [0, 8],
+    iconSize: [null, null], iconAnchor: [0, anchorY],
   });
 }
 
-// ENTER sign icon — auto-sized so any language fits, includes place name
-function makeEntryIcon(placeName) {
+// ENTER sign icon — auto-sized so any language fits, includes place name.
+// `offsetDown` (px) shifts the sign visually below the geo anchor — used
+// when a side-toll dot sits at the same coord (see makeExitIcon).
+function makeEntryIcon(placeName, offsetDown) {
   const nameHtml = placeName
     ? `<span class="ramp-sign-name">${placeName}</span>`
     : '';
+  const anchorY = (offsetDown ? -offsetDown : 8);
   return L.divIcon({
     className: 'ramp-icon-wrap',
     html: `<div class="ramp-sign ramp-sign-entry">${t('ramp.entry.label')}${nameHtml}</div>`,
-    iconSize: [null, null], iconAnchor: [0, 8],
+    iconSize: [null, null], iconAnchor: [0, anchorY],
   });
 }
 
 // Bumped side-toll icon — used for side tolls billed on the currently-open
 // toll's bypass. Larger than the regular 11px side-toll dot, with a strong
-// amber ring, AND visually offset up-and-left from the geo coord so it
-// doesn't sit underneath the EXIT/RE-ENTER ramp pillar (which usually
-// shares the same lat/lng). The marker's onclick still uses the geo coord
-// so behavior is unchanged — only the visual is offset.
-//
-// Math: 16×16 icon with iconAnchor [32, 32] places the icon's interior
-// 16px up-and-left of the geo coord, well clear of the ramp pillar
-// which extends down-and-right from its own anchor.
+// amber ring, so it pops visually. Centered on the geo coord — when a
+// ramp pillar (EXIT/RE-ENTER) shares the same lat/lng, the *pillar* is
+// offset away from the coord (see makeExitIcon/makeEntryIcon), not this
+// dot. Toll positions are real geographic data and shouldn't be moved.
 function makeBumpedSideIcon() {
   return L.divIcon({
     className: '',
     html: `<div class="toll-marker toll-marker-side toll-marker-bypass-side toll-marker-bumped" style="background:${SIDE_TOLL_COLOR}"></div>`,
     iconSize:   [16, 16],
-    iconAnchor: [32, 32],
+    iconAnchor: [8, 8],
   });
 }
 
@@ -788,9 +795,21 @@ function openSidePanel(toll) {
       });
       }
 
-      // EXIT sign marker — anchored on the off-ramp itself
+      // EXIT sign marker — anchored on the off-ramp itself.
+      // If a side toll is at the same coord (its dot would be hidden under
+      // the sign), offset the SIGN downward so the dot stays visible at
+      // its real position. Toll positions are real geographic data and
+      // shouldn't be moved.
+      const sideInfo = (typeof window.bypassSideTollCost === 'function')
+        ? window.bypassSideTollCost(toll, key, dir)
+        : { items: [], totals: {}, anyAtRamps: false };
+      const exitHasCoincident  = sideInfo.items.some(it => it.role === 'exit');
+      const entryHasCoincident = sideInfo.items.some(it => it.role === 'entry');
+      const RAMP_SIGN_OFFSET   = 16;  // px below geo coord, clears the 11/16px dot
+
       const em = L.marker([dir.off_ramp.lat, dir.off_ramp.lng], {
-        icon: makeExitIcon(), zIndexOffset: 600,
+        icon: makeExitIcon(undefined, exitHasCoincident ? RAMP_SIGN_OFFSET : 0),
+        zIndexOffset: 600,
       });
       em.bindTooltip(`${t('ramp.exit.tooltip', {name: dir.exit_name})}<br><small>${translateDirectionLabel(dir.label)}</small>`, {
         className: 'ramp-tooltip',
@@ -801,7 +820,8 @@ function openSidePanel(toll) {
 
       // ENTER sign marker — anchored on the on-ramp itself
       const nm = L.marker([dir.on_ramp.lat, dir.on_ramp.lng], {
-        icon: makeEntryIcon(), zIndexOffset: 600,
+        icon: makeEntryIcon(undefined, entryHasCoincident ? RAMP_SIGN_OFFSET : 0),
+        zIndexOffset: 600,
       });
       nm.bindTooltip(`${t('ramp.entry.tooltip', {name: dir.entry_name})}<br><small>${translateDirectionLabel(dir.label)}</small>`, {
         className: 'ramp-tooltip',
@@ -815,8 +835,7 @@ function openSidePanel(toll) {
       // pin them on the map so the route looks honest. We skip when the
       // global side-tolls toggle is already on (those markers are already
       // visible) to avoid duplicate dots at the same coords.
-      if (!sideTollsVisible && typeof window.bypassSideTollCost === 'function') {
-        const sideInfo = window.bypassSideTollCost(toll, key, dir);
+      if (!sideTollsVisible) {
         sideInfo.items.forEach(({ toll: sideToll, role }) => {
           // Use the same bumped icon as the global-toggle path: 16px
           // ringed marker offset up-and-left so it pops out from behind
