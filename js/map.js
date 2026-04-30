@@ -456,6 +456,15 @@ function openSidePanel(toll) {
   legendEl.classList.add('pushed');
   document.body.classList.add('panel-open');
 
+  // Single source of truth for the currently active direction filter,
+  // shared between setDirectionFilter() and the async Mapbox .then()
+  // callbacks that update bypass/highway line opacities. Without this,
+  // a callback resolving after the filter was applied would overwrite
+  // the filter's opacity:0 with its own opacity:0.9, making both
+  // directions visible until the user clicks a filter pill a second
+  // time. Set in setDirectionFilter; consulted in the Mapbox callback.
+  let activeDirFilter = null;
+
   // Mark side-toll panels with a class so CSS can theme them yellow.
   // (Direction pills, badges, etc. switch from blue to yellow accents.)
   const panelEl = document.getElementById('toll-side-panel');
@@ -615,15 +624,26 @@ function openSidePanel(toll) {
           };
         }),
       ]).then(([highwayRes, bypassRes]) => {
+        // Honor the current direction filter — if the user opened a
+        // multi-direction toll and we're filtered to e.g. northbound, the
+        // southbound .then() arrives later and would otherwise blindly
+        // re-reveal that direction's lines. Check first.
+        const visible = activeDirFilter == null
+          || activeDirFilter === 'both'
+          || activeDirFilter === key;
         if (highwayRes && highwayRes.coords.length > 1) {
           highwayLine.setLatLngs(highwayRes.coords);
-          highwayLine.setStyle({ opacity: 0.7, dashArray: null });
+          highwayLine.setStyle({ opacity: visible ? 0.7 : 0, dashArray: null });
           updateArrow(highwayArrow, highwayRes.coords, 'dir-arrow-highway');
+          // setIcon (inside updateArrow) replaces the marker's DOM, so any
+          // previously-applied setOpacity is lost. Re-apply.
+          highwayArrow.setOpacity(visible ? 1 : 0);
         }
         if (bypassRes && bypassRes.coords.length > 1) {
           bypassLine.setLatLngs(bypassRes.coords);
-          bypassLine.setStyle({ opacity: 0.9, dashArray: null });
+          bypassLine.setStyle({ opacity: visible ? 0.9 : 0, dashArray: null });
           updateArrow(bypassArrow, bypassRes.coords, 'dir-arrow-bypass');
+          bypassArrow.setOpacity(visible ? 1 : 0);
         }
         updateDirStats(toll, key, dir, bypassRes, highwayRes);
       });
@@ -820,6 +840,7 @@ function openSidePanel(toll) {
 
   // Show only the selected direction's lines + signs, or both
   function setDirectionFilter(activeKey /* 'northbound' | 'southbound' | 'eastbound' | 'westbound' | 'both' */) {
+    activeDirFilter = activeKey;  // record so async route callbacks can honor it
     inspectLayers.forEach(layer => {
       if (!layer._dirKey) return;
       const visible = activeKey === 'both' || layer._dirKey === activeKey;
