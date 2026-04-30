@@ -355,10 +355,10 @@
 
   <div id="bottom-bar">
     <span class="bar-label" data-i18n="bar.from">Από</span>
-    <input class="bar-input" id="origin" value="Αθήνα" autocomplete="off" data-i18n-aria-label="aria.origin" style="flex:1;max-width:150px" />
+    <input class="bar-input" id="origin" placeholder="πχ Αθήνα" autocomplete="off" data-i18n-aria-label="aria.origin" data-i18n-placeholder="bar.origin.placeholder" style="flex:1;max-width:150px" />
     <button class="swap-btn" id="swap-btn" data-i18n-title="bar.swap" title="Αντιστροφή διαδρομής">⇄</button>
     <span class="bar-label" data-i18n="bar.to">Προς</span>
-    <input class="bar-input" id="dest" value="Λάρισα" autocomplete="off" data-i18n-aria-label="aria.dest" style="flex:1;max-width:150px" />
+    <input class="bar-input" id="dest" placeholder="πχ Λάρισα" autocomplete="off" data-i18n-aria-label="aria.dest" data-i18n-placeholder="bar.dest.placeholder" style="flex:1;max-width:150px" />
     <div class="bar-sep"></div>
     <select class="bar-select" id="vehicle" data-i18n-aria-label="aria.vehicle">
       <option value="motorcycle" data-i18n="bar.moto">🏍 Μοτο</option>
@@ -490,7 +490,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260430-1500"></script>
+  <script src="js/i18n.js?v=20260430-1600"></script>
   <script src="data/tolls.js?v=20260430-2500"></script>
   <script src="data/routes.js?v=20260427-0700"></script>
   <script src="js/map.js?v=20260430-2500"></script>
