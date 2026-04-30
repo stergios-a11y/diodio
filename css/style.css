@@ -480,7 +480,7 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 .tt-header {
-  padding: 12px 14px 10px;
+  padding: 10px 14px 8px;
   border-bottom: 1px solid var(--line);
   display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
 }
@@ -519,7 +519,7 @@ body {
   white-space: nowrap; flex-shrink: 0;
 }
 .tt-direction {
-  padding: 7px 14px;
+  padding: 5px 14px;
   font-size: 0.7rem;
   color: var(--ink-2);
   background: var(--paper-2);
@@ -527,32 +527,28 @@ body {
   display: flex; align-items: center; gap: 6px;
 }
 .tt-prices {
-  padding: 10px 14px;
+  padding: 8px 14px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 7px;
+  gap: 6px;
 }
 .price-cell {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 8px 5px;
+  display: flex; flex-direction: row; align-items: center; justify-content: center;
+  gap: 5px;
+  padding: 5px 6px;
   background: var(--paper-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   transition: transform 0.15s var(--ease);
 }
-.price-cell .vehicle-icon { font-size: 1.1rem; margin-bottom: 3px; line-height: 1; }
+.price-cell .vehicle-icon { font-size: 0.95rem; line-height: 1; }
 .price-cell .vehicle-label {
-  font-size: 0.55rem;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-  font-weight: 500;
+  display: none;  /* icon alone is enough; label was redundant and ate vertical space */
 }
 .price-cell .price-val {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 0.92rem;
   letter-spacing: -0.02em;
   color: var(--ink);
   font-variation-settings: "opsz" 144;
@@ -564,15 +560,15 @@ body {
   font-size: 0.66rem;
   color: var(--muted);
   margin-right: 1px;
-  vertical-align: 3px;
+  vertical-align: 1px;
 }
 .tt-notes {
-  padding: 8px 14px 10px;
+  padding: 6px 14px 8px;
   font-family: var(--font-display);
   font-style: italic;
   font-size: 0.7rem;
   color: var(--ink-3);
-  line-height: 1.55;
+  line-height: 1.45;
   border-top: 1px solid var(--line);
   background: var(--paper-2);
 }

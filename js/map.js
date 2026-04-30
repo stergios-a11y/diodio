@@ -262,19 +262,16 @@ function buildHoverTooltip(toll) {
     </div>
     <div class="tt-prices">
       <div class="price-cell">
-        <div class="vehicle-icon">🏍</div>
-        <div class="vehicle-label">Moto</div>
-        <div class="price-val"><span class="eur">€</span>${toll.cat1.toFixed(2)}</div>
+        <span class="vehicle-icon">🏍</span>
+        <span class="price-val"><span class="eur">€</span>${toll.cat1.toFixed(2)}</span>
       </div>
       <div class="price-cell">
-        <div class="vehicle-icon">🚗</div>
-        <div class="vehicle-label">Car</div>
-        <div class="price-val"><span class="eur">€</span>${toll.cat2.toFixed(2)}</div>
+        <span class="vehicle-icon">🚗</span>
+        <span class="price-val"><span class="eur">€</span>${toll.cat2.toFixed(2)}</span>
       </div>
       <div class="price-cell">
-        <div class="vehicle-icon">🚐</div>
-        <div class="vehicle-label">Van</div>
-        <div class="price-val"><span class="eur">€</span>${toll.cat3.toFixed(2)}</div>
+        <span class="vehicle-icon">🚐</span>
+        <span class="price-val"><span class="eur">€</span>${toll.cat3.toFixed(2)}</span>
       </div>
     </div>
     ${notes}`;
