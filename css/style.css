@@ -3301,3 +3301,18 @@ input[type="range"]::-moz-range-track {
 @media (max-width: 480px) {
   .sp-ferry-fare-list { grid-template-columns: 1fr; }
 }
+
+/* ══════════════════════════════════════
+   FERRY PIER MARKERS (Rio-Antirrio)
+   Synthetic yellow markers at the two ferry piers, shown when the
+   global "Πλευρικά διόδια" toggle is on. Visual hint that they're
+   sea crossings rather than road tolls: thin aegean-blue ring over
+   the yellow base.
+   ══════════════════════════════════════ */
+.toll-marker-ferry-pier {
+  border: 1.5px solid var(--aegean);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.3);
+}
+.toll-marker-ferry-pier:hover {
+  transform: scale(1.5);
+}

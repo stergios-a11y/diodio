@@ -1143,6 +1143,67 @@ TOLL_DATA.forEach(toll => {
   markersByHighway[toll.highway].push(marker);
 });
 
+// ── Ferry pier markers ───────────────────────────────────
+// Tolls that have a ferry-mode bypass (currently just rioantirrio) get
+// synthetic yellow markers at each pier so the global "show side tolls"
+// toggle reveals them alongside regular side tolls — they're billable
+// stops on a bypass, same conceptual category, even though they're not
+// in TOLL_DATA as type:"side" records. Click → opens the parent toll's
+// side panel so the user gets to the ferry schedule + fare info.
+//
+// We dedupe by lat/lng key because northbound and southbound bypasses
+// reference the same two piers (just swapped). One marker per pier.
+TOLL_DATA.forEach(parentToll => {
+  if (!parentToll.bypass_directions) return;
+  const seen = new Set();
+  Object.entries(parentToll.bypass_directions).forEach(([dirKey, dir]) => {
+    if (dir.mode !== 'ferry' || !dir.fare) return;
+    [['off_ramp', dir.exit_name],
+     ['on_ramp',  dir.entry_name]].forEach(([rampField, pierName]) => {
+      const ramp = dir[rampField];
+      if (!ramp) return;
+      const key = `${ramp.lat.toFixed(5)},${ramp.lng.toFixed(5)}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="toll-marker toll-marker-side toll-marker-ferry-pier" style="background:${SIDE_TOLL_COLOR}"></div>`,
+        iconSize: [11, 11], iconAnchor: [5.5, 5.5],
+      });
+      const marker = L.marker([ramp.lat, ramp.lng], { icon, zIndexOffset: 100 });
+      // Tooltip: pier name + ferry fare for car (sensible default) + frequency.
+      // Mirrors what the bridge panel shows in detail. Function-form content
+      // re-resolves on each hover so it tracks the current language.
+      marker.bindTooltip(() => {
+        const carFare = dir.fare.cat2;
+        const freq    = dir.frequency_min;
+        return `<strong>${pierName}</strong><br>` +
+               `<small>${t('sp.bypass.ferry.title')} · 🚗 €${carFare.toFixed(2)} · ${t('sp.bypass.ferry.frequency', { n: freq })}</small>`;
+      }, { className: 'ramp-tooltip', sticky: true });
+      // Click → open the parent toll's panel (the bridge), where users get
+      // the full ferry block: schedule, full fare table, verdict math.
+      marker.on('click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        openSidePanel(parentToll);
+      });
+      // Add to map only if toggle is on — same default as regular side tolls
+      if (sideTollsVisible) marker.addTo(map);
+      // Synthetic toll record so allMarkers behavior (dim/restore) works.
+      // Not pushed to markersByHighway — these aren't part of any motorway.
+      const synthToll = {
+        id:        `${parentToll.id}_ferry_pier_${key}`,
+        type:      'side',
+        lat:       ramp.lat,
+        lng:       ramp.lng,
+        name_gr:   pierName,
+        name_en:   pierName,
+      };
+      allMarkers.push({ toll: synthToll, marker });
+      sideMarkers.push({ toll: synthToll, marker });
+    });
+  });
+});
+
 map.on('click', () => {
   if (sidePanelOpen && Date.now() - sidePanelOpenedAt > 800) closeSidePanel();
 });
