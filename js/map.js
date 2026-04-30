@@ -1263,20 +1263,57 @@ function openSidePanel(toll) {
 const markersByHighway = {};
 const allMarkers       = [];
 
-// Side tolls (type === "side") get yellow markers and are hidden by default.
+// Side tolls (type === "side") get yellow markers and are visible by default.
 // Toggleable via the legend "Πλευρικά διόδια / Side tolls" button.
 const SIDE_TOLL_COLOR = '#f4c430';  // light yellow
-let sideTollsVisible = false;
+let sideTollsVisible = true;
 const sideMarkers    = [];  // { toll, marker } for side tolls only
+
+// Build the divIcon for a toll marker. Frontals get a pill shape oriented
+// perpendicular to the highway they sit on (using the toll's `axis` field:
+// NS = horizontal pill across an N–S road, EW = vertical pill across an
+// E–W road). The pill visually reads as a "barrier across the road,"
+// matching how a real toll plaza looks. Side tolls keep the small yellow
+// dot (they're booths attached to ramps, not main-line plazas). Bridges
+// stay as circles for now — their geographic spot is the bridge midspan,
+// not a "barrier across the road."
+function makeTollMarkerIcon(toll, isActive) {
+  const isSide   = toll.type === 'side';
+  const isFrontal = toll.type === 'frontal';
+  const color   = isSide
+    ? SIDE_TOLL_COLOR
+    : (isActive ? '#1f5828' : (HIGHWAY_COLORS[toll.highway] || '#888'));
+
+  if (isFrontal) {
+    // Pill perpendicular to the highway. Sized so the long axis is ~26px
+    // (clearly larger than the old 11px circle, but doesn't dwarf the map
+    // at typical zoom). Active state grows by ~15%.
+    const longSide  = isActive ? 30 : 26;
+    const shortSide = isActive ? 12 : 10;
+    const orient    = toll.axis === 'EW' ? 'ew' : 'ns';
+    const w = orient === 'ns' ? longSide : shortSide;
+    const h = orient === 'ns' ? shortSide : longSide;
+    return L.divIcon({
+      className: '',
+      html: `<div class="toll-marker toll-marker-frontal toll-marker-frontal-${orient}${isActive ? ' active' : ''}" style="background:${color}"></div>`,
+      iconSize:   [w, h],
+      iconAnchor: [w / 2, h / 2],
+    });
+  }
+
+  // Side & bridge: the original 11/14 px circle.
+  const size = isActive ? 14 : 11;
+  return L.divIcon({
+    className: '',
+    html: `<div class="toll-marker${isActive ? ' active' : ''}${isSide ? ' toll-marker-side' : ''}" style="background:${color}"></div>`,
+    iconSize:   [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
 
 TOLL_DATA.forEach(toll => {
   const isSide = toll.type === 'side';
-  const color  = isSide ? SIDE_TOLL_COLOR : (HIGHWAY_COLORS[toll.highway] || '#888');
-  const icon  = L.divIcon({
-    className: '',
-    html: `<div class="toll-marker${isSide ? ' toll-marker-side' : ''}" style="background:${color}"></div>`,
-    iconSize: [11, 11], iconAnchor: [5.5, 5.5],
-  });
+  const icon   = makeTollMarkerIcon(toll, false);
 
   const marker = L.marker([toll.lat, toll.lng], { icon, zIndexOffset: 100 });
 
@@ -1648,17 +1685,11 @@ function setActiveTollLabel(activeTollId) {
     }));
   });
   // Update dot markers — turn the active one green, restore others to highway color
-  // (or yellow, for side tolls).
+  // (or yellow, for side tolls). Frontals retain their pill shape; only the size +
+  // color change in the active state.
   allMarkers.forEach(({ toll, marker }) => {
-    const isSide = toll.type === 'side';
-    const color = isSide ? SIDE_TOLL_COLOR : (HIGHWAY_COLORS[toll.highway] || '#888');
     const isActive = toll.id === activeTollId;
-    marker.setIcon(L.divIcon({
-      className: '',
-      html: `<div class="toll-marker${isActive ? ' active' : ''}${isSide ? ' toll-marker-side' : ''}" style="background:${isActive ? '#1f5828' : color}"></div>`,
-      iconSize: isActive ? [14, 14] : [11, 11],
-      iconAnchor: isActive ? [7, 7] : [5.5, 5.5],
-    }));
+    marker.setIcon(makeTollMarkerIcon(toll, isActive));
   });
 }
 window.setActiveTollLabel = setActiveTollLabel;
