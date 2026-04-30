@@ -1395,10 +1395,10 @@ const TOLL_DATA = [
   },
   {
     id: "aktio_preveza",
-    name_gr: "Διόδια Σύραγγας Ακτίου",
+    name_gr: "Διόδια Σήραγγας Ακτίου",
     name_en: "Aktio–Preveza Tunnel",
     highway: "BRIDGE", highway_name: "Aktio–Preveza Underwater Tunnel",
-    operator: "Egnatia Odos",
+    operator: "Aktio-Preveza Tunnel SA",
     type: "bridge", direction_label: "Both directions",
     lat: 38.9401892, lng: 20.7661072,
     cat1: 1.50, cat2: 3.00, cat3: 6.00, cat4: 9.00,

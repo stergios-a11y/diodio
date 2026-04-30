@@ -18,12 +18,11 @@ the user controls.
 
 Key features:
 
-- 50 main toll booths plus 11 side-toll booths across A1, A2, A5, A6, A7, A8,
-  E65, plus the Rio–Antirrio bridge and the Aktio–Preveza tunnel
-- 16 cities, 106 explicit city-to-city routes plus shortest-hub composition
-  for the rest
-- Bypass routes for ~70% of tolls, with curated exit / re-entry ramp
-  coordinates verified against OpenStreetMap motorway-junction data
+<!-- counts:start -->
+- 50 main toll booths (48 frontal + 2 bridges/tunnels) plus 84 side-toll booths across A1, A2, A5, A6, A7, A8, E65, plus the Rio–Antirrio bridge and the Aktio–Preveza tunnel
+- 16 cities, 106 explicit city-to-city routes plus shortest-hub composition for the rest
+- Bypass routes for ~69% of frontal tolls (20 verified, 10 approximate, 3 mixed, 15 pending), with curated exit / re-entry ramp coordinates verified against OpenStreetMap motorway-junction data
+<!-- counts:end -->
 - Greek-first UI with full English translation
 - Side-panel comparisons of bypass vs. motorway distance and time, fetched
   live from Mapbox Directions
@@ -40,7 +39,7 @@ Static site, no build step. Three pages via hash router (`#map`, `#routes`,
 index.html              # entry point (single page)
 css/style.css           # all styles in one file
 data/
-├── tolls.js            # 61 toll booths with prices + bypass routes
+├── tolls.js            # 134 toll booths with prices + bypass routes
 ├── routes.js           # 16 cities, hub-composed city-to-city routes
 └── toll-sources.json   # source registry + classification rules
 js/
@@ -79,8 +78,14 @@ Toll prices change annually (typically January). To update:
 
 1. Edit `data/tolls.js` — change `cat1`, `cat2`, `cat3`, `cat4` for affected
    booths.
-2. Bump cache-buster: `sed -i '' "s/v=[0-9-]*\(['\"]\)/v=$(date +%Y%m%d-%H%M)\1/g" index.html`
-3. Commit and push. GitHub Pages deploys in ~30 seconds.
+2. Refresh derived counts in `index.html` and `README.md` from the canonical
+   data files: `python3 tools/update-counts.py`. This rewrites the JSON-LD
+   `featureList` claims and the README's "Key features" bullets so they can't
+   drift from the data. Run `python3 tools/update-counts.py --check` (exit
+   code 1 if files would change) to verify the working tree is up to date
+   before committing.
+3. Bump cache-buster: `sed -i '' "s/v=[0-9-]*\(['\"]\)/v=$(date +%Y%m%d-%H%M)\1/g" index.html`
+4. Commit and push. GitHub Pages deploys in ~30 seconds.
 
 To audit bypass coordinates against OpenStreetMap (run once after major
 data changes):
