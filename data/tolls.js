@@ -1391,7 +1391,65 @@ const TOLL_DATA = [
     lat: 38.3337794, lng: 21.7660189,
     cat1: 2.50, cat2: 15.90, cat3: 24.70, cat4: 50.90,
     notes: "Charilaos Trikoupis Bridge. Single-crossing toll (2026): motorbikes €2.50, cars €15.90, trucks 2-axle €24.70, trucks 4+ axle €50.90. Buses and disability cards have separate tariffs. Discounts: Aller-Retour (5h roundtrip), 30-trip cards, e-Pass.",
-    bypass_directions: null,
+    // Ferry bypass: the only practical alternative to the bridge is the
+    // Rio–Antirrio ferry. Treated as a special-mode bypass (mode: "ferry")
+    // so the side panel renders ferry-specific UI: schedule + fare instead
+    // of "exit/re-enter" ramp tags. Fare/frequency/crossing data sourced
+    // from rio-antirrio.blogspot.com (last verified 2026-04-30).
+    //
+    // Cat3 (van) is missing from the official ferry tariff — treated as
+    // 2-axle truck (€12). Cat4 maps to 2-axle truck (€12) which is the
+    // typical case; heavier 3-/4-/5-axle trucks pay €17/€22/€25 but
+    // those are rare in everyday travel and the schema only carries one
+    // truck price. Bridge cat4 (€50.90) is the heaviest-truck rate.
+    //
+    // minutes: 30 = ~10 min average wait (departures every 20 min) +
+    // 15 min crossing + ~5 min loading/disembark. Bridge crossing itself
+    // is ~1-2 min, so net detour vs bridge is roughly the full 30.
+    bypass_directions: {
+      northbound: {
+        label: "Northbound (Rio → Antirrio)",
+        exit_name: "Πορθμείο Ρίου",
+        entry_name: "Πορθμείο Αντιρρίου",
+        // Off-ramp = Rio pier (south side, where you board going north).
+        // On-ramp  = Antirrio pier (north side, where you disembark).
+        off_ramp:   { lat: 38.30846925917029, lng: 21.778846574004888 },
+        on_ramp:    { lat: 38.32851336752111, lng: 21.76410308445035 },
+        // Pre-exit / post-merge: motorway approach points. For the ferry
+        // these are notional — set equal to the pier coords so the
+        // existing schema-normalizer in map.js doesn't blow up. The
+        // ferry-mode renderer skips the "via local roads" line anyway.
+        pre_exit:   { lat: 38.30846925917029, lng: 21.778846574004888 },
+        post_merge: { lat: 38.32851336752111, lng: 21.76410308445035 },
+        minutes: 30,
+        via: [],
+        confidence: "verified",
+        mode: "ferry",
+        fare:           { cat1: 1.00, cat2: 7.00, cat3: 12.00, cat4: 12.00 },
+        frequency_min:  20,
+        crossing_min:   15,
+        operator_name:  "Πορθμείο Ρίου - Αντιρρίου",
+      },
+      southbound: {
+        label: "Southbound (Antirrio → Rio)",
+        exit_name: "Πορθμείο Αντιρρίου",
+        entry_name: "Πορθμείο Ρίου",
+        // Off-ramp = Antirrio pier (north side, where you board going south).
+        // On-ramp  = Rio pier (south side, where you disembark).
+        off_ramp:   { lat: 38.32851336752111, lng: 21.76410308445035 },
+        on_ramp:    { lat: 38.30846925917029, lng: 21.778846574004888 },
+        pre_exit:   { lat: 38.32851336752111, lng: 21.76410308445035 },
+        post_merge: { lat: 38.30846925917029, lng: 21.778846574004888 },
+        minutes: 30,
+        via: [],
+        confidence: "verified",
+        mode: "ferry",
+        fare:           { cat1: 1.00, cat2: 7.00, cat3: 12.00, cat4: 12.00 },
+        frequency_min:  20,
+        crossing_min:   15,
+        operator_name:  "Πορθμείο Ρίου - Αντιρρίου",
+      },
+    },
   },
   {
     id: "aktio_preveza",

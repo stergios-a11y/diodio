@@ -356,6 +356,17 @@ function bearingDeg(a, b) {
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
 }
 
+// Great-circle distance between two {lat, lng} points in kilometers.
+// Used for ferry-mode bypass stats where we don't fetch a road route.
+function haversineKm(a, b) {
+  const R = 6371;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const A = Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(A), Math.sqrt(1 - A));
+}
+
 // Given a polyline (array of [lat, lng] pairs), find the midpoint by
 // array index plus the local bearing at that point. For routes with
 // reasonably even waypoint spacing (Mapbox output) this approximates
@@ -410,6 +421,29 @@ function makeEntryIcon(placeName) {
     html: `<div class="ramp-sign ramp-sign-entry">${t('ramp.entry.label')}${nameHtml}</div>`,
     iconSize: [null, null], iconAnchor: [0, 8],
   });
+}
+
+// ── Side-toll display-name cleaner ────────────────────────
+// Side-toll names in the data are deliberately verbose so the dataset is
+// self-describing — e.g. "Πλευρικά Καπανδρίτι — Βόρεια είσοδος" /
+// "Kapandriti side — N entry". When we list these inside a "you'll still
+// pay X side tolls" callout, the prefix and direction suffix are
+// redundant (the callout already says "side toll" and renders the role
+// separately). This helper strips both.
+function cleanSideTollName(name, lang) {
+  if (!name) return '';
+  if (lang === 'el') {
+    // "Πλευρικά Καπανδρίτι — Βόρεια είσοδος" → "Καπανδρίτι"
+    return name
+      .replace(/^Πλευρικά\s+/i, '')
+      .replace(/\s+[—–-]\s+(Βόρεια|Νότια|Ανατολική|Δυτική).*$/i, '')
+      .trim();
+  }
+  // "Kapandriti side — N entry" → "Kapandriti"
+  return name
+    .replace(/\s+side\s+[—–-]\s+[NSEW]\s+(entry|exit)\s*$/i, '')
+    .replace(/\s+side\s*$/i, '')
+    .trim();
 }
 
 function openSidePanel(toll) {
@@ -489,7 +523,7 @@ function openSidePanel(toll) {
         lineCap: 'round', lineJoin: 'round',
       }).addTo(map);
       bypassLine.bindTooltip(
-        `🔵 ${translateDirectionLabel(dir.label)} — ${t('bypass.via.local')}`,
+        `🔵 ${translateDirectionLabel(dir.label)} — ${t(dir.mode === 'ferry' ? 'bypass.via.ferry' : 'bypass.via.local')}`,
         { sticky: true, className: 'bypass-tooltip' }
       );
       bypassLine._dirKey = key;
@@ -547,6 +581,20 @@ function openSidePanel(toll) {
       //
       // Sum the three durations and distances for the comparison stats;
       // concatenate the three polylines for visualization.
+      //
+      // Ferry mode: skip road routing entirely. Pier→pier by road would
+      // return an absurd detour around the gulf. Synthesize stats from
+      // geodesic distance + dir.minutes / dir.crossing_min instead.
+      if (dir.mode === 'ferry') {
+        const ferryDistKm = haversineKm(dir.off_ramp, dir.on_ramp);
+        // The bridge crossing itself is ~2.9km and takes ~5 min by car.
+        // We don't have a true highway-route to fetch here (the bridge
+        // is the highway), so the "highway" stats represent the bridge:
+        // straight-line distance, fixed 5 min crossing.
+        const bridgeRes  = { coords: highwayPlaceholder, distanceKm: ferryDistKm, durationMin: 5 };
+        const ferryRes   = { coords: bypassPlaceholder,  distanceKm: ferryDistKm, durationMin: dir.minutes };
+        updateDirStats(toll, key, dir, ferryRes, bridgeRes);
+      } else {
       Promise.all([
         fetchRoute(dir.pre_exit, dir.post_merge, 'highway'),
         Promise.all([
@@ -579,6 +627,7 @@ function openSidePanel(toll) {
         }
         updateDirStats(toll, key, dir, bypassRes, highwayRes);
       });
+      }
 
       // EXIT sign marker — anchored on the off-ramp itself
       const em = L.marker([dir.off_ramp.lat, dir.off_ramp.lng], {
@@ -601,6 +650,45 @@ function openSidePanel(toll) {
       nm.addTo(map);
       nm._dirKey = key;
       inspectLayers.push(nm);
+
+      // ─── Bypass-context side-toll markers ────────────────────
+      // If this bypass forces the driver through one or more side tolls,
+      // pin them on the map so the route looks honest. We skip when the
+      // global side-tolls toggle is already on (those markers are already
+      // visible) to avoid duplicate dots at the same coords.
+      if (!sideTollsVisible && typeof window.bypassSideTollCost === 'function') {
+        const sideInfo = window.bypassSideTollCost(toll, key, dir);
+        sideInfo.items.forEach(({ toll: sideToll, role }) => {
+          const sideIcon = L.divIcon({
+            className: '',
+            html: `<div class="toll-marker toll-marker-side toll-marker-bypass-side" style="background:${SIDE_TOLL_COLOR}"></div>`,
+            iconSize: [13, 13], iconAnchor: [6.5, 6.5],
+          });
+          const sideMarker = L.marker([sideToll.lat, sideToll.lng], {
+            icon: sideIcon,
+            zIndexOffset: 550,  // above bypass line, below ramp signs
+          });
+          // Tooltip mirrors the side-panel callout — name + role.
+          const lang = getCurrentLang();
+          const nameForTip = cleanSideTollName(
+            lang === 'el' ? sideToll.name_gr : sideToll.name_en,
+            lang
+          );
+          const roleLabel  = t('sp.bypass.sidetolls.role.' + role);
+          sideMarker.bindTooltip(
+            `${nameForTip} <small>(${roleLabel})</small>`,
+            { className: 'ramp-tooltip' }
+          );
+          // Click-through to side toll's own panel — same UX as global toggle.
+          sideMarker.on('click', function(e) {
+            L.DomEvent.stopPropagation(e);
+            openSidePanel(sideToll);
+          });
+          sideMarker.addTo(map);
+          sideMarker._dirKey = key;
+          inspectLayers.push(sideMarker);
+        });
+      }
     });
   }
 
@@ -700,12 +788,14 @@ function openSidePanel(toll) {
 
     // Per-vehicle price diff: bypass price minus highway price for each of the 4
     // categories. Highway price is the frontal toll. Bypass price is the sum of
-    // any side tolls billable at the bypass off_ramp/on_ramp endpoints.
+    // any side tolls billable at the bypass off_ramp/on_ramp endpoints — OR the
+    // ferry fare when mode === 'ferry' (Rio-Antirrio bridge bypass).
     //   diff < 0 → bypass cheaper (savings, green)
     //   diff = 0 → no difference
     //   diff > 0 → bypass costlier (rare; happens when side tolls exceed frontal)
     if (pd && toll && dir && typeof window.bypassSideTollCost === 'function') {
-      const sideInfo = window.bypassSideTollCost(toll, dirKey, dir);
+      const isFerry = dir.mode === 'ferry' && dir.fare;
+      const sideInfo = isFerry ? null : window.bypassSideTollCost(toll, dirKey, dir);
       const cats = [
         { key: 'cat1', emoji: '🏍', labelKey: 'sp.motorcycle' },
         { key: 'cat2', emoji: '🚗', labelKey: 'sp.car' },
@@ -714,7 +804,7 @@ function openSidePanel(toll) {
       ];
       const rows = cats.map(({ key, emoji, labelKey }) => {
         const frontal = toll[key] || 0;
-        const side    = sideInfo.totals[key] || 0;
+        const side    = isFerry ? (dir.fare[key] || 0) : (sideInfo.totals[key] || 0);
         const diff    = side - frontal;     // negative = bypass cheaper
         const sign    = diff > 0 ? '+' : (diff < 0 ? '−' : '');
         const cls     = diff < 0 ? 'savings' : (diff > 0 ? 'cost' : 'zero');
@@ -811,6 +901,74 @@ function openSidePanel(toll) {
         confHTML = `<div class="sp-confidence sp-conf-auto" title="${t('sp.confidence.tooltip.auto')}">${t('sp.confidence.auto')}</div>`;
       }
       // 'verified' deliberately renders nothing — clean state, no clutter.
+      // Side-toll callout: when this bypass has billable side tolls,
+      // list them so the user knows the bypass isn't fully free.
+      // When it IS fully free, render a positive confirmation.
+      // Uses the same bypassSideTollCost helper that calculator.js uses
+      // for the price math, so the displayed list matches what's billed.
+      //
+      // Ferry mode (e.g. Rio-Antirrio): render a different block entirely
+      // — schedule + fare info, since "side tolls" doesn't apply at sea.
+      let sideTollsHTML = '';
+      if (dir.mode === 'ferry' && dir.fare) {
+        const lang = getCurrentLang();
+        const cats = [
+          { key: 'cat1', emoji: '🏍', labelKey: 'sp.motorcycle' },
+          { key: 'cat2', emoji: '🚗', labelKey: 'sp.car' },
+          { key: 'cat3', emoji: '🚐', labelKey: 'sp.van' },
+          { key: 'cat4', emoji: '🚛', labelKey: 'sp.truck' },
+        ];
+        const fareRows = cats.map(({ key, emoji, labelKey }) => {
+          const fare = dir.fare[key];
+          if (fare == null) return '';
+          return `<li class="sp-ferry-fare-item">
+            <span class="sp-ferry-fare-veh"><span class="sp-ferry-fare-emoji">${emoji}</span>${t(labelKey)}</span>
+            <span class="sp-ferry-fare-val">€${fare.toFixed(2)}</span>
+          </li>`;
+        }).join('');
+        const freq = dir.frequency_min;
+        const cross = dir.crossing_min;
+        sideTollsHTML = `<div class="sp-bypass-sidetolls sp-bypass-ferry">
+          <div class="sp-bypass-ferry-title">${t('sp.bypass.ferry.title')}</div>
+          <div class="sp-bypass-ferry-schedule">
+            <span class="sp-bypass-ferry-stat">${t('sp.bypass.ferry.frequency', { n: freq })}</span>
+            <span class="sp-bypass-ferry-stat">${t('sp.bypass.ferry.crossing', { n: cross })}</span>
+          </div>
+          <div class="sp-bypass-ferry-fare-label">${t('sp.bypass.ferry.fare')}</div>
+          <ul class="sp-ferry-fare-list">${fareRows}</ul>
+        </div>`;
+      } else if (typeof window.bypassSideTollCost === 'function') {
+        const sideInfo = window.bypassSideTollCost(toll, key, dir);
+        if (sideInfo.items.length > 0) {
+          const lang = getCurrentLang();
+          const titleKey = sideInfo.items.length === 1
+            ? 'sp.bypass.sidetolls.title.one'
+            : 'sp.bypass.sidetolls.title.many';
+          const items = sideInfo.items.map(({ toll: s, role }) => {
+            // Side-toll names are e.g. "Πλευρικά Καπανδρίτι — Βόρεια είσοδος"
+            // or "Kapandriti side — N entry". Strip the "Πλευρικά"/"side" prefix
+            // and the direction suffix — both are redundant here (the heading
+            // already says "side toll" and we render the role separately).
+            const rawName = lang === 'el' ? s.name_gr : s.name_en;
+            const name = cleanSideTollName(rawName, lang);
+            const roleLabel = t('sp.bypass.sidetolls.role.' + role);
+            return `<li class="sp-bypass-sidetoll-item">
+              <span class="sp-bypass-sidetoll-dot"></span>
+              <span class="sp-bypass-sidetoll-name">${name}</span>
+              <span class="sp-bypass-sidetoll-role">(${roleLabel})</span>
+            </li>`;
+          }).join('');
+          sideTollsHTML = `<div class="sp-bypass-sidetolls sp-bypass-sidetolls-some">
+            <div class="sp-bypass-sidetolls-title">${t(titleKey, { n: sideInfo.items.length })}</div>
+            <ul class="sp-bypass-sidetolls-list">${items}</ul>
+          </div>`;
+        } else {
+          sideTollsHTML = `<div class="sp-bypass-sidetolls sp-bypass-sidetolls-free">
+            ${t('sp.bypass.sidetolls.free')}
+          </div>`;
+        }
+      }
+
       bypassHTML += `
         <div class="sp-dir${isActive ? ' active' : ''}" data-dir-key="${key}">
           <div class="sp-dir-label">${translateDirectionLabel(dir.label)}</div>
@@ -831,6 +989,7 @@ function openSidePanel(toll) {
             </span>
           </div>
           ${confHTML}
+          ${sideTollsHTML}
           <div class="sp-dir-compare" data-stats="${key}">
             <div class="sp-cmp-row sp-cmp-bypass">
               <span class="sp-cmp-dot" style="background:#2a6b9e"></span>

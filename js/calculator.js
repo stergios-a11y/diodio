@@ -273,7 +273,12 @@ function calcVerdict(toll, catKey, timeValue, travelDirection) {
   }
 
   const frontalCost = toll[catKey];
-  const sideInfo    = bypassSideTollCost(toll, dirKey, dir);
+  // Ferry mode (Rio-Antirrio bridge): the alternative cost is the ferry fare,
+  // not a side-toll sum. Side tolls don't apply at sea piers.
+  const isFerry  = dir.mode === 'ferry' && dir.fare;
+  const sideInfo = isFerry
+    ? { items: [], totals: dir.fare, anyAtRamps: false }
+    : bypassSideTollCost(toll, dirKey, dir);
   const sideCost    = sideInfo.totals[catKey] || 0;
   const netSavings  = frontalCost - sideCost;
 

@@ -3150,3 +3150,154 @@ input[type="range"]::-moz-range-track {
     padding: 11px 14px;  /* slightly larger tap target on mobile */
   }
 }
+
+/* ══════════════════════════════════════
+   BYPASS-CONTEXT SIDE-TOLL MARKERS
+   Yellow side-toll dots that appear specifically when a toll's side panel
+   is open AND that toll's bypass passes through one or more side tolls.
+   They're tied to the inspectLayers lifecycle: cleared when the panel
+   closes. Slightly larger + ring of yellow glow so they pop.
+   Only added when global side-tolls toggle is OFF (see map.js).
+   ══════════════════════════════════════ */
+.toll-marker-bypass-side {
+  width: 13px; height: 13px;
+  border: 2.5px solid var(--paper);
+  box-shadow:
+    0 0 0 2px rgba(244,196,48,0.45),
+    0 0 0 5px rgba(244,196,48,0.18),
+    0 2px 6px rgba(0,0,0,0.35);
+}
+.toll-marker-bypass-side:hover {
+  transform: scale(1.5);
+}
+
+/* ══════════════════════════════════════
+   BYPASS SIDE-TOLL CALLOUT (in side panel)
+   Two states:
+   - .sp-bypass-sidetolls-some  → amber-ish "you'll still pay X side tolls"
+   - .sp-bypass-sidetolls-free  → green "no tolls — fully free"
+   Sits between the confidence indicator and the comparison block.
+   ══════════════════════════════════════ */
+.sp-bypass-sidetolls {
+  margin: 6px 0 8px;
+  padding: 8px 11px;
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.sp-bypass-sidetolls-some {
+  background: rgba(244,196,48,0.12);   /* faint yellow, semantic "side toll" */
+  border: 1px solid rgba(200,158,26,0.55);
+  color: #5a4500;                       /* dark yellow-brown for legibility */
+}
+.sp-bypass-sidetolls-free {
+  background: var(--go-bg);
+  border: 1px solid var(--go);
+  color: #1f5a35;
+  font-weight: 500;
+}
+.sp-bypass-sidetolls-title {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+.sp-bypass-sidetolls-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.sp-bypass-sidetoll-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 1px 0;
+}
+.sp-bypass-sidetoll-dot {
+  flex-shrink: 0;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #c89e1a;          /* darker yellow than the toll-marker fill */
+  border: 1px solid #6e5612;
+}
+.sp-bypass-sidetoll-name {
+  font-weight: 500;
+  color: #4a3500;
+}
+.sp-bypass-sidetoll-role {
+  font-size: 0.72rem;
+  color: #6e5612;
+  font-style: italic;
+}
+
+/* ══════════════════════════════════════
+   FERRY-MODE BYPASS (Rio-Antirrio bridge)
+   When the bypass for a bridge crossing is a ferry, render the schedule
+   + fare table here instead of the road-style "you'll still pay X side
+   tolls" callout. Visual style: cool aegean-blue accent (it IS the sea)
+   to distinguish from the amber side-toll callout and the green
+   "fully free" confirmation.
+   ══════════════════════════════════════ */
+.sp-bypass-ferry {
+  background: var(--aegean-lt);
+  border: 1px solid #a8cae0;
+  border-left: 3px solid var(--aegean);
+  color: var(--aegean-dark);
+}
+.sp-bypass-ferry-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--aegean-dark);
+}
+.sp-bypass-ferry-schedule {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.72rem;
+  margin-bottom: 8px;
+}
+.sp-bypass-ferry-stat {
+  background: var(--paper);
+  border: 1px solid #c7d8e3;
+  border-radius: var(--radius);
+  padding: 3px 8px;
+  color: var(--aegean-dark);
+  font-weight: 500;
+}
+.sp-bypass-ferry-fare-label {
+  font-size: 0.7rem;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.sp-ferry-fare-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 12px;
+}
+.sp-ferry-fare-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+}
+.sp-ferry-fare-veh {
+  display: flex; align-items: center; gap: 4px;
+  color: var(--ink-2);
+}
+.sp-ferry-fare-emoji { font-size: 0.95rem; }
+.sp-ferry-fare-val {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--aegean-dark);
+}
+@media (max-width: 480px) {
+  .sp-ferry-fare-list { grid-template-columns: 1fr; }
+}
