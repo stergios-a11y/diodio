@@ -1345,32 +1345,35 @@ const sideMarkers    = [];  // { toll, marker } for side tolls only
 // convey "this is a barrier across the road."
 const ZOOM_THRESHOLD_FRONTAL_PILL = 11;
 
-// Build the divIcon for a toll marker. Frontals get a pill shape oriented
-// perpendicular to the actual highway bearing (using each toll's `bearing`
-// field, computed from the bypass pre_exit→post_merge line). At low zoom
-// they revert to the same small circle as side tolls so the overview is
-// not crowded. Side tolls always render as yellow dots (booths on ramps,
-// not main-line plazas). Bridges stay as circles — they sit at midspan
-// and the "barrier across the road" metaphor doesn't apply.
+// Build the divIcon for a toll marker. Frontals AND bridges get a pill
+// shape oriented perpendicular to the road/bridge (using each toll's
+// `bearing` field). At low zoom they revert to the same small circle as
+// side tolls so the overview is not crowded. Side tolls always render as
+// yellow dots (booths on ramps, not main-line plazas).
+//
+// The `bearing` field is computed automatically from the bypass corridor
+// (in tolls.js); a `bearing_manual` field, if present, takes precedence —
+// use it to override specific tolls where the auto-computed value is off
+// (e.g. on highway sections that curve sharply between bypass endpoints).
 function makeTollMarkerIcon(toll, isActive) {
-  const isSide    = toll.type === 'side';
-  const isFrontal = toll.type === 'frontal';
+  const isSide   = toll.type === 'side';
+  const isPillEligible = toll.type === 'frontal' || toll.type === 'bridge';
   const color   = isSide
     ? SIDE_TOLL_COLOR
     : (isActive ? '#1f5828' : (HIGHWAY_COLORS[toll.highway] || '#888'));
 
-  // Frontal pills only appear when the user has zoomed in far enough to
-  // see road geometry. At lower zooms, fall through to the dot rendering.
-  const showAsPill = isFrontal && map.getZoom() >= ZOOM_THRESHOLD_FRONTAL_PILL;
+  // Pills only appear when the user has zoomed in far enough to see road
+  // geometry. At lower zooms, fall through to the dot rendering.
+  const showAsPill = isPillEligible && map.getZoom() >= ZOOM_THRESHOLD_FRONTAL_PILL;
 
   if (showAsPill) {
     const longSide  = isActive ? 30 : 26;
     const shortSide = isActive ? 12 : 10;
-    const bearing = (typeof toll.bearing === 'number') ? toll.bearing : 0;
-    const rot = bearing % 180;
-    // Container is a square sized to the longSide so the rotated pill
-    // never clips, regardless of bearing. Inner div is centered and
-    // rotated. Anchor at center so it sits exactly on the toll's coord.
+    // Manual override beats auto-computed bearing.
+    const rawBearing = (typeof toll.bearing_manual === 'number')
+      ? toll.bearing_manual
+      : (typeof toll.bearing === 'number' ? toll.bearing : 0);
+    const rot = ((rawBearing % 180) + 180) % 180;
     const cw = longSide + 4;
     return L.divIcon({
       className: '',
@@ -1380,7 +1383,7 @@ function makeTollMarkerIcon(toll, isActive) {
     });
   }
 
-  // Side, bridge, or low-zoom frontal: original 11/14 px circle.
+  // Side, low-zoom frontal/bridge: original 11/14 px circle.
   const size = isActive ? 14 : 11;
   return L.divIcon({
     className: '',
@@ -1634,10 +1637,9 @@ map.on('zoomend', () => {
   if (typeof allMarkers !== 'undefined') {
     const z = map.getZoom();
     allMarkers.forEach(({ toll, marker }) => {
-      if (toll.type !== 'frontal') return;
+      // Both frontals and bridges now switch dot↔pill on zoom.
+      if (toll.type !== 'frontal' && toll.type !== 'bridge') return;
       const isActive = currentTollOpen && currentTollOpen.id === toll.id;
-      // Only rebuild if the dot/pill state actually changed for this zoom.
-      // We track last-rendered shape on the marker for cheap idempotency.
       const wantPill = z >= ZOOM_THRESHOLD_FRONTAL_PILL;
       if (marker._lastFrontalShape === (wantPill ? 'pill' : 'dot')
           && marker._lastFrontalActive === !!isActive) return;
