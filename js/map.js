@@ -430,17 +430,26 @@ function makeEntryIcon(placeName) {
 // pay X side tolls" callout, the prefix and direction suffix are
 // redundant (the callout already says "side toll" and renders the role
 // separately). This helper strips both.
+//
+// Suffix format (since R33):
+//   GR: "Πλευρικά Δρέπανο — Προς ανατολικά — είσοδος"  → "Δρέπανο"
+//   EN: "Drepano side — Eastbound entry"                  → "Drepano"
+// Old pre-R33 formats also handled for backward compat with cached data.
 function cleanSideTollName(name, lang) {
   if (!name) return '';
   if (lang === 'el') {
-    // "Πλευρικά Καπανδρίτι — Βόρεια είσοδος" → "Καπανδρίτι"
     return name
       .replace(/^Πλευρικά\s+/i, '')
+      // New format: "— Προς βόρεια — είσοδος[ Α]"
+      .replace(/\s+[—–-]\s+Προς\s+(βόρεια|νότια|ανατολικά|δυτικά)\s+[—–-]\s+(είσοδος|έξοδος).*$/i, '')
+      // Legacy bare-adjective format
       .replace(/\s+[—–-]\s+(Βόρεια|Νότια|Ανατολική|Δυτική).*$/i, '')
       .trim();
   }
-  // "Kapandriti side — N entry" → "Kapandriti"
   return name
+    // New format: "side — Northbound entry[ A]"
+    .replace(/\s+side\s+[—–-]\s+(Northbound|Southbound|Eastbound|Westbound)\s+(entry|exit)(\s+[A-Z])?\s*$/i, '')
+    // Legacy "side — N entry" format
     .replace(/\s+side\s+[—–-]\s+[NSEW]\s+(entry|exit)\s*$/i, '')
     .replace(/\s+side\s*$/i, '')
     .trim();
