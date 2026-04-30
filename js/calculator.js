@@ -668,8 +668,226 @@ async function analyze() {
 }
 
 // ── Enter key ─────────────────────────────────────────────
+// Skip analyze when the city autocomplete is open with a highlighted
+// suggestion — that keystroke selects the suggestion instead.
 ['origin', 'dest'].forEach(id => {
   document.getElementById(id).addEventListener('keydown', e => {
-    if (e.key === 'Enter') analyze();
+    if (e.key !== 'Enter') return;
+    const dropdown = document.querySelector('.city-ac-dropdown');
+    if (dropdown && !dropdown.hidden && dropdown.querySelector('.is-active')) return;
+    analyze();
   });
 });
+
+// ── City autocomplete ─────────────────────────────────────
+// Attaches a dropdown to #origin and #dest that suggests one of the 16
+// CITIES as the user types. Match logic: case-insensitive prefix +
+// substring on Greek (with tonos folded) and English names. Nothing
+// here breaks existing free-text entry — Nominatim still handles
+// queries for cities outside the matrix.
+//
+// Keyboard: ↓/↑ navigate, Enter selects highlighted (or runs analyze
+// if no highlight), Esc closes, Tab closes naturally on blur.
+// Mobile: dropdown opens upward (above the input) since the bottom bar
+// pins to the screen bottom — opening downward would extend off-screen.
+(function initCityAutocomplete() {
+  if (typeof CITIES === 'undefined') return;
+
+  // Fold Greek diacritics + lowercase. Used on both query and targets.
+  function fold(s) {
+    return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  // Pre-build a lightweight index: for each city, store folded gr/en names.
+  const INDEX = CITIES.map(c => ({
+    city: c,
+    gr_fold: fold(c.name_gr),
+    en_fold: fold(c.name_en),
+  }));
+
+  // Return up to `limit` cities matching `query`, scored:
+  //   3 = prefix match, 2 = substring match, 1 = within-1-edit fuzzy.
+  // Empty/whitespace query returns ALL cities (so focusing an empty
+  // input reveals the full list — useful as a quick-pick).
+  function findCityMatches(query, limit = 8) {
+    const q = fold(query);
+    if (!q) {
+      return INDEX.map(({ city }) => ({ city, score: 0 })).slice(0, limit);
+    }
+    const out = [];
+    for (const { city, gr_fold, en_fold } of INDEX) {
+      let score = 0;
+      if (gr_fold.startsWith(q) || en_fold.startsWith(q)) score = 3;
+      else if (gr_fold.includes(q) || en_fold.includes(q)) score = 2;
+      else if (within1(gr_fold, q) || within1(en_fold, q)) score = 1;
+      if (score > 0) out.push({ city, score });
+    }
+    out.sort((a, b) => b.score - a.score);
+    return out.slice(0, limit);
+  }
+
+  // Single-edit distance (insert/delete/substitute), copied semantically
+  // from suggestCity above so the matcher behaves identically.
+  function within1(a, b) {
+    if (a === b) return true;
+    if (Math.abs(a.length - b.length) > 1) return false;
+    let i = 0, j = 0, edits = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { i++; j++; continue; }
+      if (++edits > 1) return false;
+      if (a.length > b.length) i++;
+      else if (b.length > a.length) j++;
+      else { i++; j++; }
+    }
+    return edits + (a.length - i) + (b.length - j) <= 1;
+  }
+
+  // Build the dropdown DOM once, append to body. Repositioned per input.
+  const dropdown = document.createElement('div');
+  dropdown.className = 'city-ac-dropdown';
+  dropdown.setAttribute('role', 'listbox');
+  dropdown.hidden = true;
+  document.body.appendChild(dropdown);
+
+  // Active state: which input the dropdown is currently bound to.
+  let activeInput = null;
+  let activeIndex = -1;
+  let currentMatches = [];
+  let suppressNextOpen = false;  // set right after a selection so the synthesized 'input' doesn't re-open
+
+  function positionDropdown() {
+    if (!activeInput || dropdown.hidden) return;
+    const rect = activeInput.getBoundingClientRect();
+    // Open upward: bottom of dropdown sits 4px above top of input.
+    dropdown.style.left = `${Math.round(rect.left)}px`;
+    dropdown.style.minWidth = `${Math.round(rect.width)}px`;
+    dropdown.style.bottom = `${Math.round(window.innerHeight - rect.top + 4)}px`;
+    dropdown.style.top = 'auto';
+  }
+
+  function renderDropdown() {
+    const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
+    if (!currentMatches.length) {
+      dropdown.hidden = true;
+      return;
+    }
+    const html = currentMatches.map(({ city }, i) => {
+      const primary = lang === 'el' ? city.name_gr : city.name_en;
+      const secondary = lang === 'el' ? city.name_en : city.name_gr;
+      const cls = i === activeIndex ? 'city-ac-row is-active' : 'city-ac-row';
+      return `<div class="${cls}" role="option" data-idx="${i}">
+        <span class="city-ac-primary">${primary}</span>
+        <span class="city-ac-secondary">${secondary}</span>
+      </div>`;
+    }).join('');
+    dropdown.innerHTML = html;
+    dropdown.hidden = false;
+    positionDropdown();
+  }
+
+  function open(input) {
+    activeInput = input;
+    activeIndex = -1;
+    currentMatches = findCityMatches(input.value, 8);
+    renderDropdown();
+  }
+
+  function close() {
+    activeInput = null;
+    activeIndex = -1;
+    currentMatches = [];
+    dropdown.hidden = true;
+  }
+
+  function select(index) {
+    const m = currentMatches[index];
+    if (!m || !activeInput) return;
+    const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
+    activeInput.value = lang === 'el' ? m.city.name_gr : m.city.name_en;
+    suppressNextOpen = true;
+    close();
+    activeInput && activeInput.focus();
+  }
+
+  function moveActive(delta) {
+    if (!currentMatches.length) return;
+    activeIndex = (activeIndex + delta + currentMatches.length) % currentMatches.length;
+    renderDropdown();
+  }
+
+  // Wire up both inputs.
+  ['origin', 'dest'].forEach(id => {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    input.addEventListener('focus', () => {
+      if (suppressNextOpen) { suppressNextOpen = false; return; }
+      open(input);
+    });
+
+    input.addEventListener('input', () => {
+      if (document.activeElement !== input) return;
+      open(input);
+    });
+
+    input.addEventListener('blur', () => {
+      // Delay close so a click on a row registers before blur kills it.
+      setTimeout(() => {
+        if (activeInput === input) close();
+      }, 120);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (dropdown.hidden) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+      else if (e.key === 'Enter' && activeIndex >= 0) {
+        // The analyze-on-Enter handler checks the dropdown state directly
+        // and bails out when a suggestion is highlighted — so we just
+        // preventDefault and run the selection.
+        e.preventDefault();
+        select(activeIndex);
+      }
+      else if (e.key === 'Escape') { e.preventDefault(); close(); input.blur(); }
+    });
+  });
+
+  // Click-to-select on dropdown rows. Use mousedown so it fires before
+  // the input's blur (which would close the dropdown).
+  dropdown.addEventListener('mousedown', (e) => {
+    const row = e.target.closest('.city-ac-row');
+    if (!row) return;
+    e.preventDefault();
+    select(parseInt(row.dataset.idx, 10));
+  });
+
+  // Hover updates highlight.
+  dropdown.addEventListener('mousemove', (e) => {
+    const row = e.target.closest('.city-ac-row');
+    if (!row) return;
+    const idx = parseInt(row.dataset.idx, 10);
+    if (idx !== activeIndex) {
+      activeIndex = idx;
+      // Lightweight repaint — toggle is-active classes without rebuilding HTML
+      dropdown.querySelectorAll('.city-ac-row').forEach((el, i) => {
+        el.classList.toggle('is-active', i === activeIndex);
+      });
+    }
+  });
+
+  // Click anywhere else closes the dropdown.
+  document.addEventListener('mousedown', (e) => {
+    if (dropdown.hidden) return;
+    if (e.target === activeInput) return;
+    if (dropdown.contains(e.target)) return;
+    close();
+  });
+
+  // Reposition on resize / orientation change / scroll.
+  window.addEventListener('resize', positionDropdown);
+  window.addEventListener('orientationchange', positionDropdown);
+  // Re-render on language change so labels switch live.
+  window.addEventListener('langchange', () => {
+    if (!dropdown.hidden) renderDropdown();
+  });
+})();
