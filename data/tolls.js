@@ -983,24 +983,24 @@ const TOLL_DATA = [
       northbound: {
         label: "Northbound (towards Ioannina)",
         exit_name: "Χαλικίου", entry_name: "Αγγελοκάστρου",
-        pre_exit:   { lat: 38.512796, lng: 21.309039 },
-        off_ramp:   { lat: 38.514200, lng: 21.285400 },
-        on_ramp:    { lat: 38.540864, lng: 21.284177 },
-        post_merge: { lat: 38.545800, lng: 21.274720 },
+        pre_exit:   { lat: 38.50523603610132,  lng: 21.315203146333523 },
+        off_ramp:   { lat: 38.50688711354209,  lng: 21.313586478025243 },
+        on_ramp:    { lat: 38.542303201100125, lng: 21.28317850108731 },
+        post_merge: { lat: 38.543033489509654, lng: 21.28035181937903 },
         minutes: 22,
-        via: [{ lat: 38.5142, lng: 21.2854 },{ lat: 38.535, lng: 21.290 },{ lat: 38.555, lng: 21.298 },{ lat: 38.5684, lng: 21.3012 }],
-        confidence: "approximate"
+        via: [],
+        confidence: "verified"
       },
       southbound: {
         label: "Southbound (towards Antirrio)",
         exit_name: "Αγγελοκάστρου", entry_name: "Χαλικίου",
-        pre_exit:   { lat: 38.545701, lng: 21.274602 },
-        off_ramp:   { lat: 38.540864, lng: 21.284177 },
-        on_ramp:    { lat: 38.514200, lng: 21.285400 },
-        post_merge: { lat: 38.512745, lng: 21.308881 },
+        pre_exit:   { lat: 38.54222035998942,  lng: 21.28201826072881 },
+        off_ramp:   { lat: 38.539813255587106, lng: 21.285007644963052 },
+        on_ramp:    { lat: 38.50526075681633,  lng: 21.314303895562972 },
+        post_merge: { lat: 38.50311654229595,  lng: 21.32034778097572 },
         minutes: 22,
-        via: [{ lat: 38.5684, lng: 21.3012 },{ lat: 38.555, lng: 21.298 },{ lat: 38.535, lng: 21.290 },{ lat: 38.5142, lng: 21.2854 }],
-        confidence: "approximate"
+        via: [],
+        confidence: "verified"
       },
     },
   },
