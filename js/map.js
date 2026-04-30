@@ -82,12 +82,6 @@ function _openVehMenu() {
   if (!menu || !btn) return;
   menu.hidden = false;
   btn.setAttribute('aria-expanded', 'true');
-  // Close on outside click — defer one tick so the click that opened
-  // the menu doesn't immediately close it.
-  setTimeout(() => {
-    document.addEventListener('click', _closeOnOutside, { once: true });
-    document.addEventListener('keydown', _closeOnEscape, { once: true });
-  }, 0);
 }
 function _closeVehMenu() {
   const menu = document.getElementById('veh-menu');
@@ -96,18 +90,21 @@ function _closeVehMenu() {
   menu.hidden = true;
   btn.setAttribute('aria-expanded', 'false');
 }
-function _closeOnOutside(e) {
+// Persistent global listener — fires on every mousedown but only acts when
+// the menu is open AND the click is outside the toggle group. This is
+// simpler and more reliable than the once/re-arm pattern (which had edge
+// cases around stopPropagation and Leaflet event interception).
+document.addEventListener('mousedown', (e) => {
+  const menu = document.getElementById('veh-menu');
+  if (!menu || menu.hidden) return;
   const grp = document.getElementById('vehicle-toggle');
   if (grp && !grp.contains(e.target)) _closeVehMenu();
-  else {
-    // Click was inside; re-arm the listener.
-    document.addEventListener('click', _closeOnOutside, { once: true });
-  }
-}
-function _closeOnEscape(e) {
-  if (e.key === 'Escape') _closeVehMenu();
-  else document.addEventListener('keydown', _closeOnEscape, { once: true });
-}
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const menu = document.getElementById('veh-menu');
+  if (menu && !menu.hidden) _closeVehMenu();
+});
 
 // Wire up the toggle once DOM is ready. Scripts load at end of <body>, so
 // DOM is usually already parsed by the time we get here; readyState check
@@ -1055,12 +1052,12 @@ function openSidePanel(toll) {
     const pd = el.querySelector('[data-price-diff]');
 
     if (bypassRes && bp) {
-      bp.textContent = `${fmt(bypassRes.distanceKm, 'km')} · ${fmt(bypassRes.durationMin, t('bar.time.label2'))}`;
+      bp.textContent = `${fmt(bypassRes.distanceKm, t('unit.km'))} · ${fmt(bypassRes.durationMin, t('bar.time.label2'))}`;
     } else if (bp) {
       bp.textContent = t('compare.unavailable');
     }
     if (highwayRes && hw) {
-      hw.textContent = `${fmt(highwayRes.distanceKm, 'km')} · ${fmt(highwayRes.durationMin, t('bar.time.label2'))}`;
+      hw.textContent = `${fmt(highwayRes.distanceKm, t('unit.km'))} · ${fmt(highwayRes.durationMin, t('bar.time.label2'))}`;
     } else if (hw) {
       hw.textContent = t('compare.unavailable');
     }
@@ -1070,7 +1067,7 @@ function openSidePanel(toll) {
       const timeDiff = bypassRes.durationMin - highwayRes.durationMin;
       const distSign = distDiff >= 0 ? '+' : '';
       const timeSign = timeDiff >= 0 ? '+' : '';
-      df.innerHTML = `${t('compare.diff')}: <strong>${distSign}${distDiff.toFixed(1)} km</strong> · <strong>${timeSign}${Math.round(timeDiff)} ${t('bar.time.label2')}</strong>`;
+      df.innerHTML = `${t('compare.diff')}: <strong>${distSign}${distDiff.toFixed(1)} ${t('unit.km')}</strong> · <strong>${timeSign}${Math.round(timeDiff)} ${t('bar.time.label2')}</strong>`;
     }
 
     // Per-vehicle price diff: bypass price minus highway price for each of the 4
@@ -1229,20 +1226,22 @@ function openSidePanel(toll) {
         <div class="sp-dir${isActive ? ' active' : ''}" data-dir-key="${key}">
           <div class="sp-dir-label">${translateDirectionLabel(dir.label)}</div>
           <div class="sp-dir-exits">
+            ${dir.exit_name ? `
             <span class="sp-exit-tag">
               <svg class="sp-tag-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="17" y1="7" x2="7" y2="17"/>
                 <polyline points="16 17 7 17 7 8"/>
               </svg>
               <span class="sp-tag-text">${t('sp.exit.tag')}${dir.exit_name}</span>
-            </span>
+            </span>` : ''}
+            ${dir.entry_name ? `
             <span class="sp-entry-tag">
               <svg class="sp-tag-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="7" y1="17" x2="17" y2="7"/>
                 <polyline points="8 7 17 7 17 16"/>
               </svg>
               <span class="sp-tag-text">${t('sp.entry.tag')}${dir.entry_name}</span>
-            </span>
+            </span>` : ''}
           </div>
           ${confHTML}
           ${sideTollsHTML}

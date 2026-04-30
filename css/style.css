@@ -44,7 +44,7 @@
   --topbar-h:   54px;
   --bar-h:      72px;
   --panel-h:    320px;
-  --sp-w:       440px;
+  --sp-w:       420px;
   --radius-sm:  3px;   /* scrollbars, tiny chips, internal corners */
   --radius:     5px;   /* default control & card corner */
   --radius-lg:  10px;  /* prominent panels, modals */
@@ -1013,15 +1013,16 @@ body {
   opacity: 0.7;
 }
 
-/* Prices — single-vehicle row, no longer a multi-row table.
-   Tightened bottom padding since there's no list of variants below. */
+/* Prices — single-vehicle headline. This is the main number on the panel,
+   so make it visually prominent. The vehicle emoji is large (matches the
+   visual weight of the price), and the price itself uses display font. */
 .sp-prices {
-  padding: 4px 26px 8px;
+  padding: 6px 26px 14px;
 }
 .sp-price-row {
-  display: flex; justify-content: space-between; align-items: baseline;
-  padding: 6px 0;
-  font-size: 0.95rem;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0;
+  font-size: 1.05rem;
 }
 .sp-price-row > span {
   color: var(--ink-2);
@@ -1030,15 +1031,15 @@ body {
   letter-spacing: -0.005em;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
-.sp-emoji { font-size: 1.05rem; line-height: 1; }
-.sp-vlabel { display: inline; }
+.sp-emoji { font-size: 2.4rem; line-height: 1; }
+.sp-vlabel { display: inline; font-size: 1rem; }
 .sp-price-row strong {
   color: var(--ink);
   font-weight: 600;
   font-family: var(--font-display);
-  font-size: 1.18rem;
+  font-size: 2.1rem;
   letter-spacing: -0.025em;
   font-variation-settings: "opsz" 144;
 }
@@ -1141,9 +1142,9 @@ body {
 /* Direction blocks — refined */
 .sp-dir { transition: opacity 0.22s var(--ease), border-color 0.22s var(--ease), background 0.22s var(--ease); }
 .sp-dir {
-  padding: 14px 22px 16px;
+  padding: 14px 22px 16px 19px; /* slim left padding to compensate the 5px active border */
   border-bottom: 1px solid var(--line);
-  border-left: 3px solid var(--line);
+  border-left: 5px solid var(--line);
   background: var(--paper);
   opacity: 0.45;
   cursor: pointer; /* whole block is clickable to select this direction */
@@ -1154,10 +1155,13 @@ body {
   opacity: 0.7;
 }
 .sp-dir.active {
-  border-left-color: var(--go);
-  background: linear-gradient(to right, var(--go-bg) 0%, var(--paper) 30%);
+  border-left: 5px solid var(--go);
+  /* Richer left-to-right tint so the selected direction reads at a glance —
+     the previous gradient stopped at 30%, this one extends further with a
+     slightly more saturated start color. */
+  background: linear-gradient(to right, rgba(46,122,74,0.13) 0%, rgba(46,122,74,0.04) 50%, var(--paper) 100%);
   opacity: 1;
-  cursor: default; /* already selected — no pointer */
+  cursor: default;
 }
 .sp-dir.dimmed { opacity: 0.32; }
 .sp-dir:last-child { border-bottom: none; }
@@ -1298,8 +1302,8 @@ body {
 .sp-cmp-price-diff .sp-cmp-pd-row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  padding: 2px 0;
+  align-items: center;
+  padding: 6px 0;
 }
 .sp-cmp-price-diff .sp-cmp-pd-row + .sp-cmp-pd-row { border-top: 1px dotted var(--line); }
 .sp-cmp-price-diff .sp-cmp-pd-veh {
@@ -1309,13 +1313,14 @@ body {
   font-style: italic;
   color: var(--ink-3);
 }
-.sp-cmp-price-diff .sp-cmp-pd-emoji { font-style: normal; font-size: 0.85rem; }
+.sp-cmp-price-diff .sp-cmp-pd-emoji { font-style: normal; font-size: 1.7rem; line-height: 1; }
 .sp-cmp-price-diff .sp-cmp-pd-val {
   font-style: normal;
   font-weight: 600;
   color: var(--ink);
-  font-size: 0.8rem;
+  font-size: 1.15rem;
   letter-spacing: -0.015em;
+  font-family: var(--font-display);
 }
 .sp-cmp-price-diff .sp-cmp-pd-val.savings { color: #2d7a3a; }
 .sp-cmp-price-diff .sp-cmp-pd-val.cost    { color: #b8502d; }
