@@ -91,20 +91,24 @@ function _closeVehMenu() {
   btn.setAttribute('aria-expanded', 'false');
 }
 // Persistent global listener — fires on every mousedown but only acts when
-// the menu is open AND the click is outside the toggle group. This is
-// simpler and more reliable than the once/re-arm pattern (which had edge
-// cases around stopPropagation and Leaflet event interception).
+// the menu is open AND the click is outside the toggle group.
+//
+// CRITICAL: registered in CAPTURE phase (third arg `true`). Leaflet's map
+// container intercepts mousedown events and calls stopPropagation on them
+// to manage drag/pan state, which prevents bubble-phase listeners on
+// `document` from ever firing for clicks on the map. Capture phase runs
+// before the target's handlers, so we see the event regardless.
 document.addEventListener('mousedown', (e) => {
   const menu = document.getElementById('veh-menu');
   if (!menu || menu.hidden) return;
   const grp = document.getElementById('vehicle-toggle');
   if (grp && !grp.contains(e.target)) _closeVehMenu();
-});
+}, true);
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   const menu = document.getElementById('veh-menu');
   if (menu && !menu.hidden) _closeVehMenu();
-});
+}, true);
 
 // Wire up the toggle once DOM is ready. Scripts load at end of <body>, so
 // DOM is usually already parsed by the time we get here; readyState check
@@ -698,7 +702,38 @@ function openSidePanel(toll) {
   // then invalidate map size so Leaflet recalculates its viewport and centers correctly.
   setTimeout(() => {
     map.invalidateSize();
-    map.setView([toll.lat, toll.lng], Math.max(map.getZoom(), 11), { animate: true });
+    // Fit the view to the toll + its bypass endpoints (off_ramp & on_ramp
+    // for each direction) so the user sees BOTH the toll plaza AND where
+    // the bypass diverges/rejoins. Without this, very long bypasses fly
+    // off-screen and the user has to pan to find the ramps.
+    //
+    // For tolls without bypass data (most side tolls, some frontals),
+    // fall back to the previous "center on toll at zoom 11" behavior.
+    const points = [[toll.lat, toll.lng]];
+    if (toll.bypass_directions) {
+      for (const dir of Object.values(toll.bypass_directions)) {
+        if (!dir || dir.mode === 'ferry') continue;
+        ['off_ramp', 'on_ramp', 'pre_exit', 'post_merge'].forEach(k => {
+          if (dir[k] && typeof dir[k].lat === 'number') {
+            points.push([dir[k].lat, dir[k].lng]);
+          }
+        });
+      }
+    }
+    if (points.length > 1) {
+      // Fit with asymmetric padding: extra on the right so the toll isn't
+      // hidden behind the 420px-wide side panel. The panel covers roughly
+      // the right third of the viewport on desktop. Mobile uses a bottom
+      // sheet instead of right panel, so we use plain padding there.
+      const isMobile = window.matchMedia('(max-width: 740px)').matches;
+      const fitOpts = isMobile
+        ? { padding: [60, 60], maxZoom: 14, animate: true }
+        : { paddingTopLeft: [60, 60], paddingBottomRight: [460, 60], maxZoom: 14, animate: true };
+      map.fitBounds(L.latLngBounds(points), fitOpts);
+    } else {
+      // Solo toll (no bypass) — just center and zoom in.
+      map.setView([toll.lat, toll.lng], Math.max(map.getZoom(), 13), { animate: true });
+    }
   }, 320);
 
   const bd    = toll.bypass_directions;
