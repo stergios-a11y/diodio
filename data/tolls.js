@@ -1415,12 +1415,17 @@ const TOLL_DATA = [
         // On-ramp  = Antirrio pier (north side, where you disembark).
         off_ramp:   { lat: 38.30846925917029, lng: 21.778846574004888 },
         on_ramp:    { lat: 38.32851336752111, lng: 21.76410308445035 },
-        // Pre-exit / post-merge: motorway approach points. For the ferry
-        // these are notional — set equal to the pier coords so the
-        // existing schema-normalizer in map.js doesn't blow up. The
-        // ferry-mode renderer skips the "via local roads" line anyway.
-        pre_exit:   { lat: 38.30846925917029, lng: 21.778846574004888 },
-        post_merge: { lat: 38.32851336752111, lng: 21.76410308445035 },
+        // Highway approach + return: where the driver leaves the motorway
+        // before the bridge, and where they rejoin it after disembarking.
+        pre_exit:   { lat: 38.3033821015933,    lng: 21.80160780291951 },
+        post_merge: { lat: 38.34304514815557,   lng: 21.75880319478825 },
+        // Ramp waypoints: passed to Mapbox to force the road-leg routing
+        // through the actual ramp toward the pier, instead of letting
+        // Mapbox pick a random local road from the highway exit.
+        // exit_ramp = on the road from pre_exit → off_ramp (the boarding pier).
+        // entry_ramp = on the road from on_ramp (disembark pier) → post_merge.
+        exit_ramp:  { lat: 38.30273082428895,   lng: 21.79998015025846 },
+        entry_ramp: { lat: 38.342441091095885,  lng: 21.760134398481856 },
         minutes: 30,
         via: [],
         confidence: "verified",
@@ -1438,11 +1443,10 @@ const TOLL_DATA = [
         // On-ramp  = Rio pier (south side, where you disembark).
         off_ramp:   { lat: 38.32851336752111, lng: 21.76410308445035 },
         on_ramp:    { lat: 38.30846925917029, lng: 21.778846574004888 },
-        // pre_exit / post_merge are the actual highway approach + return
-        // road points (verified). Used for the bypass-line geometry so the
-        // route reads as: highway-approach → pier → pier → highway-return.
         pre_exit:   { lat: 38.3454093270018,  lng: 21.754958276280536 },
         post_merge: { lat: 38.304556720679685, lng: 21.785767072195252 },
+        exit_ramp:  { lat: 38.34326446187637, lng: 21.757416729025888 },
+        entry_ramp: { lat: 38.30515185987359, lng: 21.783948053381103 },
         minutes: 30,
         via: [],
         confidence: "verified",

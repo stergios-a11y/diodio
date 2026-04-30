@@ -330,6 +330,10 @@ function closeSidePanel() {
   document.body.classList.remove('panel-open');
   clearInspectLayers();
   restoreAll();
+  // Reset any side-toll z-index bumps applied by openSidePanel for
+  // this toll's bypass-billed side tolls (default zIndexOffset for
+  // side markers is 100; ramp signs are 600; we used 700 to elevate).
+  sideMarkers.forEach(({ marker }) => marker.setZIndexOffset(100));
   sidePanelOpen = false;
   currentTollOpen = null;
   if (typeof setActiveTollLabel === 'function') setActiveTollLabel(null);
@@ -459,6 +463,11 @@ function openSidePanel(toll) {
   // Auto-dismiss the first-visit tip — user took the hint, don't show again.
   if (typeof window.dismissFirstTip === 'function') window.dismissFirstTip();
   clearInspectLayers();
+  // Reset z-index of any side-toll markers a previous panel may have
+  // bumped (when transitioning panel→panel without closing). Default
+  // for side markers is 100; we'll re-elevate this toll's billed
+  // side tolls below.
+  sideMarkers.forEach(({ marker }) => marker.setZIndexOffset(100));
   sidePanelOpen = true;
   sidePanelOpenedAt = Date.now();
   currentTollOpen = toll;
@@ -488,6 +497,27 @@ function openSidePanel(toll) {
   // Restore just this toll's marker
   const myMarker = allMarkers.find(m => m.toll.id === toll.id);
   if (myMarker) myMarker.marker.setOpacity(1);
+
+  // Side tolls billed on any of this toll's bypasses should remain
+  // visible AND sit above the EXIT/RE-ENTER ramp signs (z-offset 600)
+  // so the user can see exactly where they'll pay. Without this,
+  // dimAll() drops them to 0.07 opacity and the ramp signs cover them.
+  // We track the elevated markers to revert them on close.
+  if (toll.bypass_directions && typeof window.bypassSideTollCost === 'function') {
+    Object.entries(toll.bypass_directions).forEach(([dirKey, dir]) => {
+      if (!dir) return;
+      // bypassSideTollCost only finds type:"side" records — ferry-mode
+      // bypasses return empty (no "side" tolls at sea piers), which is fine.
+      const info = window.bypassSideTollCost(toll, dirKey, dir);
+      info.items.forEach(({ toll: sideToll }) => {
+        const sm = allMarkers.find(am => am.toll.id === sideToll.id);
+        if (sm) {
+          sm.marker.setOpacity(1);
+          sm.marker.setZIndexOffset(700);  // above ramp signs (600)
+        }
+      });
+    });
+  }
 
   // Wait for layout transition to settle (panel opens, bottom bar hides on mobile),
   // then invalidate map size so Leaflet recalculates its viewport and centers correctly.
@@ -600,18 +630,57 @@ function openSidePanel(toll) {
       // Sum the three durations and distances for the comparison stats;
       // concatenate the three polylines for visualization.
       //
-      // Ferry mode: skip road routing entirely. Pier→pier by road would
-      // return an absurd detour around the gulf. Synthesize stats from
-      // geodesic distance + dir.minutes / dir.crossing_min instead.
+      // Ferry mode: route the two road legs via Mapbox (using exit_ramp /
+      // entry_ramp as waypoints to force the route through the actual ramp
+      // toward the pier), then synthesize the ferry crossing as a straight
+      // line between piers. Total bypass distance/time = leg1 + ferry +
+      // leg2. Highway alternative = direct pre_exit → post_merge route via
+      // the bridge (Mapbox knows the bridge exists and will use it).
       if (dir.mode === 'ferry') {
-        const ferryDistKm = haversineKm(dir.off_ramp, dir.on_ramp);
-        // The bridge crossing itself is ~2.9km and takes ~5 min by car.
-        // We don't have a true highway-route to fetch here (the bridge
-        // is the highway), so the "highway" stats represent the bridge:
-        // straight-line distance, fixed 5 min crossing.
-        const bridgeRes  = { coords: highwayPlaceholder, distanceKm: ferryDistKm, durationMin: 5 };
-        const ferryRes   = { coords: bypassPlaceholder,  distanceKm: ferryDistKm, durationMin: dir.minutes };
-        updateDirStats(toll, key, dir, ferryRes, bridgeRes);
+        Promise.all([
+          fetchRoute(dir.pre_exit, dir.post_merge, 'highway'),
+          fetchRoute(dir.pre_exit, dir.off_ramp,   'highway', dir.exit_ramp ? [dir.exit_ramp] : []),
+          fetchRoute(dir.on_ramp,  dir.post_merge, 'highway', dir.entry_ramp ? [dir.entry_ramp] : []),
+        ]).then(([highwayRes, leg1, leg2]) => {
+          const visible = activeDirFilter == null
+            || activeDirFilter === 'both'
+            || activeDirFilter === key;
+          if (highwayRes && highwayRes.coords.length > 1) {
+            highwayLine.setLatLngs(highwayRes.coords);
+            highwayLine.setStyle({ opacity: visible ? 0.7 : 0, dashArray: null });
+            updateArrow(highwayArrow, highwayRes.coords, 'dir-arrow-highway');
+            highwayArrow.setOpacity(visible ? 1 : 0);
+          }
+          if (leg1 && leg2) {
+            // Bypass coords: leg1 (drive to embarkation) + leg2 (drive from
+            // disembarkation). The polyline jumps from leg1's last point
+            // (off_ramp = pier A) to leg2's first point (on_ramp = pier B),
+            // which visually represents the ferry crossing as a straight
+            // line — exactly what we want.
+            const ferryDistKm = haversineKm(dir.off_ramp, dir.on_ramp);
+            const bypassCoords = [...leg1.coords, ...leg2.coords];
+            const bypassRes = {
+              coords:      bypassCoords,
+              distanceKm:  leg1.distanceKm + ferryDistKm + leg2.distanceKm,
+              durationMin: leg1.durationMin + dir.minutes + leg2.durationMin,
+            };
+            bypassLine.setLatLngs(bypassRes.coords);
+            bypassLine.setStyle({ opacity: visible ? 0.9 : 0, dashArray: null });
+            updateArrow(bypassArrow, bypassRes.coords, 'dir-arrow-bypass');
+            bypassArrow.setOpacity(visible ? 1 : 0);
+            updateDirStats(toll, key, dir, bypassRes, highwayRes);
+          } else {
+            // Mapbox failed for one of the road legs — fall back to
+            // pier-to-pier straight-line stats so the panel still works.
+            const ferryDistKm = haversineKm(dir.off_ramp, dir.on_ramp);
+            const fallbackRes = {
+              coords: [[dir.off_ramp.lat, dir.off_ramp.lng], [dir.on_ramp.lat, dir.on_ramp.lng]],
+              distanceKm: ferryDistKm,
+              durationMin: dir.minutes,
+            };
+            updateDirStats(toll, key, dir, fallbackRes, highwayRes || { distanceKm: ferryDistKm, durationMin: 5 });
+          }
+        });
       } else {
       Promise.all([
         fetchRoute(dir.pre_exit, dir.post_merge, 'highway'),
