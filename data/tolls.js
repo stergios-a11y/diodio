@@ -950,21 +950,25 @@ const TOLL_DATA = [
     bypass_directions: {
       northbound: {
         label: "Northbound (towards Ioannina)",
-        exit_name: "Γαβρολίμνης", entry_name: "Μεσολογγίου",
-        exit:  { lat: 38.3951, lng: 21.6582 },
-        entry: { lat: 38.378905, lng: 21.501744 },
+        exit_name: "Αντιρρίου", entry_name: "Γαβρολίμνης",
+        pre_exit:   { lat: 38.33796571182557,  lng: 21.763682331026587 },
+        off_ramp:   { lat: 38.339811375786574, lng: 21.762584495662978 },
+        on_ramp:    { lat: 38.374146313250066, lng: 21.625653772379952 },
+        post_merge: { lat: 38.3752601020302,   lng: 21.621091298524824 },
         minutes: 20,
-        via: [{ lat: 38.3951, lng: 21.6582 },{ lat: 38.398, lng: 21.580 },{ lat: 38.401, lng: 21.510 },{ lat: 38.4021, lng: 21.4325 }],
-        confidence: "approximate"
+        via: [],
+        confidence: "verified"
       },
       southbound: {
         label: "Southbound (towards Antirrio)",
-        exit_name: "Μεσολογγίου", entry_name: "Γαβρολίμνης",
-        exit:  { lat: 38.378905, lng: 21.501744 },
-        entry: { lat: 38.3951, lng: 21.6582 },
+        exit_name: "Γαβρολίμνης", entry_name: "Αντιρρίου",
+        pre_exit:   { lat: 38.37545071516859,  lng: 21.62048582915568 },
+        off_ramp:   { lat: 38.37319696296926,  lng: 21.625382026301043 },
+        on_ramp:    { lat: 38.338379296546506, lng: 21.762746254329237 },
+        post_merge: { lat: 38.335799886432305, lng: 21.764786837825476 },
         minutes: 20,
-        via: [{ lat: 38.4021, lng: 21.4325 },{ lat: 38.401, lng: 21.510 },{ lat: 38.398, lng: 21.580 },{ lat: 38.3951, lng: 21.6582 }],
-        confidence: "approximate"
+        via: [],
+        confidence: "verified"
       },
     },
   },
