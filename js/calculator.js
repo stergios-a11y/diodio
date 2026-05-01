@@ -631,9 +631,11 @@ function renderResults(a) {
         </div>
       </div>
       <div class="rp-cmp-tags">
-        <span><strong>${results.length}</strong> ${t('rp.frontal.tolls')}</span>
-        <span><strong>${avoidCount}</strong> ${t('verdict.avoid')}</span>
-        <span><strong>${payCount}</strong> ${t('verdict.pay')}</span>
+        <span class="rp-cmp-tags-line"><strong>${results.length}</strong> ${t('rp.frontal.tolls')}</span>
+        <span class="rp-cmp-tags-line">
+          <span><strong>${payCount}</strong> ${t('verdict.pay')}</span>
+          <span><strong>${avoidCount}</strong> ${t('verdict.avoid')}</span>
+        </span>
       </div>`;
   };
   renderStats(extraKm);
@@ -696,14 +698,14 @@ function renderResults(a) {
       const moneySign   = moneyDiff >= 0 ? '−' : '+';
       const moneyClass  = Math.abs(moneyDiff) < 0.005 ? 'zero' : (moneyDiff > 0 ? 'savings' : 'cost');
       const kmStr       = bypassKm >= 0.1 ? `+${bypassKm.toFixed(1)}` : '+0.0';
-      // Tags: exit/entry names if available
-      const tagText = r.dir.exit_name && r.dir.entry_name
-        ? `↗ ${r.dir.exit_name} → ${r.dir.entry_name}`
-        : '';
+      // Inline exit→entry into the bypass label, e.g. "Παράκαμψη Μαλγάρων → Χαλάστρας"
+      const bypassLabel = r.dir.exit_name && r.dir.entry_name
+        ? `${t('compare.bypass')} <span class="chip-cmp-route">${r.dir.exit_name} → ${r.dir.entry_name}</span>`
+        : t('compare.bypass');
       cmpHtml = `
         <div class="chip-cmp" data-toll-id="${r.toll.id}">
           <div class="chip-cmp-row">
-            <span class="chip-cmp-label">${t('compare.bypass')}</span>
+            <span class="chip-cmp-label">${bypassLabel}</span>
             <span class="chip-cmp-money">€${bypassMoney.toFixed(2)}</span>
             <span class="chip-cmp-dist">${kmStr} ${t('unit.km')}</span>
             <span class="chip-cmp-time">+${bypassMin} ${t('bar.time.label2')}</span>
@@ -720,8 +722,7 @@ function renderResults(a) {
             <span class="chip-cmp-dist cost">${kmStr} ${t('unit.km')}</span>
             <span class="chip-cmp-time cost">+${bypassMin} ${t('bar.time.label2')}</span>
           </div>
-        </div>
-        ${tagText ? `<div class="chip-tags">${tagText}</div>` : ''}`;
+        </div>`;
     } else {
       // No bypass available — keep the original short reasoning as a single tag.
       cmpHtml = `<div class="chip-tags chip-tags-noby">${t('verdict.no.bypass.short')}</div>`;
