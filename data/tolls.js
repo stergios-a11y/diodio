@@ -972,25 +972,21 @@ const TOLL_DATA = [
     bypass_directions: {
       eastbound: {
         label: "Eastbound (towards Komotini)",
-        exit_name: "ΒΙΠΕ Κομοτηνής", entry_name: "Ιάσμου",
-        pre_exit:   { lat: 41.122146, lng: 25.310027 },
-        off_ramp:   { lat: 41.125400, lng: 25.325400 },
-        on_ramp:    { lat: 41.116579, lng: 25.178272 },
-        post_merge: { lat: 41.115952, lng: 25.190159 },
+        pre_exit:   { lat: 41.094210206297284, lng: 24.939463236370653 },
+        off_ramp:   { lat: 41.09507248424769,  lng: 24.942971794954374 },
+        on_ramp:    { lat: 41.11605275554924,  lng: 25.185206840007744 },
+        post_merge: { lat: 41.1160200306206,   lng: 25.189568691890223 },
         minutes: 18,
-        via: [{ lat: 41.1254, lng: 25.3254 },{ lat: 41.127, lng: 25.250 },{ lat: 41.130, lng: 25.200 },{ lat: 41.1325, lng: 25.1254 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
       westbound: {
         label: "Westbound (towards Kavala)",
-        exit_name: "Ιάσμου", entry_name: "ΒΙΠΕ Κομοτηνής",
-        pre_exit:   { lat: 41.116075, lng: 25.190151 },
-        off_ramp:   { lat: 41.116579, lng: 25.178272 },
-        on_ramp:    { lat: 41.125400, lng: 25.325400 },
-        post_merge: { lat: 41.122263, lng: 25.310108 },
+        pre_exit:   { lat: 41.11588671168725, lng: 25.191937400775373 },
+        off_ramp:   { lat: 41.1169872094375,  lng: 25.18461458605209 },
+        on_ramp:    { lat: 41.0977067677672,  lng: 24.945865817858298 },
+        post_merge: { lat: 41.09573034358229, lng: 24.942421722854764 },
         minutes: 18,
-        via: [{ lat: 41.1325, lng: 25.1254 },{ lat: 41.130, lng: 25.200 },{ lat: 41.127, lng: 25.250 },{ lat: 41.1254, lng: 25.3254 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
     },
   },
