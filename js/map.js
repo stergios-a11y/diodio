@@ -1674,6 +1674,27 @@ const ZOOM_THRESHOLD_FRONTAL_PILL = 11;
 //
 // At low zoom (< ZOOM_THRESHOLD_FRONTAL_PILL) frontals/bridges revert
 // to the same small circle as side tolls so the overview isn't crowded.
+// Compute a default bearing from any bypass direction's
+// pre_exit → post_merge segment. Those two anchors sit on the
+// motorway, on either side of the toll, so the segment between them
+// approximates the local highway direction. Far better than hand-typed
+// static `bearing` values that have drifted out of sync with the data.
+//
+// Returns null if the toll has no usable corridor (e.g. bypass_directions
+// is null/missing, or all directions are ferry-mode).
+function _computeCorridorBearing(toll) {
+  const dirs = toll && toll.bypass_directions;
+  if (!dirs) return null;
+  for (const dir of Object.values(dirs)) {
+    if (!dir || dir.mode === 'ferry') continue;
+    const a = dir.pre_exit;
+    const b = dir.post_merge;
+    if (!a || !b || typeof a.lat !== 'number' || typeof b.lat !== 'number') continue;
+    return bearingDeg(a, b);
+  }
+  return null;
+}
+
 function makeTollMarkerIcon(toll, isActive) {
   const isSide   = toll.type === 'side';
   const isPillEligible = toll.type === 'frontal' || toll.type === 'bridge';
@@ -1688,11 +1709,24 @@ function makeTollMarkerIcon(toll, isActive) {
   if (showAsPill) {
     const longSide  = isActive ? 30 : 26;
     const shortSide = isActive ? 12 : 10;
-    // Bearing source priority: route > manual > auto.
+    // Bearing source priority:
+    //   1. bearing_route   — refined from real Mapbox highway geometry
+    //                        once the toll has been opened (most accurate)
+    //   2. bearing_manual  — explicit user override
+    //   3. corridor-derived — computed from any direction's
+    //                        pre_exit → post_merge segment. Available for
+    //                        every toll with bypass_directions, no click
+    //                        required, no cache hydration required.
+    //   4. static bearing  — fallback only; many static values in data
+    //                        have drifted out of sync with the actual
+    //                        highway geometry, so this is the last resort.
+    const corridorBearing = _computeCorridorBearing(toll);
     const rawBearing = (typeof toll.bearing_route === 'number')
       ? toll.bearing_route
       : (typeof toll.bearing_manual === 'number')
       ? toll.bearing_manual
+      : (corridorBearing != null)
+      ? corridorBearing
       : (typeof toll.bearing === 'number' ? toll.bearing : 0);
     const rot = ((rawBearing % 180) + 180) % 180;
     const cw = longSide + 4;
