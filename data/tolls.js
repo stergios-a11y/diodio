@@ -1326,7 +1326,28 @@ const TOLL_DATA = [
     lat: 38.1449493, lng: 21.6191570,
     cat1: 2.50, cat2: 3.60, cat3: 9.00, cat4: 12.70,
     notes: "Eastern approach to Patras.",
-    bypass_directions: null,
+    bypass_directions: {
+      westbound: {
+        label: "Westbound (towards Patras)",
+        pre_exit:   { lat: 38.15460893746965,  lng: 21.635374880976745 },
+        off_ramp:   { lat: 38.15393585328039,  lng: 21.63239795887755 },
+        on_ramp:    { lat: 38.11540576856103,  lng: 21.527683094907122 },
+        post_merge: { lat: 38.112311972415945, lng: 21.524314234428548 },
+        minutes: 12,
+        via: [],
+        confidence: "verified"
+      },
+      eastbound: {
+        label: "Eastbound (towards Athens)",
+        pre_exit:   { lat: 38.112311972415945, lng: 21.524314234428548 },
+        off_ramp:   { lat: 38.11637903156108,  lng: 21.530176096931843 },
+        on_ramp:    { lat: 38.153183795096446, lng: 21.632988647290016 },
+        post_merge: { lat: 38.15452239411336,  lng: 21.636139316980202 },
+        minutes: 12,
+        via: [],
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "olympia_pyrgos",
@@ -1339,7 +1360,32 @@ const TOLL_DATA = [
     lat: 37.7525508, lng: 21.3585639,
     cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
     notes: "Southern terminus of Olympia Odos.",
-    bypass_directions: null,
+    bypass_directions: {
+      northbound: {
+        label: "Northbound",
+        // pre_exit is the toll-road terminus (where Olympia Odos ends going south).
+        // NB drivers START here when entering the bypass-relevant segment.
+        pre_exit:   { lat: 37.70518186683015,   lng: 21.389792821868795 },
+        off_ramp:   { lat: 37.70759085854706,   lng: 21.387035625850586 },
+        on_ramp:    { lat: 37.799641662362596,  lng: 21.375617655786662 },
+        post_merge: { lat: 37.802576613724106,  lng: 21.37439044623601 },
+        minutes: 12,
+        via: [],
+        confidence: "verified"
+      },
+      southbound: {
+        label: "Southbound",
+        pre_exit:   { lat: 37.80291116395065,   lng: 21.374133226236086 },
+        off_ramp:   { lat: 37.79787524505727,   lng: 21.374616622331104 },
+        on_ramp:    { lat: 37.706289945843736,  lng: 21.388500418144787 },
+        // post_merge sits at the toll-road terminus — Olympia Odos ends here
+        // for SB drivers after the bypass loop. Same coord as NB pre_exit.
+        post_merge: { lat: 37.70518186683015,   lng: 21.389792821868795 },
+        minutes: 12,
+        via: [],
+        confidence: "verified"
+      },
+    },
   },
 
   // ══════════════════════════════════════════════════════════
