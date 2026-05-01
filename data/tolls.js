@@ -624,8 +624,29 @@ const TOLL_DATA = [
     axis: "NS", bearing: 168,
     lat: 41.1086804, lng: 22.5585932,
     cat1: 2.05, cat2: 2.95, cat3: 7.40, cat4: 10.40,
-    notes: "Greek–North Macedonian border. No bypass.",
-    bypass_directions: null,
+    notes: "Greek–North Macedonian border.",
+    bypass_directions: {
+      northbound: {
+        label: "Northbound",
+        pre_exit:   { lat: 40.98535104303029, lng: 22.605110595344126 },
+        off_ramp:   { lat: 40.98971052692015, lng: 22.605024596889965 },
+        on_ramp:    { lat: 41.11546872034766, lng: 22.55564940556392 },
+        post_merge: { lat: 41.11711608342741, lng: 22.55460353563799 },
+        minutes: 15,
+        via: [],
+        confidence: "verified"
+      },
+      southbound: {
+        label: "Southbound",
+        pre_exit:   { lat: 41.11597905511699,  lng: 22.55490702386695 },
+        off_ramp:   { lat: 41.11382782802925,  lng: 22.555096971291068 },
+        on_ramp:    { lat: 40.98965864390125,  lng: 22.60356688922765 },
+        post_merge: { lat: 40.986089897777994, lng: 22.604599659819957 },
+        minutes: 15,
+        via: [],
+        confidence: "verified"
+      },
+    },
   },
 
   // ══════════════════════════════════════════════════════════
