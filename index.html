@@ -176,7 +176,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260430-3800" />
+  <link rel="stylesheet" href="css/style.css?v=20260501-0200" />
 </head>
 <body>
 
@@ -475,19 +475,67 @@
     <span class="bar-label" data-i18n="bar.to">Προς</span>
     <input class="bar-input" id="dest" placeholder="πχ Λάρισα" autocomplete="off" data-i18n-aria-label="aria.dest" data-i18n-placeholder="bar.dest.placeholder" style="flex:1;max-width:150px" />
     <div class="bar-sep"></div>
-    <div class="tv-compact">
-      <div class="tv-compact-sentence">
-        <span class="lbl tv-desktop" data-i18n="bar.time.prefix">Θα οδηγούσα</span>
-        <span class="lbl tv-mobile" data-i18n="bar.time.short.prefix">Δεκτή παράκαμψη:</span>
-        <span class="val" id="tv-val-pill">
-          <span class="val-num" id="tv-val">5</span>
-          <span class="val-tier" id="tv-tier"></span>
-        </span>
-        <span class="lbl lbl-suffix tv-desktop" data-i18n="bar.time.suffix">επιπλέον λεπτά για να γλιτώσω €1 σε διόδια</span>
-        <span class="lbl lbl-suffix tv-mobile" data-i18n="bar.time.short.suffix">λεπ. ανά €1</span>
+
+    <!-- Tolerance control: starts in "prose mode" on first visit (full sentence
+         + slider visible inline), switches to "pill mode" on first slider
+         interaction (small icon + number button that opens a popover). State
+         persists in localStorage as `mydiodia.tip.tolerance.v1`. The slider is
+         a single element that moves between .tv-compact (prose mode) and
+         .tv-popover-slot (pill mode) via appendChild — one source of truth.
+         Wired up by calculator.js. -->
+    <div class="tv-control" id="tv-control">
+
+      <!-- Prose mode: shown to first-visit users. Same content as before. -->
+      <div class="tv-compact tv-mode-prose">
+        <div class="tv-compact-sentence">
+          <span class="lbl tv-desktop" data-i18n="bar.time.prefix">Θα οδηγούσα</span>
+          <span class="lbl tv-mobile" data-i18n="bar.time.short.prefix">Δεκτή παράκαμψη:</span>
+          <span class="val" id="tv-val-pill">
+            <span class="val-num" id="tv-val">5</span>
+            <span class="val-tier" id="tv-tier"></span>
+          </span>
+          <span class="lbl lbl-suffix tv-desktop" data-i18n="bar.time.suffix">επιπλέον λεπτά για να γλιτώσω €1 σε διόδια</span>
+          <span class="lbl lbl-suffix tv-mobile" data-i18n="bar.time.short.suffix">λεπ. ανά €1</span>
+        </div>
+        <input type="range" id="tv-slider" min="2" max="15" value="5" step="1" data-i18n-aria-label="aria.time.slider" />
       </div>
-      <input type="range" id="tv-slider" min="2" max="15" value="5" step="1" data-i18n-aria-label="aria.time.slider" />
+
+      <!-- Pill mode: shown to returning visitors and after first interaction. -->
+      <button class="tv-pill tv-mode-pill" id="tv-pill" type="button"
+              aria-haspopup="dialog" aria-expanded="false"
+              data-i18n-aria-label="aria.tolerance.pill">
+        <svg class="tv-pill-icon" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="13" r="8"/>
+          <path d="M12 9v4l2 2"/>
+          <path d="M9 2h6"/>
+        </svg>
+        <span class="tv-pill-num" id="tv-pill-num">5</span>
+        <span class="tv-pill-caret" aria-hidden="true">▾</span>
+      </button>
+
+      <!-- Popover: opened from the pill on desktop. On mobile this becomes an
+           in-place inline panel via the same .is-open class. The slider is
+           appended into .tv-popover-slot when the popover opens, and moved
+           back into .tv-compact when it closes. This keeps the slider as a
+           single DOM element with one set of event listeners. -->
+      <div class="tv-popover" id="tv-popover" role="dialog"
+           aria-labelledby="tv-popover-title" hidden>
+        <div class="tv-popover-arrow" aria-hidden="true"></div>
+        <div class="tv-popover-question" id="tv-popover-title"
+             data-i18n="bar.time.popover.question">
+          Πόσα επιπλέον λεπτά θα οδηγούσες για να γλιτώσεις €1 σε διόδια;
+        </div>
+        <div class="tv-popover-row">
+          <div class="tv-popover-slot" id="tv-popover-slot"></div>
+          <span class="tv-popover-val" id="tv-popover-val">5</span>
+        </div>
+        <div class="tv-popover-tier" id="tv-popover-tier"></div>
+      </div>
+
     </div>
+
     <div class="bar-sep"></div>
     <button class="analyse-btn" id="analyse-btn" onclick="analyze()">
       <div class="btn-spinner"></div>
@@ -598,11 +646,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260501-0100"></script>
-  <script src="data/tolls.js?v=20260501-0100"></script>
+  <script src="js/i18n.js?v=20260501-0200"></script>
+  <script src="data/tolls.js?v=20260430-5600"></script>
   <script src="data/routes.js?v=20260427-0700"></script>
   <script src="js/map.js?v=20260430-4800"></script>
-  <script src="js/calculator.js?v=20260430-2900"></script>
-  <script src="js/pages.js?v=20260501-0100"></script>
+  <script src="js/calculator.js?v=20260501-0200"></script>
+  <script src="js/pages.js?v=20260427-0800"></script>
 </body>
 </html>

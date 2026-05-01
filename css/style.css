@@ -1567,6 +1567,153 @@ input[type="range"]::-moz-range-track {
   height: 8px;
 }
 
+/* ─── Tolerance control: prose ⇄ pill modes ──────────────────────────────
+   The tolerance control has two visual modes, toggled by .is-pill-mode on
+   .tv-control. Prose mode (default for first-time visitors) shows the full
+   sentence + slider inline. Pill mode (default for returning visitors)
+   shows a compact button with a stopwatch icon + number, opening a popover
+   on click. Switch happens via JS on first slider interaction.
+
+   The slider element is moved (via appendChild) between .tv-compact (prose)
+   and .tv-popover-slot (pill). Single source of truth, single set of
+   listeners — see calculator.js for the move logic. */
+
+.tv-control {
+  position: relative;       /* anchor for absolutely-positioned popover */
+  display: flex;
+  align-items: center;
+  flex-shrink: 1;
+  min-width: 0;
+}
+.tv-control:not(.is-pill-mode) .tv-mode-pill { display: none; }
+.tv-control.is-pill-mode      .tv-mode-prose { display: none; }
+
+/* Pill button: icon + number + caret. Mirrors the size/spacing of the
+   topbar btn-ghost so it visually rhymes with the rest of the bar. */
+.tv-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  height: 36px;
+  border: 1px solid var(--paper-3);
+  background: var(--paper);
+  color: var(--ink-2);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.tv-pill:hover {
+  border-color: var(--aegean);
+  background: var(--paper-2);
+}
+.tv-pill[aria-expanded="true"] {
+  border-color: var(--aegean);
+  background: var(--aegean-lt);
+  color: var(--aegean-dark);
+  box-shadow: inset 0 1px 2px rgba(26,31,46,0.06);
+}
+.tv-pill-icon {
+  flex-shrink: 0;
+  color: var(--aegean);
+  /* The icon color tracks the slider's current --fill-color, set on
+     #tv-control by JS. Falls back to aegean if JS hasn't run yet. */
+  color: var(--fill-color, var(--aegean));
+  transition: color 0.15s var(--ease);
+}
+.tv-pill-num {
+  font-variant-numeric: tabular-nums;
+  min-width: 1ch;
+  text-align: center;
+}
+.tv-pill-caret {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-left: -2px;
+}
+
+/* Popover: floats above the bar. The arrow points down at the pill. */
+.tv-popover {
+  position: absolute;
+  bottom: calc(100% + 12px);    /* sit above the bar with breathing room */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  padding: 14px 14px 12px;
+  background: var(--paper);
+  border: 1px solid var(--paper-3);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  z-index: 300;                  /* above bottom-bar (which is ~200) */
+  animation: tv-popover-in 0.18s var(--ease-out) backwards;
+}
+.tv-popover[hidden] { display: none; }
+@keyframes tv-popover-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.tv-popover-arrow {
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 14px;
+  height: 14px;
+  background: var(--paper);
+  border-right: 1px solid var(--paper-3);
+  border-bottom: 1px solid var(--paper-3);
+}
+.tv-popover-question {
+  font-size: 0.84rem;
+  color: var(--ink-2);
+  line-height: 1.35;
+  margin-bottom: 14px;
+}
+.tv-popover-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tv-popover-slot {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+/* When the slider is mounted inside the popover slot, stretch it. */
+.tv-popover-slot input[type="range"] {
+  width: 100%;
+}
+.tv-popover-val {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--paper);
+  background: var(--fill-color, var(--aegean));
+  min-width: 36px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: var(--radius);
+  font-variant-numeric: tabular-nums;
+  transition: background 0.15s var(--ease);
+}
+.tv-popover-tier {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--muted);
+  min-height: 1em;
+  font-variant: italic;
+}
+
 .analyse-btn {
   height: 48px;
   background: linear-gradient(180deg, var(--aegean) 0%, var(--aegean-dark) 100%);
@@ -3046,6 +3193,58 @@ input[type="range"]::-moz-range-track {
     border-width: 2.5px;
   }
   .tv-compact input[type="range"]::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-width: 2.5px;
+  }
+
+  /* ── Tolerance control on mobile ──────────────────────────────────────
+     In prose mode (first visit), the existing .tv-compact column-flex
+     layout above does the work. In pill mode, the .tv-control becomes a
+     full-width row containing the pill button. Tapping the pill expands
+     the popover *inline below the bar* instead of floating above it. */
+  .tv-control {
+    width: 100%;
+    order: 9;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tv-control.is-pill-mode {
+    /* Pill alone is small; center it in its own row so it doesn't look
+       lonely against the full-width inputs above. */
+    align-items: center;
+  }
+  .tv-pill {
+    height: 40px;
+    padding: 0 14px;
+    font-size: 0.95rem;
+  }
+  .tv-pill-icon { width: 16px; height: 16px; }
+  /* On mobile, popover stretches to bar width and renders below the bar
+     (the bar lives at the top of the bottom-bar's column layout, so the
+     popover ends up just under the pill — no need to fight viewport edges). */
+  .tv-popover {
+    position: static;
+    transform: none;
+    width: 100%;
+    margin-top: 8px;
+    animation-name: tv-popover-in-mobile;
+  }
+  @keyframes tv-popover-in-mobile {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .tv-popover-arrow { display: none; }   /* no arrow needed in flow layout */
+  .tv-popover-question { font-size: 0.88rem; }
+  /* Bigger slider thumb inside the popover on mobile, matching the
+     prose-mode .tv-compact slider thumb size. */
+  .tv-popover-slot input[type="range"] {
+    height: 6px;
+  }
+  .tv-popover-slot input[type="range"]::-webkit-slider-thumb {
+    width: 24px; height: 24px;
+    border-width: 2.5px;
+  }
+  .tv-popover-slot input[type="range"]::-moz-range-thumb {
     width: 24px; height: 24px;
     border-width: 2.5px;
   }

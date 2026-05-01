@@ -10,6 +10,17 @@ const slider = document.getElementById('tv-slider');
 const tvVal  = document.getElementById('tv-val');
 const tvTier = document.getElementById('tv-tier');
 
+// Pill mode references — present whether or not pill mode is active. We
+// always update them so swapping between modes is a pure CSS toggle.
+const tvControl    = document.getElementById('tv-control');
+const tvPill       = document.getElementById('tv-pill');
+const tvPillNum    = document.getElementById('tv-pill-num');
+const tvPopover    = document.getElementById('tv-popover');
+const tvPopoverSlot= document.getElementById('tv-popover-slot');
+const tvPopoverVal = document.getElementById('tv-popover-val');
+const tvPopoverTier= document.getElementById('tv-popover-tier');
+const tvCompact    = document.querySelector('.tv-compact');   // prose-mode home for the slider
+
 // Map slider value (2..15) to a semantic tier so users can see the meaning
 // of the number, not just the number itself.
 function sliderTierKey(n) {
@@ -22,6 +33,13 @@ function updateSliderUI() {
   const v = parseInt(slider.value);
   tvVal.textContent = slider.value;
   if (tvTier) tvTier.textContent = t(sliderTierKey(v));
+
+  // Pill-mode mirrors: the pill always shows the current number, and when
+  // the popover is open its value pill + tier line are kept in sync too.
+  if (tvPillNum)     tvPillNum.textContent     = slider.value;
+  if (tvPopoverVal)  tvPopoverVal.textContent  = slider.value;
+  if (tvPopoverTier) tvPopoverTier.textContent = t(sliderTierKey(v));
+
   // Drive the CSS gradient stop so the "filled" portion of the track tracks
   // the current value. Without this the track would always show 50% fill.
   const min = parseFloat(slider.min) || 0;
@@ -37,14 +55,103 @@ function updateSliderUI() {
   const hue = 120 - (pct / 100) * 110;   // 120 → 10 across 0-100%
   const fillColor = `hsl(${hue.toFixed(0)}, 65%, 45%)`;
   // Set on the parent so both the slider track AND the value pill (sibling
-  // elements within .tv-compact) can read the same CSS variable.
+  // elements within .tv-compact) can read the same CSS variable. Also set
+  // on .tv-control so pill mode's icon + popover val pill use the same hue.
   const compactParent = slider.closest('.tv-compact') || slider;
   compactParent.style.setProperty('--fill-color', fillColor);
+  if (tvControl) tvControl.style.setProperty('--fill-color', fillColor);
   slider.style.setProperty('--fill-color', fillColor);  // also on slider for the gradient
 }
 slider.addEventListener('input', updateSliderUI);
 window.addEventListener('langchange', updateSliderUI);
 updateSliderUI();
+
+// ── Tolerance prose ⇄ pill mode ──────────────────────────────────────
+// On first visit, the bottom-bar shows the full prose explanation of the
+// tolerance setting. After the user changes the slider once, we switch
+// the bar to pill mode (a small button + number that opens a popover)
+// and persist that choice in localStorage so returning visitors skip
+// straight to the compact UI. The slider element itself moves between
+// .tv-compact (prose mode) and .tv-popover-slot (pill mode) via
+// appendChild — this keeps it as a single DOM element with a single
+// set of event listeners. See style.css for the visual rules.
+const TOLERANCE_TIP_KEY = 'mydiodia.tip.tolerance.v1';
+
+function setPillMode(on) {
+  if (!tvControl) return;
+  tvControl.classList.toggle('is-pill-mode', !!on);
+  if (on) {
+    // Slider's home in pill mode is the popover slot. We don't actually
+    // mount it there until the popover opens (see openPopover) — until
+    // then the slider sits in the popover slot but invisible because
+    // the popover container is [hidden]. This keeps event listeners
+    // attached and CSS variables flowing during the transition.
+    if (tvPopoverSlot && slider.parentElement !== tvPopoverSlot) {
+      tvPopoverSlot.appendChild(slider);
+    }
+  } else {
+    // Move slider back to the prose home.
+    if (tvCompact && slider.parentElement !== tvCompact) {
+      tvCompact.appendChild(slider);
+    }
+  }
+}
+
+function openPopover() {
+  if (!tvPopover || !tvPill) return;
+  tvPopover.hidden = false;
+  tvPill.setAttribute('aria-expanded', 'true');
+  // Defer outside-click handler attach by one tick so the click that
+  // opened the popover doesn't immediately close it.
+  setTimeout(() => {
+    document.addEventListener('click', onOutsideClick);
+    document.addEventListener('keydown', onPopoverKey);
+  }, 0);
+}
+function closePopover() {
+  if (!tvPopover || !tvPill) return;
+  tvPopover.hidden = true;
+  tvPill.setAttribute('aria-expanded', 'false');
+  document.removeEventListener('click', onOutsideClick);
+  document.removeEventListener('keydown', onPopoverKey);
+}
+function onOutsideClick(ev) {
+  if (!tvControl) return;
+  if (!tvControl.contains(ev.target)) closePopover();
+}
+function onPopoverKey(ev) {
+  if (ev.key === 'Escape') {
+    closePopover();
+    if (tvPill) tvPill.focus();
+  }
+}
+
+if (tvPill) {
+  tvPill.addEventListener('click', () => {
+    if (tvPopover && tvPopover.hidden) openPopover();
+    else closePopover();
+  });
+}
+
+// Initial mode: pill if the user has already discovered the slider, prose
+// otherwise. We read the key in a try/catch because Safari private mode
+// throws on localStorage access in some configurations.
+let toleranceTipSeen = false;
+try { toleranceTipSeen = !!localStorage.getItem(TOLERANCE_TIP_KEY); }
+catch (e) { /* localStorage unavailable — stay in prose mode forever, fine */ }
+if (toleranceTipSeen) setPillMode(true);
+
+// First time the user changes the slider, mark them as having seen the
+// tolerance UI and switch to pill mode. Use 'change' (not 'input') so the
+// transition only fires after the user lets go of the thumb — sliding
+// back and forth wouldn't shrink the bar mid-drag.
+slider.addEventListener('change', () => {
+  if (!toleranceTipSeen) {
+    toleranceTipSeen = true;
+    try { localStorage.setItem(TOLERANCE_TIP_KEY, '1'); } catch (e) { /* ignore */ }
+    setPillMode(true);
+  }
+}, { once: false });
 
 // ── Swap button ───────────────────────────────────────────
 document.getElementById('swap-btn').addEventListener('click', () => {
