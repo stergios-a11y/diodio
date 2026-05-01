@@ -35,7 +35,12 @@ function updateSliderUI() {
   // so the color stays warm-red instead of going pure red which can feel
   // alarming. Saturation/lightness held constant for a smooth ramp.
   const hue = 120 - (pct / 100) * 110;   // 120 → 10 across 0-100%
-  slider.style.setProperty('--fill-color', `hsl(${hue.toFixed(0)}, 65%, 45%)`);
+  const fillColor = `hsl(${hue.toFixed(0)}, 65%, 45%)`;
+  // Set on the parent so both the slider track AND the value pill (sibling
+  // elements within .tv-compact) can read the same CSS variable.
+  const compactParent = slider.closest('.tv-compact') || slider;
+  compactParent.style.setProperty('--fill-color', fillColor);
+  slider.style.setProperty('--fill-color', fillColor);  // also on slider for the gradient
 }
 slider.addEventListener('input', updateSliderUI);
 window.addEventListener('langchange', updateSliderUI);

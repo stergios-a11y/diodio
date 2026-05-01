@@ -1450,7 +1450,9 @@ body {
 .tv-compact .val {
   font-family: var(--font-body);
   color: var(--paper);
-  background: var(--aegean);
+  /* Background tracks the slider's --fill-color so the value pill shifts
+     green→amber→red in sync. Falls back to aegean blue before JS runs. */
+  background: var(--fill-color, var(--aegean));
   width: 88px;
   flex-shrink: 0;
   display: flex;
@@ -1460,8 +1462,9 @@ body {
   gap: 0;
   padding: 4px 8px 5px;
   border-radius: var(--radius-lg);
-  box-shadow: 0 1px 3px rgba(42,107,158,0.3);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.18);
   line-height: 1;
+  transition: background 0.15s var(--ease);
 }
 .tv-compact .val-num {
   font-weight: 700;

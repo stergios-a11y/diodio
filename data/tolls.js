@@ -1608,6 +1608,16 @@ const TOLL_DATA = [
         via: [],
         confidence: "verified"
       },
+      southbound: {
+        label: "Southbound",
+        pre_exit:   { lat: 37.38456972845123,  lng: 22.16719822213346 },
+        off_ramp:   { lat: 37.382693283472435, lng: 22.164982101657795 },
+        on_ramp:    { lat: 37.27242816647754,  lng: 22.235747342936545 },
+        post_merge: { lat: 37.27244518700809,  lng: 22.239171251457932 },
+        minutes: 12,
+        via: [],
+        confidence: "verified"
+      },
     },
   },
   {
