@@ -937,7 +937,26 @@ const TOLL_DATA = [
     lat: 40.9598127, lng: 24.4724027,
     cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15,
     notes: "Frontal toll on Egnatia mainline near Kavala.",
-    bypass_directions: null,
+    bypass_directions: {
+      eastbound: {
+        label: "Eastbound (towards Xanthi)",
+        pre_exit:   { lat: 40.95460589513331, lng: 24.462259614787076 },
+        off_ramp:   { lat: 40.95520580951653, lng: 24.464816432297074 },
+        on_ramp:    { lat: 41.007464369215114, lng: 24.66090068749589 },
+        post_merge: { lat: 41.01044175743452,  lng: 24.664909663427547 },
+        minutes: 15,
+        confidence: "verified"
+      },
+      westbound: {
+        label: "Westbound (towards Thessaloniki)",
+        pre_exit:   { lat: 41.010982695299106, lng: 24.665472267380764 },
+        off_ramp:   { lat: 41.0090106472961,   lng: 24.66123761482622 },
+        on_ramp:    { lat: 40.95593127740474,  lng: 24.46415315527635 },
+        post_merge: { lat: 40.954316284878274, lng: 24.460922659286638 },
+        minutes: 15,
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "egnatia_xanthi",
