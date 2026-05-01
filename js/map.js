@@ -1719,10 +1719,18 @@ TOLL_DATA.forEach(toll => {
 
 // ── Ferry pier markers ───────────────────────────────────
 // Tolls that have a ferry-mode bypass (currently just rioantirrio) get
-// synthetic markers at each pier. Conceptually piers belong to the bridge
-// they bypass (a Bridges & Tunnels group), so they're rendered as always-
-// visible markers — NOT gated by the side-tolls toggle. Click → opens the
-// parent toll's side panel so the user gets to the ferry schedule + fare info.
+// synthetic yellow markers at each pier so the global "Πλευρικά διόδια"
+// toggle reveals them alongside regular side tolls — they're billable
+// stops on a bypass, same conceptual category, even though they're not
+// in TOLL_DATA as type:"side" records.
+//
+// They're also registered under the parent bridge's highway key
+// (markersByHighway["BRIDGE"]) so when the user clicks "Γέφυρες & Σήραγγες"
+// in the legend, the piers stay highlighted along with the bridge they
+// belong to (instead of dimming with everything else).
+//
+// Click → opens the parent toll's side panel so the user gets to the
+// ferry schedule + fare info.
 //
 // We dedupe by lat/lng key because northbound and southbound bypasses
 // reference the same two piers (just swapped). One marker per pier.
@@ -1738,10 +1746,9 @@ TOLL_DATA.forEach(parentToll => {
       const key = `${ramp.lat.toFixed(5)},${ramp.lng.toFixed(5)}`;
       if (seen.has(key)) return;
       seen.add(key);
-      const bridgeColor = HIGHWAY_COLORS['BRIDGE'] || '#b8502d';
       const icon = L.divIcon({
         className: '',
-        html: `<div class="toll-marker toll-marker-ferry-pier" style="background:${bridgeColor}"></div>`,
+        html: `<div class="toll-marker toll-marker-side toll-marker-ferry-pier" style="background:${SIDE_TOLL_COLOR}"></div>`,
         iconSize: [11, 11], iconAnchor: [5.5, 5.5],
       });
       const marker = L.marker([ramp.lat, ramp.lng], { icon, zIndexOffset: 100 });
@@ -1760,20 +1767,25 @@ TOLL_DATA.forEach(parentToll => {
         L.DomEvent.stopPropagation(e);
         openSidePanel(parentToll);
       });
-      // Ferry piers belong conceptually to the bridge they bypass, not to the
-      // side-tolls layer. Always visible (like bridge markers themselves) — NOT
-      // gated by the side-tolls toggle. Synthetic toll record for allMarkers
-      // dim/restore behavior, but NOT pushed to sideMarkers.
-      marker.addTo(map);
+      // Add to map only if toggle is on — same default as regular side tolls
+      if (sideTollsVisible) marker.addTo(map);
+      // Synthetic toll record so allMarkers behavior (dim/restore) works.
       const synthToll = {
         id:        `${parentToll.id}_ferry_pier_${key}`,
-        type:      'bridge_pier',
+        type:      'side',
         lat:       ramp.lat,
         lng:       ramp.lng,
         name_gr:   pierName,
         name_en:   pierName,
       };
       allMarkers.push({ toll: synthToll, marker });
+      sideMarkers.push({ toll: synthToll, marker });
+      // Also register under the parent bridge's highway key so the per-highway
+      // legend filter dims/highlights piers in sync with the bridge they belong to.
+      // Without this, clicking "Bridges & Tunnels" would leave piers at full opacity
+      // while everything else dims (or vice-versa).
+      if (!markersByHighway[parentToll.highway]) markersByHighway[parentToll.highway] = [];
+      markersByHighway[parentToll.highway].push(marker);
     });
   });
 });
