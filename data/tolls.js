@@ -1624,20 +1624,20 @@ const TOLL_DATA = [
     bypass_directions: {
       northbound: {
         label: "Northbound",
-        pre_exit:   { lat: 37.330959,   lng: 22.076855 },
-        off_ramp:   { lat: 37.330729,   lng: 22.078378 },
-        on_ramp:    { lat: 37.358236,    lng: 22.14009 },
-        post_merge: { lat: 37.358952, lng: 22.143728 },
+        pre_exit:   { lat: 37.33083668237609, lng: 22.076611093013085 },
+        off_ramp:   { lat: 37.33131445091693, lng: 22.079801668075174 },
+        on_ramp:    { lat: 37.35816957714605, lng: 22.139895257181124 },
+        post_merge: { lat: 37.35889474147955, lng: 22.143430621153396 },
         minutes: 10,
         via: [],
         confidence: "verified"
       },
       southbound: {
         label: "Southbound",
-        pre_exit:   { lat: 37.358833,   lng: 22.134855 },
-        off_ramp:   { lat: 37.358854,   lng: 22.128959 },
-        on_ramp:    { lat: 37.331646,    lng: 22.077633 },
-        post_merge: { lat: 37.330844, lng: 22.075723 },
+        pre_exit:   { lat: 37.358839786366836, lng: 22.1339210500354 },
+        off_ramp:   { lat: 37.35891083897448,  lng: 22.128959839834874 },
+        on_ramp:    { lat: 37.331646310091045, lng: 22.077704179088293 },
+        post_merge: { lat: 37.33013438783927,  lng: 22.072682549465792 },
         minutes: 10,
         via: [],
         confidence: "verified"
