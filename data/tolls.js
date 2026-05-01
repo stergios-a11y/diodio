@@ -1294,24 +1294,24 @@ const TOLL_DATA = [
       westbound: {
         label: "Westbound (towards Rio/Bridge)",
         exit_name: "Δρέπανο", entry_name: "Ρίο",
-        pre_exit:   { lat: 38.324589, lng: 21.865335 },
-        off_ramp:   { lat: 38.324251, lng: 21.854032 },
-        on_ramp:    { lat: 38.298500, lng: 21.785400 },
-        post_merge: { lat: 38.290444, lng: 21.778628 },
-        minutes: 12,
-        via: [{ lat: 38.3185, lng: 21.8485 },{ lat: 38.310, lng: 21.820 },{ lat: 38.2985, lng: 21.7854 }],
-        confidence: "approximate"
+        pre_exit:   { lat: 38.32392340861477,  lng: 21.862382924026715 },
+        off_ramp:   { lat: 38.32451306101076,  lng: 21.856354772181373 },
+        on_ramp:    { lat: 38.29831537245027,  lng: 21.791565289732244 },
+        post_merge: { lat: 38.29601207041289,  lng: 21.788687749133608 },
+        minutes: 10,
+        via: [],
+        confidence: "verified"
       },
       eastbound: {
         label: "Eastbound (towards Aigio)",
         exit_name: "Ρίο", entry_name: "Δρέπανο",
-        pre_exit:   { lat: 38.290226, lng: 21.778829 },
-        off_ramp:   { lat: 38.298500, lng: 21.785400 },
-        on_ramp:    { lat: 38.324251, lng: 21.854032 },
-        post_merge: { lat: 38.324461, lng: 21.865334 },
-        minutes: 12,
-        via: [{ lat: 38.2985, lng: 21.7854 },{ lat: 38.310, lng: 21.820 },{ lat: 38.3185, lng: 21.8485 }],
-        confidence: "approximate"
+        pre_exit:   { lat: 38.29550354621766,  lng: 21.788211316601323 },
+        off_ramp:   { lat: 38.29662820463285,  lng: 21.79099199165999 },
+        on_ramp:    { lat: 38.323706209189844, lng: 21.857593649243185 },
+        post_merge: { lat: 38.323694652435584, lng: 21.860284886551195 },
+        minutes: 10,
+        via: [],
+        confidence: "verified"
       },
     },
   },
