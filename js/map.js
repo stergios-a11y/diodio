@@ -1559,8 +1559,6 @@ function openSidePanel(toll) {
       <div class="sp-hwy-badge" style="--hwy-color:${color}">${t('hwy.' + toll.highway)}</div>
       <div class="sp-name">${primaryName}</div>
       <div class="sp-name-gr">${secondaryName}</div>
-    </div>
-    <div class="sp-prices">
       <div class="sp-price-row"><span><span class="sp-emoji">${window.getVehicleMeta().emoji}</span><span class="sp-vlabel">${t(window.getVehicleMeta().labelKey)}</span></span><strong>€${toll[window.getVehicleCat()].toFixed(2)}</strong></div>
     </div>
     ${
@@ -1674,11 +1672,23 @@ function makeTollMarkerIcon(toll, isActive) {
     });
   }
 
-  // Side, low-zoom frontal/bridge: original 11/14 px circle.
-  const size = isActive ? 14 : 11;
+  // Side, low-zoom frontal/bridge: 11/14 px circle.
+  // Side tolls specifically render even smaller (6px) at low zoom — there
+  // are 87 of them on the map and at country-level zoom they create
+  // visual clutter. They grow to the regular 11px size at the same
+  // zoom threshold where frontals turn into pills, so as the user
+  // zooms in to plan a specific section all markers gain detail
+  // together.
+  let size;
+  if (isSide && !isActive && map.getZoom() < ZOOM_THRESHOLD_FRONTAL_PILL) {
+    size = 6;
+  } else {
+    size = isActive ? 14 : 11;
+  }
+  const sideSmallClass = (isSide && size === 6) ? ' toll-marker-side-small' : '';
   return L.divIcon({
     className: '',
-    html: `<div class="toll-marker${isActive ? ' active' : ''}${isSide ? ' toll-marker-side' : ''}" style="background:${color}"></div>`,
+    html: `<div class="toll-marker${isActive ? ' active' : ''}${isSide ? ' toll-marker-side' : ''}${sideSmallClass}" style="background:${color}"></div>`,
     iconSize:   [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -2052,20 +2062,27 @@ function updateTollNamesVisibility() {
 map.on('zoomend', () => {
   updateRampsVisibility();
   updateTollNamesVisibility();
-  // Re-render frontal markers — at the zoom threshold they swap between
-  // dots and pills. We only need to refresh frontals; side tolls and
-  // bridges are zoom-invariant.
+  // Re-render markers — at the zoom threshold frontals swap dot↔pill,
+  // and side tolls swap small (6px) ↔ regular (11px). Bridges follow
+  // frontals. We track each marker's last-rendered shape so we don't
+  // burn cycles re-rendering when nothing changed.
   if (typeof allMarkers !== 'undefined') {
     const z = map.getZoom();
+    const aboveThreshold = z >= ZOOM_THRESHOLD_FRONTAL_PILL;
     allMarkers.forEach(({ toll, marker }) => {
-      // Both frontals and bridges now switch dot↔pill on zoom.
-      if (toll.type !== 'frontal' && toll.type !== 'bridge') return;
       const isActive = currentTollOpen && currentTollOpen.id === toll.id;
-      const wantPill = z >= ZOOM_THRESHOLD_FRONTAL_PILL;
-      if (marker._lastFrontalShape === (wantPill ? 'pill' : 'dot')
+      let wantShape;
+      if (toll.type === 'frontal' || toll.type === 'bridge') {
+        wantShape = aboveThreshold ? 'pill' : 'dot';
+      } else if (toll.type === 'side') {
+        wantShape = aboveThreshold ? 'side-regular' : 'side-small';
+      } else {
+        return;
+      }
+      if (marker._lastFrontalShape === wantShape
           && marker._lastFrontalActive === !!isActive) return;
       marker.setIcon(makeTollMarkerIcon(toll, isActive));
-      marker._lastFrontalShape  = wantPill ? 'pill' : 'dot';
+      marker._lastFrontalShape  = wantShape;
       marker._lastFrontalActive = !!isActive;
     });
   }

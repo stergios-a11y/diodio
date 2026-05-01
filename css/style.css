@@ -395,6 +395,22 @@ body {
   z-index: 9999 !important;
 }
 
+/* Small side-toll dot — used at low zoom (< ZOOM_THRESHOLD_FRONTAL_PILL).
+   At country-level zoom the regular 11px side dots create visual noise
+   against the 48 frontal markers; this 6px variant fades them back so
+   the user can read the trunk-route structure. As they zoom in to plan
+   a specific section, the dots grow to the regular size at the same
+   threshold where frontals grow into pills. */
+.toll-marker-side-small {
+  width: 6px;
+  height: 6px;
+  border-width: 1px;
+  box-shadow: 0 1px 2px rgba(26,31,46,0.25);
+}
+.toll-marker-side-small:hover {
+  transform: scale(2);
+}
+
 /* ══════════════════════════════════════
    FRONTAL TOLL PILLS — perpendicular to the highway
 
@@ -1057,10 +1073,11 @@ body:has(#results-panel.open) .map-floating-toggle {
 
 /* Prices — single-vehicle headline. This is the main number on the panel,
    so make it visually prominent. The vehicle emoji is large (matches the
-   visual weight of the price), and the price itself uses display font. */
-.sp-prices {
-  padding: 6px 26px 14px;
-}
+   visual weight of the price), and the price itself uses display font.
+   The price-row sits inside the header (.sp-header-inner) so it stays
+   visually grouped with the toll name; on desktop it's a full-width row
+   below the name; on mobile (see media query) it's grid-positioned next
+   to the name to save vertical space. */
 .sp-price-row {
   display: flex; justify-content: space-between; align-items: center;
   padding: 8px 0;
@@ -3156,31 +3173,45 @@ input[type="range"]::-moz-range-track {
 
   /* Tighter side panel content on mobile so more fits in the smaller sheet */
   .sp-header { padding: 9px 14px; padding-top: 14px; }
-  .sp-header-inner { padding: 14px 16px 12px; }
-  .sp-name { font-size: 1.4rem; margin-bottom: 2px; line-height: 1.1; }
-  .sp-name-gr { font-size: 0.82rem; margin-bottom: 6px; }
-  .sp-section-title { padding: 8px 16px 4px; font-size: 0.66rem; }
-  .sp-prices {
-    padding: 6px 16px 10px;
+  /* Mobile header is a 2-column grid: badge spans full width on top,
+     then toll name on the left + price on the right of the second row.
+     This keeps the price visible without burning a separate row of
+     vertical real estate — important on small viewports where the
+     side panel is a bottom sheet competing with the map. */
+  .sp-header-inner {
+    padding: 14px 16px 12px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "badge   badge"
+      "name    price"
+      "namegr  price";
+    column-gap: 10px;
+    align-items: center;
   }
-  /* Compact price cells: emoji on top, price below; hide the text label */
+  .sp-header-inner .sp-hwy-badge { grid-area: badge; }
+  .sp-header-inner .sp-name      { grid-area: name; align-self: end; }
+  .sp-header-inner .sp-name-gr   { grid-area: namegr; align-self: start; }
+  .sp-header-inner .sp-price-row { grid-area: price; align-self: center; }
+  .sp-name { font-size: 1.4rem; margin-bottom: 2px; line-height: 1.1; }
+  .sp-name-gr { font-size: 0.82rem; margin-bottom: 0; }
+  .sp-section-title { padding: 8px 16px 4px; font-size: 0.66rem; }
+  /* Compact price chip on mobile: emoji left, big price right.
+     Previously this was a 4-column grid of cells; now it's a single
+     inline pill that lives in the header grid. */
   .sp-price-row {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    padding: 8px 4px;
+    gap: 8px;
+    padding: 6px 10px;
     background: var(--paper-2);
     border: 1px solid rgba(0,0,0,0.05);
     border-radius: var(--radius);
-    gap: 3px;
   }
-  .sp-price-row span { display: flex; align-items: center; gap: 4px; line-height: 1; }
-  .sp-price-row .sp-emoji { font-size: 1.25rem; }
+  .sp-price-row > span { display: inline-flex; align-items: center; gap: 0; line-height: 1; }
+  .sp-price-row .sp-emoji { font-size: 1.4rem; }
   .sp-price-row .sp-vlabel { display: none; }   /* hide text label on mobile */
-  .sp-price-row strong { font-size: 0.9rem; letter-spacing: -0.02em; }
+  .sp-price-row strong { font-size: 1rem; letter-spacing: -0.02em; }
 
   .sp-direction { padding: 9px 16px 12px; font-size: 0.86rem; }
   .sp-dir { padding: 11px 16px 13px; }
@@ -3269,9 +3300,11 @@ input[type="range"]::-moz-range-track {
 
   /* ── Tolerance control on mobile ──────────────────────────────────────
      In prose mode (first visit), the existing .tv-compact column-flex
-     layout above does the work. In pill mode, the .tv-control becomes a
-     full-width row containing the pill button. Tapping the pill expands
-     the popover *inline below the bar* instead of floating above it. */
+     layout above does the work. In pill mode, dissolve .tv-control with
+     display:contents so the pill sits inline with the From/To inputs
+     instead of consuming a full row below them. The popover (when
+     opened) gets order:9 to wrap to its own row below the inputs while
+     staying above the order:10 analyse button. */
   .tv-control {
     width: 100%;
     order: 9;
@@ -3279,9 +3312,22 @@ input[type="range"]::-moz-range-track {
     align-items: stretch;
   }
   .tv-control.is-pill-mode {
-    /* Pill alone is small; center it in its own row so it doesn't look
-       lonely against the full-width inputs above. */
-    align-items: center;
+    display: contents;
+  }
+  .tv-control.is-pill-mode .tv-pill {
+    /* Inline pill — slot it after the To input. flex-shrink:0 prevents
+       the bar's wrap behaviour from making it disappear when squeezed. */
+    height: 40px;
+    padding: 0 12px;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .tv-control.is-pill-mode .tv-pill-icon { width: 16px; height: 16px; }
+  .tv-control.is-pill-mode .tv-popover {
+    /* Popover wraps to its own row below the inputs (order 9) but still
+       above the analyse button (order 10). */
+    order: 9;
+    width: 100%;
   }
   .tv-pill {
     height: 40px;
