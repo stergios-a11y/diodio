@@ -187,7 +187,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260501-0600" />
+  <link rel="stylesheet" href="css/style.css?v=20260501-0700" />
 </head>
 <body>
 
@@ -310,15 +310,6 @@
         <span class="flag-option flag-el" data-lang="el">🇬🇷</span>
         <span class="flag-option flag-en" data-lang="en">🇬🇧</span>
       </button>
-      <button class="btn-ghost" id="legend-toggle" data-i18n="btn.legend.show">Υπόμνημα</button>
-      <button class="btn-ghost" id="basemap-toggle" data-i18n-title="btn.basemap.title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/>
-          <polyline points="2 15.5 12 22 22 15.5"/>
-          <polyline points="2 12 12 18.5 22 12"/>
-        </svg>
-        <span data-basemap-label>Χάρτης</span>
-      </button>
       <!-- Overflow menu: low-frequency actions (Help, Feedback). Replaces
            the dedicated topbar buttons that were competing visually with
            the primary navigation. Uses the same dropdown pattern as the
@@ -412,6 +403,72 @@
   <main id="page-map" class="page page-active">
     <div id="map-container"><div id="map"></div></div>
 
+    <!-- Map controls stack: top-right of the map. Three controls grouped in
+         a single rounded card with hairline separators. Each button opens
+         its own affordance:
+           • Basemap → small popover with 3 options (streets / satellite / hybrid)
+           • Legend  → toggles the existing #legend slide-in panel
+           • Side tolls → binary toggle (button carries on/off state itself)
+         Replaces the previous topbar buttons (#legend-toggle, #basemap-toggle)
+         and the floating bottom-right pill (#side-tolls-toggle / .map-floating-toggle).
+         Hidden on routes/tolls pages; only visible on the map page. -->
+    <div id="map-controls" class="map-controls" role="toolbar"
+         data-i18n-aria-label="aria.map.controls" aria-label="Map controls">
+
+      <!-- Basemap trigger: opens the popover below it. -->
+      <button id="mc-basemap-btn" class="mc-btn" type="button"
+              aria-haspopup="menu" aria-expanded="false"
+              data-i18n-title="btn.basemap.title" title="Στυλ χάρτη">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/>
+          <polyline points="2 15.5 12 22 22 15.5"/>
+          <polyline points="2 12 12 18.5 22 12"/>
+        </svg>
+      </button>
+
+      <!-- Legend trigger: toggles the #legend panel visibility. -->
+      <button id="mc-legend-btn" class="mc-btn" type="button"
+              aria-pressed="false"
+              data-i18n-title="btn.legend.title" title="Υπόμνημα">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="8" y1="6"  x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <circle cx="4" cy="6"  r="1.5"/>
+          <circle cx="4" cy="12" r="1.5"/>
+          <circle cx="4" cy="18" r="1.5"/>
+        </svg>
+      </button>
+
+      <!-- Side-tolls toggle: binary; button carries on/off state via .is-on
+           class. Shows a small yellow dot when on. -->
+      <button id="mc-side-btn" class="mc-btn is-on" type="button"
+              aria-pressed="true"
+              data-i18n-title="control.side" title="Πλευρικά διόδια">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <circle cx="5"  cy="7"  r="1.5"/>
+          <circle cx="19" cy="7"  r="1.5"/>
+          <circle cx="5"  cy="17" r="1.5"/>
+          <circle cx="19" cy="17" r="1.5"/>
+        </svg>
+        <span class="mc-side-state-dot" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <!-- Basemap popover: anchored under #mc-basemap-btn. Three radio options. -->
+    <div id="mc-basemap-popover" class="mc-popover" role="menu" hidden>
+      <button class="mc-popover-option" type="button" role="menuitemradio"
+              data-mode="streets" data-i18n="btn.basemap.streets">Χάρτης</button>
+      <button class="mc-popover-option" type="button" role="menuitemradio"
+              data-mode="satellite" data-i18n="btn.basemap.satellite">Δορυφόρος</button>
+      <button class="mc-popover-option" type="button" role="menuitemradio"
+              data-mode="hybrid" data-i18n="btn.basemap.hybrid">Υβριδικό</button>
+    </div>
+
     <aside id="legend">
     <div class="legend-title" data-i18n="legend.title">Φίλτρο διοδίων ανά αυτοκινητόδρομο</div>
     <div id="legend-list"></div>
@@ -425,14 +482,6 @@
       <span class="legend-ramps-state" data-i18n="legend.ramps.off">Off</span>
     </button>
   </aside>
-
-  <!-- Side-tolls toggle: floats below the legend, independent of legend state.
-       Clicking it shows/hides the yellow side-toll markers on the map. -->
-  <button id="side-tolls-toggle" class="map-floating-toggle active" type="button">
-    <span class="legend-side-dot"></span>
-    <span class="map-floating-toggle-label" data-i18n="control.side">Πλευρικά διόδια</span>
-    <span class="map-floating-toggle-state" data-i18n="legend.side.on">On</span>
-  </button>
 
   <!-- First-visit tip: explains the bypass advisor on first load.
        Auto-dismisses on first toll click; persists dismiss state in
@@ -734,11 +783,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260430-2500"></script>
+  <script src="js/i18n.js?v=20260501-0700"></script>
   <script src="data/tolls.js?v=20260430-5600"></script>
   <script src="data/routes.js?v=20260427-0700"></script>
-  <script src="js/map.js?v=20260430-4800"></script>
+  <script src="js/map.js?v=20260501-0700"></script>
   <script src="js/calculator.js?v=20260430-2900"></script>
-  <script src="js/pages.js?v=20260501-0600"></script>
+  <script src="js/pages.js?v=20260501-0700"></script>
 </body>
 </html>

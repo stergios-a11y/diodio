@@ -374,6 +374,15 @@ function buildTollsTable() {
     if (th.dataset.sort === tollsSortColumn) {
       th.classList.add(tollsSortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
     }
+    // Mark the active vehicle's column header so CSS tints the
+    // column-strip top-to-bottom (header + data cells). The data
+    // cells use :has(.tolls-price.active); the header is data-driven
+    // so it stays in sync without :has() across browsers.
+    if (th.dataset.sort === catKey) {
+      th.setAttribute('data-active', 'true');
+    } else {
+      th.removeAttribute('data-active');
+    }
   });
 
   // Wire name clicks: jump to map and open that toll's side panel

@@ -238,26 +238,47 @@ window.basemapMode = 'streets';
 STREET_LAYER.addTo(map);
 
 // Cycle: streets → satellite → hybrid → streets ...
+// Used by the mobile drawer's basemap button. Desktop now uses the
+// top-right popover which calls setBasemap() directly.
 window.cycleBaseLayer = function() {
-  // Tear down current layer(s)
+  const next = window.basemapMode === 'streets'   ? 'satellite'
+             : window.basemapMode === 'satellite' ? 'hybrid'
+             : 'streets';
+  window.setBasemap(next);
+};
+
+// Direct selection — used by the basemap popover in the top-right map
+// controls stack. Idempotent: calling with the current mode is a no-op.
+window.setBasemap = function(mode) {
+  if (mode === window.basemapMode) return;
+  // Tear down current layer(s) first.
   if (window.basemapMode === 'streets') {
     map.removeLayer(STREET_LAYER);
-    SATELLITE_LAYER.addTo(map);
-    window.basemapMode = 'satellite';
-  } else if (window.basemapMode === 'satellite') {
-    SATELLITE_LABELS.addTo(map);
-    window.basemapMode = 'hybrid';
-  } else {
-    // hybrid → streets
-    map.removeLayer(SATELLITE_LAYER);
+  } else if (window.basemapMode === 'hybrid') {
     map.removeLayer(SATELLITE_LABELS);
-    STREET_LAYER.addTo(map);
-    window.basemapMode = 'streets';
+    map.removeLayer(SATELLITE_LAYER);
+  } else {
+    // satellite
+    map.removeLayer(SATELLITE_LAYER);
   }
-  // Notify the topbar/drawer buttons to update their label
+  // Add the target layer(s).
+  if (mode === 'streets') {
+    STREET_LAYER.addTo(map);
+  } else if (mode === 'satellite') {
+    SATELLITE_LAYER.addTo(map);
+  } else {
+    // hybrid
+    SATELLITE_LAYER.addTo(map);
+    SATELLITE_LABELS.addTo(map);
+  }
+  window.basemapMode = mode;
   if (typeof window.updateBasemapButtonLabels === 'function') {
     window.updateBasemapButtonLabels();
   }
+  // Sync the popover's active option.
+  document.querySelectorAll('#mc-basemap-popover .mc-popover-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.mode === mode);
+  });
 };
 
 // Mapbox public token, restricted by URL in account dashboard.
@@ -2107,27 +2128,26 @@ document.getElementById('legend-ramps-btn').addEventListener('click', function()
   }
 });
 
-// ── Side tolls toggle ─────────────────────────────────────
-// Side tolls (type === "side") are hidden by default. The user toggles
-// them on via the floating "Πλευρικά διόδια / Side tolls" button.
-// Markers are yellow; they cluster tightly around interchanges
-// (~150-365m apart) so hiding them by default reduces visual noise.
-document.getElementById('side-tolls-toggle').addEventListener('click', function() {
-  sideTollsVisible = !sideTollsVisible;
-  this.classList.toggle('active', sideTollsVisible);
-  const stateEl = this.querySelector('.map-floating-toggle-state');
-  if (stateEl) {
-    stateEl.setAttribute('data-i18n', sideTollsVisible ? 'legend.side.on' : 'legend.side.off');
-    stateEl.textContent = t(sideTollsVisible ? 'legend.side.on' : 'legend.side.off');
-  }
-  sideMarkers.forEach(({ marker }) => {
-    if (sideTollsVisible) {
-      marker.addTo(map);
-    } else {
-      map.removeLayer(marker);
-    }
+// ── Side tolls toggle (now in the top-right map controls stack) ────────
+// Side tolls (type === "side") are visible by default. The user toggles
+// them via the side-tolls icon button in #map-controls. Markers are
+// yellow; they cluster tightly around interchanges so hiding them
+// reduces visual noise when planning long-distance routes.
+const mcSideBtn = document.getElementById('mc-side-btn');
+if (mcSideBtn) {
+  mcSideBtn.addEventListener('click', function() {
+    sideTollsVisible = !sideTollsVisible;
+    this.classList.toggle('is-on', sideTollsVisible);
+    this.setAttribute('aria-pressed', sideTollsVisible ? 'true' : 'false');
+    sideMarkers.forEach(({ marker }) => {
+      if (sideTollsVisible) {
+        marker.addTo(map);
+      } else {
+        map.removeLayer(marker);
+      }
+    });
   });
-});
+}
 
 // ── Bottom-bar height tracker ─────────────────────────────
 // On mobile the bottom bar wraps from 1 row (~72px) to 2-3 rows (140-220px+)
@@ -2258,22 +2278,23 @@ window.addEventListener('langchange', () => {
 });
 
 // ── Legend ────────────────────────────────────────────────
-const legendBtn = document.getElementById('legend-toggle');
-// Legend starts hidden by default. Users discover it via the "Show legend"
-// button in the topbar; previously the legend competed with the map for
-// real estate on first load.
+// Legend panel is toggled via the #mc-legend-btn button in the top-right
+// map controls stack. Starts hidden by default; the controls button's
+// aria-pressed state mirrors the panel's open/closed state.
+const legendBtn = document.getElementById('mc-legend-btn');
 window.legendVis = false;
 let   legendVis = window.legendVis;
 
 legendEl.classList.toggle('hidden', !legendVis);
-legendBtn.textContent = t(legendVis ? 'btn.legend.hide' : 'btn.legend.show');
 
-legendBtn.addEventListener('click', () => {
-  legendVis = !legendVis;
-  window.legendVis = legendVis;
-  legendEl.classList.toggle('hidden', !legendVis);
-  legendBtn.textContent = t(legendVis ? 'btn.legend.hide' : 'btn.legend.show');
-});
+if (legendBtn) {
+  legendBtn.addEventListener('click', () => {
+    legendVis = !legendVis;
+    window.legendVis = legendVis;
+    legendEl.classList.toggle('hidden', !legendVis);
+    legendBtn.setAttribute('aria-pressed', legendVis ? 'true' : 'false');
+  });
+}
 
 const LEGEND_GROUPS = ['A1','A2','A5','A8','E65','A7','A6','BRIDGE'];
 
@@ -2339,28 +2360,67 @@ renderLegendList();
 window.addEventListener('langchange', renderLegendList);
 
 // ── Basemap toggle ────────────────────────────────────────
-// Topbar button + mobile drawer button both cycle through streets→satellite→hybrid.
-// updateBasemapButtonLabels() keeps the visible labels in sync with the current
-// mode and the active language.
+// Desktop: button in #map-controls opens a popover with 3 options.
+// Mobile: drawer button cycles through modes (no room for a popover
+// inside the drawer). updateBasemapButtonLabels() keeps the visible
+// labels in sync with the current mode and the active language.
 window.updateBasemapButtonLabels = function() {
   const key = `btn.basemap.${window.basemapMode}`;  // btn.basemap.streets|satellite|hybrid
   const label = t(key);
-  const topBtn = document.getElementById('basemap-toggle');
+  // Mobile drawer still has a text label.
   const mobBtn = document.getElementById('mobile-basemap-btn');
-  if (topBtn) {
-    const span = topBtn.querySelector('span[data-basemap-label]');
-    if (span) span.textContent = label;
-  }
   if (mobBtn) {
     const span = mobBtn.querySelector('span[data-basemap-label]');
     if (span) span.textContent = label;
   }
 };
 
-const basemapTopBtn = document.getElementById('basemap-toggle');
-if (basemapTopBtn) basemapTopBtn.addEventListener('click', window.cycleBaseLayer);
+// Mobile drawer cycles. Desktop popover selects directly.
 const basemapMobBtn = document.getElementById('mobile-basemap-btn');
 if (basemapMobBtn) basemapMobBtn.addEventListener('click', window.cycleBaseLayer);
+
+// Wire the popover: trigger button + outside-click + Escape close.
+(function initBasemapPopover() {
+  const trigger = document.getElementById('mc-basemap-btn');
+  const popover = document.getElementById('mc-basemap-popover');
+  if (!trigger || !popover) return;
+
+  function open() {
+    popover.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    setTimeout(() => {
+      document.addEventListener('mousedown', onOutside, true);
+      document.addEventListener('keydown', onEscape, true);
+    }, 0);
+  }
+  function close() {
+    popover.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('mousedown', onOutside, true);
+    document.removeEventListener('keydown', onEscape, true);
+  }
+  function onOutside(ev) {
+    if (!popover.contains(ev.target) && ev.target !== trigger && !trigger.contains(ev.target)) close();
+  }
+  function onEscape(ev) {
+    if (ev.key === 'Escape') { close(); trigger.focus(); }
+  }
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (popover.hidden) open();
+    else close();
+  });
+
+  popover.querySelectorAll('.mc-popover-option').forEach(opt => {
+    // Initialize active state from current basemap.
+    opt.classList.toggle('active', opt.dataset.mode === window.basemapMode);
+    opt.addEventListener('click', () => {
+      window.setBasemap(opt.dataset.mode);
+      close();
+    });
+  });
+})();
 
 // Initial label paint + re-paint on language change
 window.updateBasemapButtonLabels();

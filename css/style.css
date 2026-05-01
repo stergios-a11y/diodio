@@ -788,71 +788,131 @@ body {
 #legend.pushed { right: calc(var(--sp-w) + 14px); }
 
 /* ══════════════════════════════════════
-   FLOATING SIDE-TOLLS TOGGLE
-   Standalone pill on the bottom-right of the map, above the bottom bar.
-   Independent of legend visibility — always reachable when the map is shown.
-   Shows/hides yellow side-toll markers.
+   MAP CONTROLS STACK (top-right of map)
+
+   Three vertically-stacked icon buttons grouped in a single rounded card:
+   basemap, legend, side-tolls. Replaces the previous topbar buttons
+   (#legend-toggle, #basemap-toggle) and the bottom-right floating pill
+   (#side-tolls-toggle), consolidating map-specific controls inside the
+   map itself — Google Maps convention.
+
+   The card uses hairline separators between buttons and a single shared
+   border/shadow so the group reads as one control rather than three
+   floating buttons.
    ══════════════════════════════════════ */
-.map-floating-toggle {
+.map-controls {
   position: fixed;
-  bottom: calc(var(--bar-actual-h, var(--bar-h)) + 14px);
+  top: calc(var(--topbar-h) + 12px);
   right: 12px;
   z-index: 850;
   display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 12px;
+  flex-direction: column;
   background: var(--paper);
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 500;
+  overflow: hidden;
+}
+/* Hide on routes/tolls pages — these controls are map-specific.
+   Mirrors the existing `#page-map:not(.page-active) #legend` pattern. */
+#page-map:not(.page-active) #map-controls,
+#page-map:not(.page-active) #mc-basemap-popover { display: none; }
+/* When the toll side-panel is open and pushes content, slide the controls
+   left along with the legend so they stay visible. */
+#legend.pushed ~ .map-controls,
+.map-controls.pushed { right: calc(var(--sp-w) + 14px); }
+
+.mc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
   color: var(--ink-2);
-  letter-spacing: -0.005em;
-  transition: all 0.18s var(--ease), right 0.3s var(--ease);
-  user-select: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
 }
-.map-floating-toggle:hover {
-  border-color: #c89e1a;
-  color: var(--ink);
-  transform: translateY(-1px);
+.mc-btn:hover { background: var(--paper-2); color: var(--ink); }
+.mc-btn:not(:last-child) { border-bottom: 1px solid var(--line); }
+.mc-btn[aria-expanded="true"],
+.mc-btn[aria-pressed="true"] { background: var(--aegean-lt); color: var(--aegean-dark); }
+
+/* Side-tolls dot indicator: bottom-right of the button when on. */
+.mc-side-state-dot {
+  position: absolute;
+  bottom: 5px; right: 5px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #c89e1a;          /* matches the side-toll yellow */
+  border: 1.5px solid var(--paper);
+  opacity: 0;
+  transition: opacity 0.15s var(--ease);
 }
-.map-floating-toggle.active {
-  background: #fef6d8;          /* very light yellow */
-  border-color: #c89e1a;
-  color: #4a3500;               /* dark brown for contrast on yellow */
-  font-weight: 600;
-}
-.map-floating-toggle-label { white-space: nowrap; }
-.map-floating-toggle-state {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-  padding: 2px 6px;
-  background: var(--paper-2);
+#mc-side-btn.is-on .mc-side-state-dot { opacity: 1; }
+/* When side-tolls is OFF, mute the icon stroke a bit to signal disabled. */
+#mc-side-btn:not(.is-on) svg { opacity: 0.6; }
+
+/* Basemap popover: anchored to the right under the basemap button. Same
+   visual language as the .veh-menu / .overflow-menu — small dropdown card
+   with simple option buttons. */
+.mc-popover {
+  position: fixed;
+  top: calc(var(--topbar-h) + 12px);   /* aligned with top of controls stack */
+  right: calc(12px + 36px + 6px);      /* sit to the LEFT of the stack */
+  z-index: 860;
+  min-width: 150px;
+  background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
+  box-shadow: 0 8px 24px rgba(26,31,46,0.12), 0 2px 6px rgba(26,31,46,0.06);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-family: var(--font-body);
 }
-.map-floating-toggle.active .map-floating-toggle-state {
-  background: var(--paper);
-  border-color: #c89e1a;
-  color: #4a3500;
+.mc-popover[hidden] { display: none; }
+.mc-popover-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  font-size: 0.86rem;
+  color: var(--ink);
+  text-align: left;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s var(--ease);
 }
-/* When the side panel pushes content, the toggle slides left along with the legend. */
-#legend.pushed ~ .map-floating-toggle {
-  right: calc(var(--sp-w) + 14px);
+.mc-popover-option:hover { background: var(--aegean-lt); }
+.mc-popover-option.active {
+  background: var(--aegean-lt);
+  font-weight: 600;
+  color: var(--aegean-dark);
 }
-/* When the analyze-route results panel is open, lift the toggle above it
-   so it stays visible/clickable. Uses :has() (modern browsers, 2022+). */
-body:has(#results-panel.open) .map-floating-toggle {
-  bottom: calc(var(--bar-actual-h, var(--bar-h)) + var(--panel-h) + 14px);
+.mc-popover-option.active::before {
+  content: '✓';
+  font-size: 0.85em;
+  color: var(--aegean);
+  margin-right: -2px;
 }
+/* Reserve space for the checkmark on inactive options so they align. */
+.mc-popover-option:not(.active)::before {
+  content: '';
+  display: inline-block;
+  width: 0.85em;
+  margin-right: -2px;
+}
+
+/* Adjust legend panel position so it doesn't collide with the controls
+   stack. Legend now sits to the LEFT of the stack. */
+#legend { right: calc(12px + 36px + 8px); }
 
 .legend-title {
   padding: 11px 14px 9px;
@@ -2527,7 +2587,6 @@ input[type="range"]::-moz-range-track {
 #page-map:not(.page-active) #toll-side-panel,
 #page-map:not(.page-active) #results-panel,
 #page-map:not(.page-active) #bottom-bar,
-#page-map:not(.page-active) .map-floating-toggle,
 #page-map:not(.page-active) #first-tip,
 #page-map:not(.page-active) #map-container { display: none; }
 #page-routes,
@@ -2705,6 +2764,26 @@ input[type="range"]::-moz-range-track {
   overflow-x: auto;
   overflow-y: hidden;
   box-shadow: var(--shadow-sm);
+}
+/* Mobile horizontal-scroll affordance: layered backgrounds reveal a soft
+   gradient on the right edge when the table overflows offscreen. Uses
+   the well-known "scrolling shadows" technique (Roman Komarov):
+     • Two background layers per side (outer = "shadow cover", inner =
+       gradient itself). The cover hides the gradient when there's no
+       content beyond that edge.
+     • background-attachment: local on the cover (scrolls with content),
+       scroll on the gradient (stays at viewport edge).
+     • At scroll-start the right-side cover moves left out of view,
+       revealing the right-edge gradient → user sees "more →".
+   Only the right side is shown (we don't need a left fade because the
+   table starts at scroll-position 0 by default). */
+@media (max-width: 640px) {
+  .tolls-table-wrap {
+    background:
+      linear-gradient(to left, var(--paper), var(--paper) 70%, transparent) right center / 32px 100% no-repeat local,
+      linear-gradient(to left, transparent, var(--paper-3) 0%, transparent 32px) right center / 32px 100% no-repeat scroll,
+      var(--paper);
+  }
 }
 .tolls-table {
   width: 100%;
@@ -3058,6 +3137,26 @@ input[type="range"]::-moz-range-track {
   color: var(--aegean-dark);
   text-shadow: 0 0 0.5px rgba(42,107,158,0.25);
 }
+/* Stronger active-column treatment: tint the whole cell background +
+   left border so the column visually stands out from its neighbors.
+   Header gets the same treatment so the column-strip reads as a unit
+   from top to bottom. Uses :has() (Chrome/Safari/Edge/Firefox 2022+);
+   gracefully degrades to just the text-color rule above. */
+.tolls-table tbody td:has(.tolls-price.active) {
+  background: rgba(42, 107, 158, 0.06);
+  box-shadow: inset 1px 0 0 rgba(42, 107, 158, 0.18);
+}
+/* Data-driven header highlight: the renderer sets data-active="true" on
+   the header that matches the active vehicle (set in pages.js). */
+.tolls-table thead th[data-active="true"] {
+  background: rgba(42, 107, 158, 0.10);
+  color: var(--aegean-dark);
+  box-shadow: inset 1px 0 0 rgba(42, 107, 158, 0.25);
+}
+.tolls-table thead th[data-active="true"]::after {
+  color: var(--aegean);
+  opacity: 0.85;
+}
 
 /* ── Verdict pill in tolls table ── */
 .tolls-verdict-stack {
@@ -3208,13 +3307,8 @@ input[type="range"]::-moz-range-track {
   body.panel-open #map-container { bottom: 50vh !important; }
   body.panel-open #results-panel { display: none; }
   body.panel-open #legend { display: none; }
-  body.panel-open .map-floating-toggle { display: none; }
-
-  /* On mobile, side panel is a bottom sheet (not a side push) — reset the
-     desktop "slide-left when panel open" offset so the pill doesn't drift. */
-  #legend.pushed ~ .map-floating-toggle {
-    right: 12px;
-  }
+  body.panel-open #map-controls,
+  body.panel-open #mc-basemap-popover { display: none; }
 
   /* Tighter side panel content on mobile so more fits in the smaller sheet */
   .sp-header { padding: 9px 14px; padding-top: 14px; }
