@@ -34,6 +34,7 @@
   <meta property="og:image" content="https://stergios-a11y.github.io/diodio/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Διαδραστικός χάρτης διοδίων Ελλάδας — mydiodia" />
   <meta property="og:locale" content="el_GR" />
   <meta property="og:locale:alternate" content="en_US" />
 
@@ -43,9 +44,11 @@
   <meta name="twitter:description" content="Δες τιμές 2026, υπολόγισε το κόστος, και βρες ποια διόδια αξίζει να παρακάμψεις." />
   <meta name="twitter:image" content="https://stergios-a11y.github.io/diodio/og-image.png" />
 
-  <!-- Structured data: WebApplication + Dataset.
+  <!-- Structured data: WebApplication + Dataset + FAQPage.
        Helps Google show rich snippets and understand this is an interactive
-       tool with a curated dataset behind it. -->
+       tool with a curated dataset behind it. The FAQPage block targets
+       high-volume queries (διοδια αθηνα θεσσαλονικη, υπολογισμος διοδιων,
+       ποσο εχουν τα διοδια) and can produce expandable Q&A snippets in SERPs. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -68,11 +71,14 @@
           "priceCurrency": "EUR"
         },
         "featureList": [
-          "Interactive map of 48 main toll booths, 2 bridges/tunnels, plus 84 side toll booths",
-          "City-to-city route cost calculator across 16 cities and 106 explicit pairs",
-          "Bypass advisor with time-vs-money slider",
-          "Sortable table of all toll prices",
-          "Greek and English UI"
+          "Interactive map of 48 frontal toll booths, 2 bridges/tunnels, plus 87 side toll booths on Greek motorways",
+          "City-to-city route cost calculator across 16 cities and 106 explicit route pairs",
+          "Bypass advisor with adjustable time-vs-money preference slider",
+          "Per-toll comparison table: motorway vs bypass cost, distance, and time",
+          "Distance breakdown showing how much of a route stays on motorway vs local roads",
+          "Sortable table of all toll prices for cars, motorcycles, vans, and trucks",
+          "Greek and English UI",
+          "Coverage of A1 ΠΑΘΕ, A2 Εγνατία, A5 Νέα Οδός, A6 Αττική Οδός, A7 Μορέας, A8 Ολυμπία Οδός, E65 Κεντρική Οδός, plus Rio–Antirrio bridge and Aktio–Preveza tunnel"
         ],
         "areaServed": {
           "@type": "Country",
@@ -87,9 +93,9 @@
         "@type": "Dataset",
         "@id": "https://stergios-a11y.github.io/diodio/#dataset",
         "name": "Greek Motorway Toll Prices and Bypass Routes 2026",
-        "description": "Curated dataset of all toll booths on Greek motorways (A1/PATHE, A2/Egnatia, A5/Nea Odos, A6/Attiki Odos, A7/Moreas, A8/Olympia Odos, E65/Kentriki Odos, plus Rio-Antirrio bridge). Includes per-booth prices for all four vehicle categories, geographic coordinates, and pre-curated bypass routes with estimated extra travel time.",
+        "description": "Curated dataset of all toll booths on Greek motorways (A1/PATHE, A2/Egnatia, A5/Nea Odos, A6/Attiki Odos, A7/Moreas, A8/Olympia Odos, E65/Kentriki Odos, plus Rio-Antirrio bridge and Aktio-Preveza tunnel). Includes per-booth prices for all four vehicle categories, geographic coordinates, and pre-curated bypass routes with estimated extra travel time.",
         "url": "https://stergios-a11y.github.io/diodio/",
-        "keywords": ["tolls", "Greece", "motorways", "διόδια", "αυτοκινητόδρομοι"],
+        "keywords": ["tolls", "Greece", "motorways", "διόδια", "αυτοκινητόδρομοι", "PATHE", "Egnatia", "Olympia Odos"],
         "spatialCoverage": {
           "@type": "Place",
           "name": "Greece",
@@ -100,13 +106,67 @@
         },
         "temporalCoverage": "2026/..",
         "datePublished": "2026-01-01",
-        "dateModified": "2026-04-27",
+        "dateModified": "2026-05-01",
         "creator": {
           "@type": "Person",
           "name": "mydiodia"
         },
         "license": "https://creativecommons.org/licenses/by/4.0/",
         "isAccessibleForFree": true
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://stergios-a11y.github.io/diodio/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Πόσο κοστίζουν τα διόδια Αθήνα–Θεσσαλονίκη;",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Η διαδρομή Αθήνα → Θεσσαλονίκη μέσω της εθνικής οδού (ΠΑΘΕ / A1) περιλαμβάνει 11 σταθμούς διοδίων με συνολικό κόστος περίπου €33,70 για ΙΧ αυτοκίνητο τιμές 2026. Η αναλυτική κατανομή ανά σταθμό διατίθεται στον υπολογιστή κόστους διαδρομής του mydiodia."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Πόσο κοστίζουν τα διόδια Αθήνα–Πάτρα;",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Η διαδρομή Αθήνα → Πάτρα μέσω της Ολυμπίας Οδού (A8) περιλαμβάνει 6 σταθμούς διοδίων με συνολικό κόστος περίπου €17,40 για ΙΧ. Η εφαρμογή υπολογίζει επίσης ποια διόδια συμφέρει να παρακάμψετε με βάση πόσα επιπλέον λεπτά είστε διατεθειμένοι να ξοδέψετε."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Πώς υπολογίζω τα διόδια για τη διαδρομή μου;",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Επιλέξτε πόλη αφετηρίας και προορισμού στο mydiodia, διαλέξτε τύπο οχήματος (μοτοσικλέτα, ΙΧ, βαν, φορτηγό), και πατήστε Ανάλυση. Θα δείτε αναλυτικά κάθε διόδιο της διαδρομής, συνολικό κόστος, εναλλακτικές παρακάμψεις, και πόσο χρόνο/χιλιόμετρα προστίθενται για κάθε παράκαμψη."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Ποια διόδια στην Ελλάδα έχουν παράκαμψη;",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Στους περισσότερους μετωπικούς σταθμούς διοδίων υπάρχει παράκαμψη μέσω παλαιάς εθνικής ή τοπικής οδού. Στο mydiodia καταγράφονται οι παρακάμψεις για 48 μετωπικά διόδια στην ΠΑΘΕ, Εγνατία Οδό, Ολυμπία Οδό, Μορέα, Νέα Οδό και Κεντρική Οδό, με την έξοδο/επανείσοδο, επιπλέον χιλιόμετρα και χρόνο. Η Γέφυρα Ρίου–Αντιρρίου παρακάμπτεται μόνο μέσω του πορθμείου Ρίου–Αντιρρίου."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Ποια κατηγορία οχήματος ανήκει το αυτοκίνητό μου;",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Στην Ελλάδα τα διόδια χρεώνονται σε 4 κατηγορίες: Κατηγορία 1 (μοτοσικλέτες), Κατηγορία 2 (ΙΧ αυτοκίνητα έως 2,2μ ύψος), Κατηγορία 3 (ελαφρά φορτηγά / βαν / SUV με ρυμουλκούμενο, ή με 2 άξονες πάνω από 2,2μ), Κατηγορία 4 (βαρέα οχήματα με 3 ή περισσότερους άξονες). Στο mydiodia επιλέγετε την κατηγορία πάνω δεξιά."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Είναι δωρεάν το mydiodia;",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Ναι, το mydiodia είναι εντελώς δωρεάν, δεν απαιτεί εγγραφή ή λογαριασμό, και δεν εμφανίζει διαφημίσεις."
+            }
+          }
+        ]
       }
     ]
   }
@@ -132,28 +192,55 @@
 
       <h2 style="font-size:1.2rem;margin-top:32px;">Καλυπτόμενοι αυτοκινητόδρομοι</h2>
       <ul>
-        <li><strong>A1 / ΠΑΘΕ</strong> — Αθήνα → Θεσσαλονίκη (11 σταθμοί)</li>
-        <li><strong>A2 / Εγνατία Οδός</strong> — Ηγουμενίτσα → Αρδάνιο</li>
-        <li><strong>A5 / Νέα Οδός</strong> — Κλόκοβα → Τέροβο</li>
-        <li><strong>A6 / Αττική Οδός</strong> — Περιφερειακός Αθηνών</li>
-        <li><strong>A7 / Μορέας</strong> — Κόρινθος → Καλαμάτα / Σπάρτη</li>
-        <li><strong>A8 / Ολυμπία Οδός</strong> — Ελευσίνα → Πύργος</li>
-        <li><strong>E65 / Κεντρική Οδός</strong> — Λιανοκλάδι → Τρίκαλα</li>
-        <li>Γέφυρα Ρίου–Αντιρρίου, Σήραγγα Ακτίου–Πρέβεζας</li>
+        <li><strong>A1 / ΠΑΘΕ</strong> — Αθήνα → Θεσσαλονίκη → Εύζωνοι (15 σταθμοί διοδίων)</li>
+        <li><strong>A2 / Εγνατία Οδός</strong> — Ηγουμενίτσα → Θεσσαλονίκη → Αρδάνιο (13 σταθμοί)</li>
+        <li><strong>A5 / Νέα Οδός</strong> — Κλόκοβα → Τέροβο (4 σταθμοί)</li>
+        <li><strong>A6 / Αττική Οδός</strong> — Περιφερειακός Αθηνών (1 σταθμός)</li>
+        <li><strong>A7 / Μορέας</strong> — Κόρινθος → Καλαμάτα / Σπάρτη (5 σταθμοί)</li>
+        <li><strong>A8 / Ολυμπία Οδός</strong> — Ελευσίνα → Πάτρα → Πύργος (7 σταθμοί)</li>
+        <li><strong>E65 / Κεντρική Οδός</strong> — Λιανοκλάδι → Τρίκαλα (3 σταθμοί)</li>
+        <li><strong>Γέφυρες & Σήραγγες</strong> — Γέφυρα Ρίου–Αντιρρίου, Υποθαλάσσια Σήραγγα Ακτίου–Πρέβεζας</li>
       </ul>
 
-      <h2 style="font-size:1.2rem;margin-top:24px;">Δημοφιλείς διαδρομές</h2>
+      <h2 style="font-size:1.2rem;margin-top:24px;">Δημοφιλείς διαδρομές & κόστος διοδίων (ΙΧ, 2026)</h2>
       <ul>
-        <li>Αθήνα → Θεσσαλονίκη — €33,70 για ΙΧ (11 σταθμοί διοδίων)</li>
-        <li>Αθήνα → Πάτρα — €17,40 για ΙΧ (6 σταθμοί)</li>
-        <li>Αθήνα → Καλαμάτα — μέσω Μορέα</li>
-        <li>Αθήνα → Ιωάννινα — €44,70 για ΙΧ</li>
-        <li>Θεσσαλονίκη → Λάρισα, Πάτρα → Ιωάννινα, Αθήνα → Κοζάνη</li>
+        <li>Αθήνα → Θεσσαλονίκη — €33,70 (11 σταθμοί διοδίων στην ΠΑΘΕ)</li>
+        <li>Αθήνα → Πάτρα — €17,40 (6 σταθμοί στην Ολυμπία Οδό)</li>
+        <li>Αθήνα → Καλαμάτα — μέσω Μορέα (A7)</li>
+        <li>Αθήνα → Ιωάννινα — €44,70 (μέσω ΠΑΘΕ + Νέας Οδού)</li>
+        <li>Αθήνα → Λάρισα — μέσω ΠΑΘΕ</li>
+        <li>Αθήνα → Σπάρτη — μέσω Μορέα</li>
+        <li>Αθήνα → Κοζάνη — μέσω ΠΑΘΕ + Εγνατίας</li>
+        <li>Θεσσαλονίκη → Λάρισα — μέσω ΠΑΘΕ</li>
+        <li>Θεσσαλονίκη → Αλεξανδρούπολη — μέσω Εγνατίας</li>
+        <li>Πάτρα → Ιωάννινα — μέσω Νέας Οδού + Γέφυρας Ρίου–Αντιρρίου</li>
+        <li>Πάτρα → Καλαμάτα — μέσω Ολυμπίας Οδού + Μορέα</li>
+        <li>Ηράκλειο → Χανιά — χωρίς διόδια (επαρχιακό δίκτυο Κρήτης)</li>
       </ul>
+
+      <h2 style="font-size:1.2rem;margin-top:24px;">Τι κάνει το mydiodia</h2>
+      <ul>
+        <li><strong>Υπολογισμός κόστους διαδρομής</strong> — εισάγεις πόλη αφετηρίας και προορισμού, και βλέπεις τι θα πληρώσεις σε διόδια.</li>
+        <li><strong>Σύμβουλος παράκαμψης</strong> — για κάθε διόδιο σου λέμε αν αξίζει να το παρακάμψεις, βάσει του χρόνου που είσαι διατεθειμένος να ξοδέψεις (π.χ. 5 λεπτά για €1).</li>
+        <li><strong>Διαδραστικός χάρτης</strong> — όλα τα διόδια Ελλάδας με γεωγραφική θέση, τιμές για 4 κατηγορίες οχημάτων (μοτοσικλέτα, ΙΧ, βαν, φορτηγό).</li>
+        <li><strong>Δεδομένα για 137 σταθμούς</strong> — 48 μετωπικά διόδια, 87 πλευρικά διόδια, 2 γέφυρες/σήραγγες σε όλους τους ελληνικούς αυτοκινητοδρόμους.</li>
+        <li><strong>Δωρεάν, χωρίς εγγραφή, χωρίς διαφημίσεις.</strong></li>
+      </ul>
+
+      <h2 style="font-size:1.2rem;margin-top:24px;">Συχνές ερωτήσεις</h2>
+
+      <h3 style="font-size:1.05rem;">Πόσο κοστίζουν τα διόδια Αθήνα–Θεσσαλονίκη;</h3>
+      <p>Η διαδρομή Αθήνα → Θεσσαλονίκη μέσω της Εθνικής Οδού (ΠΑΘΕ / A1) περιλαμβάνει 11 σταθμούς διοδίων με συνολικό κόστος περίπου €33,70 για ΙΧ αυτοκίνητο (τιμές 2026). Αναλυτική κατανομή ανά σταθμό διατίθεται στον υπολογιστή του mydiodia.</p>
+
+      <h3 style="font-size:1.05rem;">Πώς υπολογίζω τα διόδια για τη διαδρομή μου;</h3>
+      <p>Επιλέξτε πόλη αφετηρίας και προορισμού, διαλέξτε τύπο οχήματος, και πατήστε Ανάλυση. Θα δείτε αναλυτικά κάθε διόδιο, συνολικό κόστος, εναλλακτικές παρακάμψεις και πόσο χρόνο/χιλιόμετρα προστίθενται για κάθε παράκαμψη.</p>
+
+      <h3 style="font-size:1.05rem;">Ποιες κατηγορίες οχημάτων υποστηρίζονται;</h3>
+      <p>Όλες οι 4 κατηγορίες χρέωσης διοδίων στην Ελλάδα: Κατηγορία 1 (μοτοσικλέτες), Κατηγορία 2 (ΙΧ αυτοκίνητα), Κατηγορία 3 (βαν / ελαφρά φορτηγά), Κατηγορία 4 (βαρέα φορτηγά).</p>
 
       <p style="margin-top:24px;font-size:0.9rem;color:#5a6678;">
-        Τιμές διοδίων ενημερωμένες τον Απρίλιο 2026. Πηγή δεδομένων: επίσημες ανακοινώσεις
-        παραχωρησιούχων (Νέα Οδός, Ολυμπία Οδός, Εγνατία, Μορέας, Κεντρική Οδός).
+        Τιμές διοδίων ενημερωμένες τον Μάιο 2026. Πηγή δεδομένων: επίσημες ανακοινώσεις
+        παραχωρησιούχων (Νέα Οδός, Ολυμπία Οδός, Εγνατία Οδός, Μορέας, Κεντρική Οδός, Αττικές Διαδρομές, Γέφυρα ΑΕ).
       </p>
 
       <hr style="margin:32px 0;border:none;border-top:1px solid #e0e3e8;" />
@@ -162,7 +249,10 @@
       <p>
         Interactive map and bypass advisor for tolls on Greek motorways. See 2026 prices
         for cars, motorcycles, vans, and trucks; calculate total cost for your route;
-        and discover which tolls are worth bypassing based on local roads.
+        and discover which tolls are worth bypassing based on local roads. Coverage:
+        A1 PATHE (Athens–Thessaloniki–Evzoni), A2 Egnatia Odos, A5 Nea Odos, A6 Attiki Odos,
+        A7 Moreas, A8 Olympia Odos, E65 Kentriki Odos, Rio–Antirrio bridge, and Aktio–Preveza tunnel.
+        137 toll booths total: 48 frontal, 87 side, 2 bridge/tunnel.
       </p>
       <p><strong>JavaScript required.</strong> Please enable it to use mydiodia.</p>
     </div>
@@ -511,7 +601,7 @@
   <script src="js/i18n.js?v=20260430-2500"></script>
   <script src="data/tolls.js?v=20260430-5600"></script>
   <script src="data/routes.js?v=20260427-0700"></script>
-  <script src="js/map.js?v=20260430-4600"></script>
+  <script src="js/map.js?v=20260430-4700"></script>
   <script src="js/calculator.js?v=20260430-2900"></script>
   <script src="js/pages.js?v=20260427-0800"></script>
 </body>
