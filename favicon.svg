@@ -1,11 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#2e7a4a"/>
-  <rect x="5" y="18" width="3" height="9" fill="#faf7f0"/>
-  <rect x="5" y="6" width="3" height="3" fill="#faf7f0"/>
-  <rect x="8" y="6" width="20" height="2.5" fill="#faf7f0"/>
-  <rect x="9.5" y="9.5" width="2" height="3" fill="#faf7f0"/>
-  <rect x="14" y="9.5" width="2" height="3" fill="#faf7f0"/>
-  <rect x="18.5" y="9.5" width="2" height="3" fill="#faf7f0"/>
-  <rect x="23" y="9.5" width="2" height="3" fill="#faf7f0"/>
-  <rect x="5" y="27" width="22" height="1.5" fill="#faf7f0"/>
+  <!-- Background: rounded square in primary blue -->
+  <rect width="32" height="32" rx="6" fill="#2a6b9e"/>
+  <!-- Gantry beam (horizontal, top) -->
+  <rect x="4" y="6" width="24" height="3.5" fill="#faf7f0"/>
+  <!-- Right vertical post -->
+  <rect x="25" y="9" width="3" height="17" fill="#faf7f0"/>
+  <!-- Booth (left rectangle) -->
+  <rect x="5" y="13" width="11" height="13" fill="#faf7f0"/>
+  <!-- Booth window (negative space, in primary blue to read as "window") -->
+  <rect x="7" y="15" width="7" height="4" fill="#2a6b9e"/>
+  <!-- Ground line -->
+  <rect x="3" y="26" width="26" height="1.5" fill="#faf7f0"/>
 </svg>
