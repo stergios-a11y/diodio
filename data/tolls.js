@@ -571,8 +571,8 @@ const TOLL_DATA = [
   },
   {
     id: "a1_moustheni",
-    name_gr: "Διόδια Μουσθένης / Στρυμονικού",
-    name_en: "Moustheni / Strymoniko",
+    name_gr: "Διόδια Μουσθένης",
+    name_en: "Moustheni",
     highway: "A1", highway_name: "PATHE (A1/E75) · Aegean Motorway",
     operator: "Aegean Motorway",
     type: "frontal", direction_label: "Both directions",
@@ -783,9 +783,30 @@ const TOLL_DATA = [
     axis: "EW", bearing: 71,
     lat: 40.3671958, lng: 22.0602089,
     cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35,
-    notes: "Mountain section between Kozani and Veroia. No viable bypass — the alternative routes through the Pieria range are narrow village roads with switchbacks, adding 30+ minutes and unsuitable for trucks or winter driving.",
-    notes_gr: "Ορεινή διαδρομή ανάμεσα σε Κοζάνη και Βέροια. Δεν υπάρχει εύλογη παράκαμψη — οι εναλλακτικές διαδρομές μέσω Πιερίων είναι στενοί χωριάτικοι δρόμοι με στροφές, προσθέτουν 30+ λεπτά και είναι ακατάλληλες για φορτηγά ή χειμερινή οδήγηση.",
-    bypass_directions: null,
+    notes: "Mountain section between Kozani and Veroia. The bypass exists but is inconvenient — narrow village roads through the Pieria range with switchbacks, adding ~30 minutes; not recommended for trucks or in winter.",
+    notes_gr: "Ορεινή διαδρομή ανάμεσα σε Κοζάνη και Βέροια. Η παράκαμψη υπάρχει αλλά είναι άβολη — στενοί χωριάτικοι δρόμοι μέσω Πιερίων με στροφές, προσθέτει περίπου 30 λεπτά· δεν συνιστάται για φορτηγά ή το χειμώνα.",
+    bypass_directions: {
+      eastbound: {
+        label: "Eastbound (towards Thessaloniki)",
+        exit_name: "Πολυμύλου", entry_name: "Βέροιας",
+        pre_exit:   { lat: 40.36920936408938, lng: 22.043695840196307 },
+        off_ramp:   { lat: 40.36942088383195, lng: 22.047636257369653 },
+        on_ramp:    { lat: 40.50647860955401, lng: 22.230038473618826 },
+        post_merge: { lat: 40.50885387216699, lng: 22.23061602351778 },
+        minutes: 30,
+        confidence: "verified"
+      },
+      westbound: {
+        label: "Westbound (towards Kozani)",
+        exit_name: "Βέροιας", entry_name: "Πολυμύλου",
+        pre_exit:   { lat: 40.50899563148427, lng: 22.23050824311689 },
+        off_ramp:   { lat: 40.50750558444378, lng: 22.229105269291384 },
+        on_ramp:    { lat: 40.36936236810959, lng: 22.052409015065365 },
+        post_merge: { lat: 40.369492901796214, lng: 22.050057181889446 },
+        minutes: 30,
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "egnatia_ieropigi",
