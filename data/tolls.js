@@ -581,27 +581,23 @@ const TOLL_DATA = [
     cat1: 1.85, cat2: 2.65, cat3: 6.70, cat4: 9.40,
     notes: "Between Kavala and Drama junctions.",
     bypass_directions: {
-      northbound: {
-        label: "Northbound (towards Kavala/Drama)",
-        exit_name: "Γαληψού", entry_name: "Μουσθένης",
-        pre_exit:   { lat: 40.786484, lng: 23.960474 },
-        off_ramp:   { lat: 40.786484, lng: 23.960474 },
-        on_ramp:    { lat: 40.8654, lng: 24.1254 },
-        post_merge: { lat: 40.8654, lng: 24.1254 },
-        minutes: 20,
-        via: [{ lat: 40.8542, lng: 23.9542 },{ lat: 40.856, lng: 24.000 },{ lat: 40.860, lng: 24.060 },{ lat: 40.8654, lng: 24.1254 }],
-        confidence: "approximate"
+      eastbound: {
+        label: "Eastbound (towards Drama)",
+        pre_exit:   { lat: 40.83630926167674, lng: 24.11150458745517 },
+        off_ramp:   { lat: 40.83827091080535, lng: 24.114422851284417 },
+        on_ramp:    { lat: 40.8849651336884,  lng: 24.23708301095448 },
+        post_merge: { lat: 40.88458303472627, lng: 24.239706602831117 },
+        minutes: 10,
+        confidence: "verified"
       },
-      southbound: {
-        label: "Southbound (towards Thessaloniki)",
-        exit_name: "Μουσθένης", entry_name: "Γαληψού",
-        pre_exit:   { lat: 40.8654, lng: 24.1254 },
-        off_ramp:   { lat: 40.8654, lng: 24.1254 },
-        on_ramp:    { lat: 40.786484, lng: 23.960474 },
-        post_merge: { lat: 40.786484, lng: 23.960474 },
-        minutes: 20,
-        via: [{ lat: 40.8654, lng: 24.1254 },{ lat: 40.860, lng: 24.060 },{ lat: 40.856, lng: 24.000 },{ lat: 40.8542, lng: 23.9542 }],
-        confidence: "approximate"
+      westbound: {
+        label: "Westbound (towards Thessaloniki)",
+        pre_exit:   { lat: 40.88532532689773,  lng: 24.237433896255705 },
+        off_ramp:   { lat: 40.88596782880429,  lng: 24.233902509707143 },
+        on_ramp:    { lat: 40.841058647425605, lng: 24.11702963716592 },
+        post_merge: { lat: 40.83990906832765,  lng: 24.115829066559048 },
+        minutes: 10,
+        confidence: "verified"
       },
     },
   },
@@ -616,7 +612,26 @@ const TOLL_DATA = [
     lat: 40.7264289, lng: 23.6937403,
     cat1: 0.95, cat2: 1.40, cat3: 3.50, cat4: 4.90,
     notes: "Popular summer exit for Asprovalta beach.",
-    bypass_directions: null,
+    bypass_directions: {
+      eastbound: {
+        label: "Eastbound (towards Kavala)",
+        pre_exit:   { lat: 40.708133298776026, lng: 23.679396623613602 },
+        off_ramp:   { lat: 40.709692152869486, lng: 23.681684863201102 },
+        on_ramp:    { lat: 40.79528536483666,  lng: 23.83229028922064 },
+        post_merge: { lat: 40.79706828347665,  lng: 23.835088103880285 },
+        minutes: 15,
+        confidence: "verified"
+      },
+      westbound: {
+        label: "Westbound (towards Thessaloniki)",
+        pre_exit:   { lat: 40.79700812766995, lng: 23.834502064060004 },
+        off_ramp:   { lat: 40.79545909687297, lng: 23.83146260329719 },
+        on_ramp:    { lat: 40.70921239597522, lng: 23.680011607913023 },
+        post_merge: { lat: 40.70724286912166, lng: 23.678080184045587 },
+        minutes: 15,
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "a1_evzoni",
