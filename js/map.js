@@ -896,7 +896,7 @@ function openSidePanel(toll) {
         fetchRoute(dir.pre_exit, dir.post_merge, 'highway'),
         Promise.all([
           fetchRoute(dir.pre_exit, dir.off_ramp,   'highway'),
-          fetchRoute(dir.off_ramp, dir.on_ramp,    'bypass', dir.bypass_via),
+          fetchRoute(dir.off_ramp, dir.on_ramp,    'bypass', dir.via),
           fetchRoute(dir.on_ramp,  dir.post_merge, 'highway'),
         ]).then(legs => {
           if (legs.some(l => !l)) return null;

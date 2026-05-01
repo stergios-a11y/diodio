@@ -443,7 +443,7 @@ function drawBypassLine(dir, label) {
 
   // If we have real ramps, fetch the bypass driving route and replace the placeholder
   if (dir.off_ramp && dir.on_ramp && typeof window.fetchBypassRoute === 'function') {
-    window.fetchBypassRoute(dir.off_ramp, dir.on_ramp, dir.bypass_via).then(routeCoords => {
+    window.fetchBypassRoute(dir.off_ramp, dir.on_ramp, dir.via).then(routeCoords => {
       if (routeCoords && routeCoords.length > 1) {
         layer.setLatLngs(routeCoords);
         layer.setStyle({ opacity: 0.9, dashArray: null });
