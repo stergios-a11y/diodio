@@ -1080,61 +1080,86 @@ function openSidePanel(toll) {
     return name;
   }
 
-  // Update the comparison stats inline in the side panel after OSRM returns
+  // Update the comparison stats inline in the side panel after OSRM returns.
+  // Three-column layout: money · distance · time. The Διαφορά row sits at the
+  // bottom of the same table with sign-prefixed colored values, replacing the
+  // old separate price-diff block + diff line.
   function updateDirStats(toll, dirKey, dir, bypassRes, highwayRes) {
     const el = document.querySelector(`.sp-dir[data-dir-key="${dirKey}"] [data-stats="${dirKey}"]`);
     if (!el) return;
-    const fmt = (n, suffix) => n != null ? `${n.toFixed(1)} ${suffix}` : '—';
+    const fmtKm  = n => n != null ? `${n.toFixed(1)} ${t('unit.km')}` : '—';
+    const fmtMin = n => n != null ? `${n.toFixed(1)} ${t('bar.time.label2')}` : '—';
 
-    const bp = el.querySelector('[data-bypass-vals]');
-    const hw = el.querySelector('[data-highway-vals]');
-    const df = el.querySelector('[data-diff-vals]');
-    const pd = el.querySelector('[data-price-diff]');
+    // Per-vehicle costs. Highway: the frontal toll. Bypass: side tolls (or ferry fare).
+    const catKey = window.getVehicleCat();
+    const isFerry = dir.mode === 'ferry' && dir.fare;
+    const sideInfo = isFerry ? null
+      : (typeof window.bypassSideTollCost === 'function'
+          ? window.bypassSideTollCost(toll, dirKey, dir)
+          : { totals: {} });
+    const highwayCost = toll[catKey] || 0;
+    const bypassCost = isFerry ? (dir.fare[catKey] || 0) : (sideInfo.totals[catKey] || 0);
+    const fmtMoney = c => `€${c.toFixed(2)}`;
 
-    if (bypassRes && bp) {
-      bp.textContent = `${fmt(bypassRes.distanceKm, t('unit.km'))} · ${fmt(bypassRes.durationMin, t('bar.time.label2'))}`;
-    } else if (bp) {
-      bp.textContent = t('compare.unavailable');
+    // Bypass row
+    const bm = el.querySelector('[data-bypass-money]');
+    const bd = el.querySelector('[data-bypass-dist]');
+    const bt = el.querySelector('[data-bypass-time]');
+    if (bm) bm.textContent = fmtMoney(bypassCost);
+    if (bypassRes) {
+      if (bd) bd.textContent = fmtKm(bypassRes.distanceKm);
+      if (bt) bt.textContent = fmtMin(bypassRes.durationMin);
+    } else {
+      if (bd) bd.textContent = t('compare.unavailable');
+      if (bt) bt.textContent = '';
     }
-    if (highwayRes && hw) {
-      hw.textContent = `${fmt(highwayRes.distanceKm, t('unit.km'))} · ${fmt(highwayRes.durationMin, t('bar.time.label2'))}`;
-    } else if (hw) {
-      hw.textContent = t('compare.unavailable');
+
+    // Highway row
+    const hm = el.querySelector('[data-highway-money]');
+    const hd = el.querySelector('[data-highway-dist]');
+    const ht = el.querySelector('[data-highway-time]');
+    if (hm) hm.textContent = fmtMoney(highwayCost);
+    if (highwayRes) {
+      if (hd) hd.textContent = fmtKm(highwayRes.distanceKm);
+      if (ht) ht.textContent = fmtMin(highwayRes.durationMin);
+    } else {
+      if (hd) hd.textContent = t('compare.unavailable');
+      if (ht) ht.textContent = '';
     }
 
-    if (bypassRes && highwayRes && df) {
+    // Diff row — bypass minus highway. Negative money = savings (green);
+    // positive distance/time = cost (amber). Tint the row based on net money.
+    const diffRow = el.querySelector('[data-diff-row]');
+    const dm = el.querySelector('[data-diff-money]');
+    const dd = el.querySelector('[data-diff-dist]');
+    const dt = el.querySelector('[data-diff-time]');
+    const moneyDiff = bypassCost - highwayCost;       // <0 = savings
+    const moneySign = moneyDiff > 0 ? '+' : (moneyDiff < 0 ? '−' : '');
+    const moneyCls  = moneyDiff < 0 ? 'savings' : (moneyDiff > 0 ? 'cost' : 'zero');
+    if (dm) {
+      dm.textContent = `${moneySign}€${Math.abs(moneyDiff).toFixed(2)}`;
+      dm.className = `sp-cmp-money ${moneyCls}`;
+    }
+    if (diffRow) {
+      // Tint the diff row green if the bypass net-saves money, amber if it costs more.
+      diffRow.classList.toggle('savings', moneyDiff < 0);
+      diffRow.classList.toggle('cost',    moneyDiff > 0);
+    }
+    if (bypassRes && highwayRes) {
       const distDiff = bypassRes.distanceKm  - highwayRes.distanceKm;
       const timeDiff = bypassRes.durationMin - highwayRes.durationMin;
-      const distSign = distDiff >= 0 ? '+' : '';
-      const timeSign = timeDiff >= 0 ? '+' : '';
-      df.innerHTML = `${t('compare.diff')}: <strong>${distSign}${distDiff.toFixed(1)} ${t('unit.km')}</strong> · <strong>${timeSign}${Math.round(timeDiff)} ${t('bar.time.label2')}</strong>`;
-    }
-
-    // Per-vehicle price diff: bypass price minus highway price for each of the 4
-    // categories. Highway price is the frontal toll. Bypass price is the sum of
-    // any side tolls billable at the bypass off_ramp/on_ramp endpoints — OR the
-    // ferry fare when mode === 'ferry' (Rio-Antirrio bridge bypass).
-    //   diff < 0 → bypass cheaper (savings, green)
-    //   diff = 0 → no difference
-    //   diff > 0 → bypass costlier (rare; happens when side tolls exceed frontal)
-    if (pd && toll && dir && typeof window.bypassSideTollCost === 'function') {
-      const isFerry = dir.mode === 'ferry' && dir.fare;
-      const sideInfo = isFerry ? null : window.bypassSideTollCost(toll, dirKey, dir);
-      const key     = window.getVehicleCat();
-      const meta    = window.getVehicleMeta();
-      const frontal = toll[key] || 0;
-      const side    = isFerry ? (dir.fare[key] || 0) : (sideInfo.totals[key] || 0);
-      const diff    = side - frontal;     // negative = bypass cheaper
-      const sign    = diff > 0 ? '+' : (diff < 0 ? '−' : '');
-      const cls     = diff < 0 ? 'savings' : (diff > 0 ? 'cost' : 'zero');
-      const abs     = Math.abs(diff).toFixed(2);
-      // Vehicle context is set by the topbar selector — the row only needs
-      // an emoji as a glance reminder, not the full label (which appears
-      // again at top of the panel and would be redundant here).
-      pd.innerHTML = `<div class="sp-cmp-pd-row">
-        <span class="sp-cmp-pd-veh"><span class="sp-cmp-pd-emoji">${meta.emoji}</span></span>
-        <span class="sp-cmp-pd-val ${cls}">${sign}€${abs}</span>
-      </div>`;
+      const distSign = distDiff > 0 ? '+' : (distDiff < 0 ? '−' : '');
+      const timeSign = timeDiff > 0 ? '+' : (timeDiff < 0 ? '−' : '');
+      const distCls  = distDiff > 0 ? 'cost' : (distDiff < 0 ? 'savings' : 'zero');
+      const timeCls  = timeDiff > 0 ? 'cost' : (timeDiff < 0 ? 'savings' : 'zero');
+      if (dd) {
+        dd.textContent = `${distSign}${Math.abs(distDiff).toFixed(1)} ${t('unit.km')}`;
+        dd.className = `sp-cmp-dist ${distCls}`;
+      }
+      if (dt) {
+        dt.textContent = `${timeSign}${Math.round(Math.abs(timeDiff))} ${t('bar.time.label2')}`;
+        dt.className = `sp-cmp-time ${timeCls}`;
+      }
     }
   }
 
@@ -1289,15 +1314,29 @@ function openSidePanel(toll) {
             <div class="sp-cmp-row sp-cmp-bypass">
               <span class="sp-cmp-dot" style="background:#2a6b9e"></span>
               <span class="sp-cmp-label">${t('compare.bypass')}</span>
-              <span class="sp-cmp-vals" data-bypass-vals>${t('compare.loading')}</span>
+              <span class="sp-cmp-vals" data-bypass-vals>
+                <span class="sp-cmp-money" data-bypass-money>${t('compare.loading')}</span>
+                <span class="sp-cmp-dist" data-bypass-dist>—</span>
+                <span class="sp-cmp-time" data-bypass-time>—</span>
+              </span>
             </div>
             <div class="sp-cmp-row sp-cmp-highway">
               <span class="sp-cmp-dot" style="background:#2e7a4a"></span>
               <span class="sp-cmp-label">${t('compare.highway')}</span>
-              <span class="sp-cmp-vals" data-highway-vals>${t('compare.loading')}</span>
+              <span class="sp-cmp-vals" data-highway-vals>
+                <span class="sp-cmp-money" data-highway-money>${t('compare.loading')}</span>
+                <span class="sp-cmp-dist" data-highway-dist>—</span>
+                <span class="sp-cmp-time" data-highway-time>—</span>
+              </span>
             </div>
-            <div class="sp-cmp-diff" data-diff-vals>—</div>
-            <div class="sp-cmp-price-diff" data-price-diff></div>
+            <div class="sp-cmp-row sp-cmp-diff" data-diff-row>
+              <span class="sp-cmp-label sp-cmp-diff-label">${t('compare.diff')}</span>
+              <span class="sp-cmp-vals">
+                <span class="sp-cmp-money" data-diff-money>—</span>
+                <span class="sp-cmp-dist" data-diff-dist>—</span>
+                <span class="sp-cmp-time" data-diff-time>—</span>
+              </span>
+            </div>
           </div>
         </div>`;
     });

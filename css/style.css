@@ -1250,8 +1250,8 @@ body {
   align-items: center;
   gap: 9px;
   font-family: var(--font-body);
-  font-size: 0.74rem;
-  padding: 4px 0;
+  font-size: 0.78rem;
+  padding: 6px 0;
 }
 .sp-cmp-row + .sp-cmp-row { border-top: 1px dashed var(--line); }
 .sp-cmp-dot {
@@ -1267,68 +1267,52 @@ body {
   letter-spacing: -0.005em;
 }
 .sp-cmp-vals {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 11px;
   color: var(--ink);
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
-.sp-cmp-diff {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
+.sp-cmp-money {
   font-family: var(--font-display);
-  font-style: italic;
-  font-size: 0.74rem;
-  color: var(--ink-3);
-  text-align: right;
-  letter-spacing: 0.005em;
-}
-.sp-cmp-diff strong {
-  font-family: var(--font-display);
-  font-style: normal;
   font-weight: 600;
-  color: var(--ink);
   font-size: 0.85rem;
   letter-spacing: -0.015em;
+  min-width: 52px;
+  text-align: right;
+}
+.sp-cmp-dist, .sp-cmp-time {
+  min-width: 56px;
+  text-align: right;
 }
 
-/* Per-vehicle price diff lines (Δ in € for each of the 4 categories).
-   Hidden when the bypass has no side tolls and no price difference matters
-   to display, by which point JS leaves the container empty. */
-.sp-cmp-price-diff {
-  margin-top: 6px;
-  font-family: var(--font-display);
-  font-size: 0.74rem;
-  color: var(--ink-3);
-  letter-spacing: 0.005em;
+/* Διαφορά row — sits at the bottom of the same table as a third row.
+   Slight tint to set it apart; bg switches green/amber based on net money. */
+.sp-cmp-row.sp-cmp-diff {
+  margin-top: 4px;
+  padding: 8px 8px;
+  border-top: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.02);
+  transition: background 0.18s var(--ease);
 }
-.sp-cmp-price-diff:empty { display: none; }
-.sp-cmp-price-diff .sp-cmp-pd-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
+.sp-cmp-row.sp-cmp-diff.savings {
+  background: rgba(46, 122, 74, 0.07);
 }
-.sp-cmp-price-diff .sp-cmp-pd-row + .sp-cmp-pd-row { border-top: 1px dotted var(--line); }
-.sp-cmp-price-diff .sp-cmp-pd-veh {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-style: italic;
-  color: var(--ink-3);
+.sp-cmp-row.sp-cmp-diff.cost {
+  background: rgba(184, 80, 45, 0.07);
 }
-.sp-cmp-price-diff .sp-cmp-pd-emoji { font-style: normal; font-size: 1.7rem; line-height: 1; }
-.sp-cmp-price-diff .sp-cmp-pd-val {
-  font-style: normal;
+.sp-cmp-diff-label {
   font-weight: 600;
   color: var(--ink);
-  font-size: 1.15rem;
-  letter-spacing: -0.015em;
-  font-family: var(--font-display);
 }
-.sp-cmp-price-diff .sp-cmp-pd-val.savings { color: #2d7a3a; }
-.sp-cmp-price-diff .sp-cmp-pd-val.cost    { color: #b8502d; }
-.sp-cmp-price-diff .sp-cmp-pd-val.zero    { color: var(--ink-3); }
+/* Color-coded diff values: savings → green, cost → amber-red, zero → muted. */
+.sp-cmp-money.savings, .sp-cmp-dist.savings, .sp-cmp-time.savings { color: #2d7a3a; }
+.sp-cmp-money.cost,    .sp-cmp-dist.cost,    .sp-cmp-time.cost    { color: #a45533; }
+.sp-cmp-money.zero,    .sp-cmp-dist.zero,    .sp-cmp-time.zero    { color: var(--ink-3); }
 
 /* ══════════════════════════════════════
    BOTTOM BAR
