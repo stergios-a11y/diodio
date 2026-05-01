@@ -815,7 +815,31 @@ const TOLL_DATA = [
     lat: 40.5745294, lng: 21.0614475,
     cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15,
     notes: "Branch spur of Egnatia towards Kastoria / Albanian border.",
-    bypass_directions: null,
+    bypass_directions: {
+      northbound: {
+        label: "Northbound",
+        pre_exit:   { lat: 40.51927390173682, lng: 21.181928389375493 },
+        off_ramp:   { lat: 40.52347294411983, lng: 21.18076107411302 },
+        // Highway terminus — A2 branch ends near Albanian border.
+        // on_ramp and post_merge are the same coord since the road ends.
+        on_ramp:    { lat: 40.62462589508906, lng: 21.061750752537193 },
+        post_merge: { lat: 40.62462589508906, lng: 21.061750752537193 },
+        minutes: 15,
+        via: [],
+        confidence: "verified"
+      },
+      southbound: {
+        label: "Southbound",
+        // SB drivers START at the terminus (where road begins going south).
+        pre_exit:   { lat: 40.623965474917675, lng: 21.06155137732066 },
+        off_ramp:   { lat: 40.62468296116626,  lng: 21.06176310317386 },
+        on_ramp:    { lat: 40.523444681111,    lng: 21.17968793276026 },
+        post_merge: { lat: 40.52006519266017,  lng: 21.181420529066965 },
+        minutes: 15,
+        via: [],
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "egnatia_thessaloniki_west",
