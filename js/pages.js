@@ -435,13 +435,19 @@ document.addEventListener('click', e => {
     });
   });
 
-  // Help button inside drawer → trigger main help modal
+  // Help button inside drawer → open help popover. We position it under
+  // the hamburger-btn since on mobile the overflow trigger is hidden and
+  // the hamburger is what's visually adjacent.
   const mobileHelpBtn = document.getElementById('mobile-help-btn');
   if (mobileHelpBtn) {
     mobileHelpBtn.addEventListener('click', () => {
       close();
-      const mainHelpBtn = document.getElementById('help-btn');
-      if (mainHelpBtn) mainHelpBtn.click();
+      const anchor = document.getElementById('hamburger-btn') || document.body;
+      if (typeof window.openHelpPopover === 'function') {
+        // Defer so the drawer's close transition runs first; otherwise
+        // the popover and the closing drawer overlap visually.
+        setTimeout(() => window.openHelpPopover(anchor), 100);
+      }
     });
   }
 })();

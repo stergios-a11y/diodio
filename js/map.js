@@ -437,18 +437,123 @@ window.fetchMainRoute = async function(fromCoord, toCoord) {
 };
 window.fetchRoute = fetchRoute;
 
-// ── Help modal ────────────────────────────────────────────
-const helpModal    = document.getElementById('help-modal');
-const helpBtn      = document.getElementById('help-btn');
-const helpClose    = document.getElementById('help-close');
-const helpCloseBtn = document.getElementById('help-close-btn');
+// ── Help popover + overflow menu ──────────────────────────
+// The topbar overflow ("···") menu holds rare actions: Help and Feedback.
+// Help opens a small popover anchored below the overflow trigger; feedback
+// is just a mailto link. Mobile drawer keeps its own drawer-level Help
+// button which calls openHelpPopover() directly. Single source of truth
+// for help visibility.
 
-helpBtn.addEventListener('click',      () => helpModal.classList.add('open'));
-helpClose.addEventListener('click',    () => helpModal.classList.remove('open'));
-helpCloseBtn.addEventListener('click', () => helpModal.classList.remove('open'));
-helpModal.addEventListener('click', e => {
-  if (e.target === helpModal) helpModal.classList.remove('open');
-});
+const helpPopover     = document.getElementById('help-popover');
+const helpPopoverClose= document.getElementById('help-popover-close');
+const overflowToggle  = document.getElementById('overflow-toggle');
+const overflowTrigger = document.getElementById('overflow-trigger-btn');
+const overflowMenu    = document.getElementById('overflow-menu');
+const overflowHelp    = document.getElementById('overflow-help');
+
+function openOverflowMenu() {
+  if (!overflowMenu || !overflowTrigger) return;
+  overflowMenu.hidden = false;
+  overflowTrigger.setAttribute('aria-expanded', 'true');
+  setTimeout(() => {
+    document.addEventListener('mousedown', onOverflowOutsideClick, true);
+    document.addEventListener('keydown', onOverflowKey, true);
+  }, 0);
+}
+function closeOverflowMenu() {
+  if (!overflowMenu || !overflowTrigger) return;
+  overflowMenu.hidden = true;
+  overflowTrigger.setAttribute('aria-expanded', 'false');
+  document.removeEventListener('mousedown', onOverflowOutsideClick, true);
+  document.removeEventListener('keydown', onOverflowKey, true);
+}
+function onOverflowOutsideClick(ev) {
+  if (overflowToggle && !overflowToggle.contains(ev.target)) closeOverflowMenu();
+}
+function onOverflowKey(ev) {
+  if (ev.key === 'Escape') { closeOverflowMenu(); overflowTrigger?.focus(); }
+}
+
+if (overflowTrigger) {
+  overflowTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (overflowMenu && overflowMenu.hidden) openOverflowMenu();
+    else closeOverflowMenu();
+  });
+}
+
+// Position the help-popover so its arrow points at the overflow trigger
+// (or any caller-supplied anchor element). Called on open and on
+// resize while the popover is visible.
+function positionHelpPopover(anchor) {
+  if (!helpPopover || !anchor) return;
+  const r = anchor.getBoundingClientRect();
+  const pop = helpPopover;
+  // Width is fixed by CSS; clamp left so it stays in viewport with 8px
+  // breathing room. Right-align under the trigger when there's space,
+  // otherwise nudge left.
+  const popWidth  = pop.offsetWidth || 320;
+  const margin    = 8;
+  let left = r.right - popWidth;             // right-align by default
+  if (left < margin) left = margin;
+  if (left + popWidth > window.innerWidth - margin) {
+    left = window.innerWidth - popWidth - margin;
+  }
+  const top = r.bottom + 10;
+  pop.style.left = left + 'px';
+  pop.style.top  = top  + 'px';
+  // Arrow points at trigger center horizontally
+  const arrow = pop.querySelector('.help-popover-arrow');
+  if (arrow) {
+    const triggerCenter = r.left + r.width / 2;
+    arrow.style.left = (triggerCenter - left - 7) + 'px';
+  }
+}
+
+let _helpAnchor = null;
+function openHelpPopover(anchor) {
+  if (!helpPopover) return;
+  _helpAnchor = anchor || overflowTrigger;
+  helpPopover.hidden = false;
+  positionHelpPopover(_helpAnchor);
+  setTimeout(() => {
+    document.addEventListener('mousedown', onHelpOutsideClick, true);
+    document.addEventListener('keydown', onHelpKey, true);
+    window.addEventListener('resize', onHelpResize);
+  }, 0);
+}
+function closeHelpPopover() {
+  if (!helpPopover) return;
+  helpPopover.hidden = true;
+  _helpAnchor = null;
+  document.removeEventListener('mousedown', onHelpOutsideClick, true);
+  document.removeEventListener('keydown', onHelpKey, true);
+  window.removeEventListener('resize', onHelpResize);
+}
+function onHelpOutsideClick(ev) {
+  if (helpPopover && !helpPopover.contains(ev.target) && !ev.target.closest('#overflow-help, #mobile-help-btn')) {
+    closeHelpPopover();
+  }
+}
+function onHelpKey(ev) {
+  if (ev.key === 'Escape') closeHelpPopover();
+}
+function onHelpResize() {
+  if (_helpAnchor) positionHelpPopover(_helpAnchor);
+}
+
+if (overflowHelp) {
+  overflowHelp.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeOverflowMenu();
+    openHelpPopover(overflowTrigger);
+  });
+}
+if (helpPopoverClose) {
+  helpPopoverClose.addEventListener('click', closeHelpPopover);
+}
+// Expose for the mobile-drawer help button (wired in pages.js).
+window.openHelpPopover = openHelpPopover;
 
 // ── Language toggle ───────────────────────────────────────
 document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);

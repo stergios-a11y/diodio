@@ -187,7 +187,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260501-0300" />
+  <link rel="stylesheet" href="css/style.css?v=20260501-0400" />
 </head>
 <body>
 
@@ -310,12 +310,6 @@
         <span class="flag-option flag-el" data-lang="el">🇬🇷</span>
         <span class="flag-option flag-en" data-lang="en">🇬🇧</span>
       </button>
-      <a class="btn-ghost btn-feedback-top" href="mailto:stergiosgousios@gmail.com?subject=mydiodia%20Feedback" data-i18n-title="btn.feedback.title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-        <span data-i18n="btn.feedback.short">Σχόλια</span>
-      </a>
       <button class="btn-ghost" id="legend-toggle" data-i18n="btn.legend.show">Υπόμνημα</button>
       <button class="btn-ghost" id="basemap-toggle" data-i18n-title="btn.basemap.title">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -325,14 +319,45 @@
         </svg>
         <span data-basemap-label>Χάρτης</span>
       </button>
-      <button class="btn-ghost btn-help" id="help-btn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-        <span data-i18n="btn.help">Οδηγίες</span>
-      </button>
+      <!-- Overflow menu: low-frequency actions (Help, Feedback). Replaces
+           the dedicated topbar buttons that were competing visually with
+           the primary navigation. Uses the same dropdown pattern as the
+           vehicle toggle. Mobile keeps these in the drawer instead. -->
+      <div class="overflow-toggle" id="overflow-toggle">
+        <button class="overflow-trigger btn-ghost" id="overflow-trigger-btn"
+                type="button" aria-haspopup="menu" aria-expanded="false"
+                data-i18n-aria-label="aria.overflow.menu" aria-label="Περισσότερες επιλογές">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <circle cx="5" cy="12" r="1"/>
+            <circle cx="12" cy="12" r="1"/>
+            <circle cx="19" cy="12" r="1"/>
+          </svg>
+        </button>
+        <div class="overflow-menu" id="overflow-menu" role="menu" hidden>
+          <button class="overflow-option" id="overflow-help" type="button" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span data-i18n="btn.help">Οδηγίες</span>
+          </button>
+          <a class="overflow-option" id="overflow-feedback"
+             href="mailto:stergiosgousios@gmail.com?subject=mydiodia%20Feedback"
+             role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span data-i18n="btn.feedback.short">Σχόλια</span>
+          </a>
+        </div>
+      </div>
       <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
           <line x1="4" y1="7" x2="20" y2="7"/>
@@ -417,47 +442,56 @@
     <button class="first-tip-close" id="first-tip-close" type="button" data-i18n-aria-label="aria.firsttip.dismiss" aria-label="Κλείσιμο επεξήγησης">✕</button>
   </div>
 
-  <div id="help-modal">
-    <div class="help-box">
-      <button class="help-close" id="help-close">✕</button>
-      <div class="help-logo">
-        <svg class="logo-glyph" viewBox="0 0 96 96" width="44" height="44" aria-hidden="true"><rect x="2" y="14" width="90" height="11" fill="#2a6b9e" rx="1.5"/><rect x="32" y="17" width="32" height="6" fill="#f4c430" rx="0.8"/><rect x="6" y="34" width="36" height="48" fill="#2a6b9e" rx="1.5"/><rect x="11" y="39" width="26" height="17" fill="#ffffff" rx="0.5"/><rect x="17" y="63" width="12" height="19" fill="#1a4a6e" rx="0.5"/><rect x="86" y="25" width="5" height="57" fill="#2a6b9e" rx="0.5"/><circle cx="42" cy="57" r="2.5" fill="#1a4a6e"/><rect x="42" y="55" width="42" height="4" fill="#f4c430" rx="0.5"/><rect x="50" y="55" width="3.5" height="4" fill="#c8302a"/><rect x="62" y="55" width="3.5" height="4" fill="#c8302a"/><rect x="74" y="55" width="3.5" height="4" fill="#c8302a"/><rect x="82.5" y="53" width="3.5" height="29" fill="#1a4a6e" rx="0.5"/><rect x="0" y="84" width="92" height="2.5" fill="#1a1f2e" rx="0.4"/></svg>
-        <span class="help-logo-text">my<span class="logo-mid">dio</span><em>dia</em></span>
-      </div>
-      <div class="help-subtitle" data-i18n="help.subtitle">Οδηγός Διοδίων Ελλάδας</div>
-
-      <div class="help-section">
-        <div class="help-section-icon">◆</div>
-        <div class="help-section-content">
-          <div class="help-section-title" data-i18n="help.section1.title">Εξερεύνησε τα διόδια</div>
-          <div class="help-section-body">
-            <span data-i18n="help.section1.intro">Κλικ σε οποιοδήποτε διόδιο στον χάρτη για τιμές και διαδρομή παράκαμψης.</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="help-divider"></div>
-
-      <div class="help-section">
-        <div class="help-section-icon">⊕</div>
-        <div class="help-section-content">
-          <div class="help-section-title" data-i18n="help.section2.title">Ανάλυσε τη διαδρομή σου</div>
-          <div class="help-section-body">
-            <span data-i18n="help.section2.intro">Στη γραμμή κάτω: όρισε αφετηρία/προορισμό, όχημα, και πόσα λεπτά είσαι διατεθειμένος να οδηγήσεις παραπάνω για να γλιτώσεις €1.</span>
-            <span data-i18n="help.section2.outro">Πατάς Ανάλυση και βλέπεις ποια διόδια αξίζει να πληρώσεις και ποια να παρακάμψεις.</span>
-            <div class="help-legend-row">
-              <span style="color:#2d7a3a;font-weight:600;" data-i18n="help.legend.avoid">Πράσινο = απόφυγε</span>
-              <span style="color:#b8502d;font-weight:600;" data-i18n="help.legend.pay">Πορτοκαλί = πλήρωσε</span>
-              <span style="color:#b8860b;font-weight:600;" data-i18n="help.legend.marginal">Κίτρινο = οριακό</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="help-tip" data-i18n="help.tip">💡 Πάντα επιβεβαίωσε στο Google Maps πριν ακολουθήσεις άγνωστη παράκαμψη.</div>
-
-      <button class="help-cta" id="help-close-btn" data-i18n="help.cta">Εντάξει</button>
+  <!-- Help popover. Anchored to the topbar overflow menu's trigger button.
+       Replaces the previous full-screen help-modal — same content, much
+       lighter machinery. Sections use <details> for native progressive
+       disclosure; all open by default since the content is short. Wired
+       up by map.js via the overflow menu's "Οδηγίες" item. -->
+  <div id="help-popover" class="help-popover" role="dialog"
+       aria-labelledby="help-popover-title" hidden>
+    <div class="help-popover-arrow" aria-hidden="true"></div>
+    <div class="help-popover-header">
+      <span class="help-popover-title" id="help-popover-title"
+            data-i18n="help.subtitle">Οδηγός Διοδίων Ελλάδας</span>
+      <button class="help-popover-close" id="help-popover-close" type="button"
+              data-i18n-aria-label="aria.help.dismiss" aria-label="Κλείσιμο">✕</button>
     </div>
+
+    <details class="help-section-d" open>
+      <summary class="help-section-summary">
+        <span class="help-section-icon">◆</span>
+        <span data-i18n="help.section1.title">Εξερεύνησε τα διόδια</span>
+      </summary>
+      <div class="help-section-d-body">
+        <span data-i18n="help.section1.intro">Κλικ σε οποιοδήποτε διόδιο στον χάρτη για τιμές και διαδρομή παράκαμψης.</span>
+      </div>
+    </details>
+
+    <details class="help-section-d" open>
+      <summary class="help-section-summary">
+        <span class="help-section-icon">⊕</span>
+        <span data-i18n="help.section2.title">Ανάλυσε τη διαδρομή σου</span>
+      </summary>
+      <div class="help-section-d-body">
+        <span data-i18n="help.section2.intro">Στη γραμμή κάτω: όρισε αφετηρία/προορισμό, όχημα, και πόσα λεπτά είσαι διατεθειμένος να οδηγήσεις παραπάνω για να γλιτώσεις €1.</span>
+        <span data-i18n="help.section2.outro">Πατάς Ανάλυση και βλέπεις ποια διόδια αξίζει να πληρώσεις και ποια να παρακάμψεις.</span>
+        <div class="help-legend-row">
+          <span class="help-color help-color-avoid" data-i18n="help.legend.avoid">Πράσινο = απόφυγε</span>
+          <span class="help-color help-color-pay" data-i18n="help.legend.pay">Πορτοκαλί = πλήρωσε</span>
+          <span class="help-color help-color-marginal" data-i18n="help.legend.marginal">Κίτρινο = οριακό</span>
+        </div>
+      </div>
+    </details>
+
+    <details class="help-section-d" open>
+      <summary class="help-section-summary">
+        <span class="help-section-icon">💡</span>
+        <span data-i18n="help.tip.title">Συμβουλή</span>
+      </summary>
+      <div class="help-section-d-body">
+        <span data-i18n="help.tip.body">Πάντα επιβεβαίωσε στο Google Maps πριν ακολουθήσεις άγνωστη παράκαμψη.</span>
+      </div>
+    </details>
   </div>
 
   <div id="toll-side-panel">
@@ -700,11 +734,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260501-0300"></script>
+  <script src="js/i18n.js?v=20260501-0400"></script>
   <script src="data/tolls.js?v=20260430-5600"></script>
   <script src="data/routes.js?v=20260427-0700"></script>
-  <script src="js/map.js?v=20260501-0300"></script>
+  <script src="js/map.js?v=20260501-0400"></script>
   <script src="js/calculator.js?v=20260430-2900"></script>
-  <script src="js/pages.js?v=20260501-0300"></script>
+  <script src="js/pages.js?v=20260501-0400"></script>
 </body>
 </html>
