@@ -1223,11 +1223,21 @@ const TOLL_DATA = [
     bypass_directions: {
       westbound: {
         label: "Westbound",
-        pre_exit:   { lat: 37.927329, lng: 22.793321 },
-        off_ramp:   { lat: 37.931497, lng: 22.787935 },
-        on_ramp:    { lat: 38.00777, lng: 22.733325 },
-        post_merge: { lat: 38.010805, lng: 22.733535 },
-        minutes: 10,
+        pre_exit:   { lat: 37.92713642077846, lng: 22.79377521378467 },
+        off_ramp:   { lat: 37.92930864027616, lng: 22.789672051837513 },
+        on_ramp:    { lat: 38.00898328568388, lng: 22.7350057614467 },
+        post_merge: { lat: 38.01270140125692, lng: 22.732463004323158 },
+        minutes: 12,
+        via: [],
+        confidence: "verified"
+      },
+      eastbound: {
+        label: "Eastbound",
+        pre_exit:   { lat: 38.013541751696174, lng: 22.73186995096869 },
+        off_ramp:   { lat: 38.01027700733543,  lng: 22.73327908818929 },
+        on_ramp:    { lat: 37.92796256221679,  lng: 22.790665457749466 },
+        post_merge: { lat: 37.92719020189895,  lng: 22.79318868881462 },
+        minutes: 12,
         via: [],
         confidence: "verified"
       },
