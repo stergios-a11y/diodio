@@ -675,25 +675,23 @@ const TOLL_DATA = [
     bypass_directions: {
       eastbound: {
         label: "Eastbound (towards Ioannina)",
-        exit_name: "Δωδώνης", entry_name: "Σελλών",
-        pre_exit:   { lat: 39.555673, lng: 20.761349 },
-        off_ramp:   { lat: 39.548200, lng: 20.785400 },
-        on_ramp:    { lat: 39.536720, lng: 20.691710 },
-        post_merge: { lat: 39.535638, lng: 20.703223 },
+        exit_name: "Σελλών", entry_name: "Δωδώνης",
+        pre_exit:   { lat: 39.495898989000956, lng: 20.532080555520736 },
+        off_ramp:   { lat: 39.49609660348638,  lng: 20.535667020490806 },
+        on_ramp:    { lat: 39.5357953631439,   lng: 20.693660918387252 },
+        post_merge: { lat: 39.53595563385451,  lng: 20.69606260603992 },
         minutes: 14,
-        via: [{ lat: 39.5482, lng: 20.7854 },{ lat: 39.535, lng: 20.740 },{ lat: 39.520, lng: 20.700 },{ lat: 39.5125, lng: 20.6584 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
       westbound: {
         label: "Westbound (towards Igoumenitsa)",
-        exit_name: "Σελλών", entry_name: "Δωδώνης",
-        pre_exit:   { lat: 39.535778, lng: 20.703250 },
-        off_ramp:   { lat: 39.536720, lng: 20.691710 },
-        on_ramp:    { lat: 39.548200, lng: 20.785400 },
-        post_merge: { lat: 39.555836, lng: 20.761219 },
+        exit_name: "Δωδώνης", entry_name: "Σελλών",
+        pre_exit:   { lat: 39.53636015656929, lng: 20.694162834520487 },
+        off_ramp:   { lat: 39.53720913294947, lng: 20.690774919239008 },
+        on_ramp:    { lat: 39.49519222941149, lng: 20.5251291088105 },
+        post_merge: { lat: 39.4946378714704,  lng: 20.523836994348276 },
         minutes: 14,
-        via: [{ lat: 39.5125, lng: 20.6584 },{ lat: 39.520, lng: 20.700 },{ lat: 39.535, lng: 20.740 },{ lat: 39.5482, lng: 20.7854 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
     },
   },
