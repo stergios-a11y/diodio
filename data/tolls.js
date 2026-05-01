@@ -739,31 +739,9 @@ const TOLL_DATA = [
     axis: "EW", bearing: 45,
     lat: 39.7895825, lng: 21.2666618,
     cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35,
-    notes: "Mountain tunnel through Pindus range. Old road via Metsovo village.",
-    bypass_directions: {
-      eastbound: {
-        label: "Eastbound (towards Thessaloniki)",
-        exit_name: "Μετσόβου", entry_name: "Παναγιάς",
-        pre_exit:   { lat: 39.754925, lng: 21.159824 },
-        off_ramp:   { lat: 39.759905, lng: 21.169323 },
-        on_ramp:    { lat: 39.793163, lng: 21.303378 },
-        post_merge: { lat: 39.800653, lng: 21.309852 },
-        minutes: 45,
-        via: [{ lat: 39.7854, lng: 21.1854 },{ lat: 39.782, lng: 21.220 },{ lat: 39.786, lng: 21.270 },{ lat: 39.7985, lng: 21.3254 }],
-        confidence: "auto"
-      },
-      westbound: {
-        label: "Westbound (towards Ioannina)",
-        exit_name: "Παναγιάς", entry_name: "Μετσόβου",
-        pre_exit:   { lat: 39.800792, lng: 21.309623 },
-        off_ramp:   { lat: 39.793163, lng: 21.303378 },
-        on_ramp:    { lat: 39.759905, lng: 21.169323 },
-        post_merge: { lat: 39.755197, lng: 21.159808 },
-        minutes: 45,
-        via: [{ lat: 39.7985, lng: 21.3254 },{ lat: 39.786, lng: 21.270 },{ lat: 39.782, lng: 21.220 },{ lat: 39.7854, lng: 21.1854 }],
-        confidence: "auto"
-      },
-    },
+    notes: "Mountain tunnel through Pindus range. No viable bypass — the only alternative is the old road over the Metsovo pass, a slow mountain detour through the village (40+ minutes extra, often closed in winter).",
+    notes_gr: "Σήραγγα στα Πινδαρικά όρη. Δεν υπάρχει εύλογη παράκαμψη — η μόνη εναλλακτική είναι ο παλιός δρόμος από το χωριό Μέτσοβο, μια αργή ορεινή διαδρομή (40+ λεπτά παραπάνω, συχνά κλειστός το χειμώνα).",
+    bypass_directions: null,
   },
   {
     id: "egnatia_kozani",
@@ -780,24 +758,22 @@ const TOLL_DATA = [
       eastbound: {
         label: "Eastbound (towards Thessaloniki)",
         exit_name: "Σιάτιστας", entry_name: "Κοζάνης",
-        pre_exit:   { lat: 40.219947, lng: 21.543025 },
-        off_ramp:   { lat: 40.227987, lng: 21.550016 },
-        on_ramp:    { lat: 40.350638, lng: 21.808375 },
-        post_merge: { lat: 40.358027, lng: 21.815010 },
+        pre_exit:   { lat: 40.234401580630525, lng: 21.577660293371935 },
+        off_ramp:   { lat: 40.23705907724213,  lng: 21.580911976611716 },
+        on_ramp:    { lat: 40.30270395220913,  lng: 21.69024295479097 },
+        post_merge: { lat: 40.30433739824976,  lng: 21.691761635307333 },
         minutes: 20,
-        via: [{ lat: 40.2584, lng: 21.5214 },{ lat: 40.268, lng: 21.620 },{ lat: 40.280, lng: 21.700 },{ lat: 40.3012, lng: 21.7854 }],
-        confidence: "auto"
+        confidence: "verified"
       },
       westbound: {
         label: "Westbound (towards Ioannina)",
         exit_name: "Κοζάνης", entry_name: "Σιάτιστας",
-        pre_exit:   { lat: 40.358108, lng: 21.814906 },
-        off_ramp:   { lat: 40.350638, lng: 21.808375 },
-        on_ramp:    { lat: 40.227987, lng: 21.550016 },
-        post_merge: { lat: 40.220057, lng: 21.542999 },
+        pre_exit:   { lat: 40.29816272567927,  lng: 21.6830930077435 },
+        off_ramp:   { lat: 40.297177687377456, lng: 21.68101343538024 },
+        on_ramp:    { lat: 40.237589265069765, lng: 21.580353882745232 },
+        post_merge: { lat: 40.23465609663487,  lng: 21.577764208682613 },
         minutes: 20,
-        via: [{ lat: 40.3012, lng: 21.7854 },{ lat: 40.280, lng: 21.700 },{ lat: 40.268, lng: 21.620 },{ lat: 40.2584, lng: 21.5214 }],
-        confidence: "auto"
+        confidence: "verified"
       },
     },
   },

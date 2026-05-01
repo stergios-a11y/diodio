@@ -589,7 +589,13 @@ function buildHoverTooltip(toll) {
   // matching their map markers. Other tolls use the highway color.
   const color    = toll.type === 'side' ? SIDE_TOLL_COLOR : (HIGHWAY_COLORS[toll.highway] || '#888');
   const dirIcons = { frontal: '⇄', entry: '⬆', exit: '⬇', bridge: '⇌', side: '◇' };
-  const notes    = toll.notes ? `<div class="tt-notes">${toll.notes}</div>` : '';
+  // Same notes-by-language logic as the side panel. Tolls with only
+  // English `notes` show nothing in EL mode (preserving existing
+  // behavior); Greek `notes_gr` opt-in fields surface in EL mode.
+  const noteText = (getCurrentLang() === 'el' && toll.notes_gr)
+    ? toll.notes_gr
+    : (getCurrentLang() === 'en' ? toll.notes : null);
+  const notes    = noteText ? `<div class="tt-notes">${noteText}</div>` : '';
   return `
     <div class="tt-header">
       <div>
@@ -1568,9 +1574,15 @@ function openSidePanel(toll) {
   const primaryName   = stripTollPrefix(getCurrentLang() === 'el' ? toll.name_gr : toll.name_en);
   const secondaryName = stripTollPrefix(getCurrentLang() === 'el' ? toll.name_en : toll.name_gr);
 
-  // Notes are English-only in data; only show when in English mode
-  const notesHTML = (toll.notes && getCurrentLang() === 'en')
-    ? `<div class="sp-notes">${toll.notes}</div>`
+  // Notes show on either language. notes_gr is the Greek copy when
+  // present; falls back to the English `notes` field otherwise. This
+  // keeps backward compatibility — tolls without notes_gr still show
+  // their English note in EN mode (and nothing in EL mode) as before.
+  const noteText = (getCurrentLang() === 'el' && toll.notes_gr)
+    ? toll.notes_gr
+    : (getCurrentLang() === 'en' ? toll.notes : null);
+  const notesHTML = noteText
+    ? `<div class="sp-notes">${noteText}</div>`
     : '';
 
   document.getElementById('sp-content').innerHTML = `
