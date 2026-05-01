@@ -59,8 +59,11 @@ function buildRoutesGrid() {
   const grid = document.getElementById('routes-grid');
   if (!grid) return;
   const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
-  const vehicleSel = document.getElementById('routes-vehicle');
-  const catKey = vehicleSel?.value || 'cat2';
+  // Vehicle is a global UI mode (not a per-page filter). Read the current
+  // value from the shared accessor; updates arrive via `vehiclechange`.
+  const catKey = (typeof window !== 'undefined' && window.getVehicleCat)
+    ? window.getVehicleCat()
+    : 'cat2';
   const cityName = c => lang === 'el' ? c.name_gr : c.name_en;
 
   const tollById = {};
@@ -141,8 +144,12 @@ function buildRoutesGrid() {
   });
 }
 
-document.addEventListener('change', e => {
-  if (e.target?.id === 'routes-vehicle') buildRoutesGrid();
+// Re-render the routes grid when the global vehicle changes (from any
+// .veh-toggle on the page — topbar or page header).
+window.addEventListener('vehiclechange', () => {
+  if (document.getElementById('page-routes')?.classList.contains('page-active')) {
+    buildRoutesGrid();
+  }
 });
 
 /* ════════════════════════════════════════════════════════════════
@@ -161,7 +168,11 @@ function buildTollsTable() {
   const lang   = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
   const search = (document.getElementById('tolls-search')?.value || '').toLowerCase().trim();
   const hwyFilter  = document.getElementById('tolls-highway-filter')?.value || '';
-  const catKey     = document.getElementById('tolls-vehicle')?.value || 'cat2';
+  // Vehicle is global UI mode — read from the shared accessor, updates via
+  // `vehiclechange`. Same pattern as the routes grid.
+  const catKey     = (typeof window !== 'undefined' && window.getVehicleCat)
+    ? window.getVehicleCat()
+    : 'cat2';
   const timeValue  = parseInt(document.getElementById('tolls-time-slider')?.value || '5', 10);
   const avoidOnly  = !!document.getElementById('tolls-avoid-only')?.checked;
 
@@ -377,7 +388,13 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   const id = e.target?.id;
-  if (id === 'tolls-highway-filter' || id === 'tolls-vehicle' || id === 'tolls-avoid-only') buildTollsTable();
+  if (id === 'tolls-highway-filter' || id === 'tolls-avoid-only') buildTollsTable();
+});
+// Re-render the tolls table when global vehicle changes (and we're on it).
+window.addEventListener('vehiclechange', () => {
+  if (document.getElementById('page-tolls')?.classList.contains('page-active')) {
+    buildTollsTable();
+  }
 });
 document.addEventListener('click', e => {
   const th = e.target.closest('#tolls-table thead th');

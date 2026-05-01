@@ -51,47 +51,61 @@ window.setVehicleCat = function(cat) {
   if (!VEHICLE_META[cat] || cat === _currentVehicleCat) return;
   _currentVehicleCat = cat;
   try { localStorage.setItem('diodio.vehicle', cat); } catch (e) {}
-  // Sync the trigger button face (emoji + label) and active option mark
-  _syncVehicleTrigger();
-  document.querySelectorAll('#veh-menu .veh-option').forEach(el => {
+  // Sync EVERY .veh-toggle on the page (topbar + page-header inline pills).
+  // Each one shows the current vehicle on its trigger button face and an
+  // .active class on the chosen option in its menu.
+  _syncAllVehicleTriggers();
+  document.querySelectorAll('.veh-toggle .veh-option').forEach(el => {
     el.classList.toggle('active', el.dataset.cat === cat);
   });
   // Notify renderers
   window.dispatchEvent(new Event('vehiclechange'));
 };
 
-// Update the trigger button's emoji + label to match _currentVehicleCat,
-// honouring the current language. Called on init, on vehicle change, and
-// also on language change (the label is i18n'd).
-function _syncVehicleTrigger() {
+// Update every .veh-toggle's trigger face (emoji + label) to match
+// _currentVehicleCat, honouring the current language. Called on init,
+// on vehicle change, and on language change (the label is i18n'd).
+function _syncAllVehicleTriggers() {
   const meta = VEHICLE_META[_currentVehicleCat];
   if (!meta) return;
-  const emojiEl = document.getElementById('veh-current-emoji');
-  const labelEl = document.getElementById('veh-current-label');
-  if (emojiEl) emojiEl.textContent = meta.emoji;
-  if (labelEl) {
-    labelEl.setAttribute('data-i18n', meta.fullKey);
-    labelEl.textContent = (typeof t === 'function') ? t(meta.fullKey) : labelEl.textContent;
-  }
+  document.querySelectorAll('.veh-toggle .veh-current').forEach(btn => {
+    const emojiEl = btn.querySelector('.veh-emoji');
+    const labelEl = btn.querySelector('.veh-label');
+    if (emojiEl) emojiEl.textContent = meta.emoji;
+    if (labelEl) {
+      labelEl.setAttribute('data-i18n', meta.fullKey);
+      labelEl.textContent = (typeof t === 'function') ? t(meta.fullKey) : labelEl.textContent;
+    }
+  });
 }
 
-// Open / close the dropdown menu.
-function _openVehMenu() {
-  const menu = document.getElementById('veh-menu');
-  const btn  = document.getElementById('veh-current-btn');
+// Open / close menus per-instance. The trigger button passed in identifies
+// which .veh-toggle group's menu to act on.
+function _openVehMenu(toggleEl) {
+  if (!toggleEl) return;
+  // Close any other open menus first — only one at a time.
+  document.querySelectorAll('.veh-toggle').forEach(other => {
+    if (other !== toggleEl) _closeVehMenu(other);
+  });
+  const menu = toggleEl.querySelector('.veh-menu');
+  const btn  = toggleEl.querySelector('.veh-current');
   if (!menu || !btn) return;
   menu.hidden = false;
   btn.setAttribute('aria-expanded', 'true');
 }
-function _closeVehMenu() {
-  const menu = document.getElementById('veh-menu');
-  const btn  = document.getElementById('veh-current-btn');
+function _closeVehMenu(toggleEl) {
+  if (!toggleEl) return;
+  const menu = toggleEl.querySelector('.veh-menu');
+  const btn  = toggleEl.querySelector('.veh-current');
   if (!menu || !btn) return;
   menu.hidden = true;
   btn.setAttribute('aria-expanded', 'false');
 }
+function _closeAllVehMenus() {
+  document.querySelectorAll('.veh-toggle').forEach(t => _closeVehMenu(t));
+}
 // Persistent global listener — fires on every mousedown but only acts when
-// the menu is open AND the click is outside the toggle group.
+// at least one menu is open AND the click is outside any toggle group.
 //
 // CRITICAL: registered in CAPTURE phase (third arg `true`). Leaflet's map
 // container intercepts mousedown events and calls stopPropagation on them
@@ -99,49 +113,47 @@ function _closeVehMenu() {
 // `document` from ever firing for clicks on the map. Capture phase runs
 // before the target's handlers, so we see the event regardless.
 document.addEventListener('mousedown', (e) => {
-  const menu = document.getElementById('veh-menu');
-  if (!menu || menu.hidden) return;
-  const grp = document.getElementById('vehicle-toggle');
-  if (grp && !grp.contains(e.target)) _closeVehMenu();
+  // If click is inside any .veh-toggle, let that toggle handle it.
+  if (e.target.closest('.veh-toggle')) return;
+  _closeAllVehMenus();
 }, true);
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
-  const menu = document.getElementById('veh-menu');
-  if (menu && !menu.hidden) _closeVehMenu();
+  _closeAllVehMenus();
 }, true);
 
-// Wire up the toggle once DOM is ready. Scripts load at end of <body>, so
+// Wire up every .veh-toggle on the page. Scripts load at end of <body>, so
 // DOM is usually already parsed by the time we get here; readyState check
 // handles the rare race where DOMContentLoaded has not yet fired.
-function _initVehicleToggle() {
-  const grp = document.getElementById('vehicle-toggle');
-  if (!grp) return;
-  _syncVehicleTrigger();
-  // Trigger toggles menu visibility.
-  const trigger = document.getElementById('veh-current-btn');
-  if (trigger) {
-    trigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const menu = document.getElementById('veh-menu');
-      if (menu && menu.hidden) _openVehMenu();
-      else _closeVehMenu();
-    });
-  }
-  // Each option sets the vehicle and closes the menu.
-  grp.querySelectorAll('.veh-option').forEach(el => {
-    el.classList.toggle('active', el.dataset.cat === _currentVehicleCat);
-    el.addEventListener('click', () => {
-      window.setVehicleCat(el.dataset.cat);
-      _closeVehMenu();
+function _initVehicleToggles() {
+  const toggles = document.querySelectorAll('.veh-toggle');
+  if (!toggles.length) return;
+  _syncAllVehicleTriggers();
+  toggles.forEach(toggleEl => {
+    const trigger = toggleEl.querySelector('.veh-current');
+    if (trigger) {
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = toggleEl.querySelector('.veh-menu');
+        if (menu && menu.hidden) _openVehMenu(toggleEl);
+        else _closeVehMenu(toggleEl);
+      });
+    }
+    toggleEl.querySelectorAll('.veh-option').forEach(el => {
+      el.classList.toggle('active', el.dataset.cat === _currentVehicleCat);
+      el.addEventListener('click', () => {
+        window.setVehicleCat(el.dataset.cat);
+        _closeVehMenu(toggleEl);
+      });
     });
   });
   // The trigger button label is i18n'd — re-sync on language toggle.
-  window.addEventListener('langchange', _syncVehicleTrigger);
+  window.addEventListener('langchange', _syncAllVehicleTriggers);
 }
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', _initVehicleToggle);
+  document.addEventListener('DOMContentLoaded', _initVehicleToggles);
 } else {
-  _initVehicleToggle();
+  _initVehicleToggles();
 }
 
 // ── Bypass schema normalizer ───────────────────────────────────────────

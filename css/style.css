@@ -294,6 +294,41 @@ body {
   line-height: 1.2;
 }
 
+/* ── Inline page-header vehicle picker ──────────────────────────────────
+   Used on the Routes and Tolls pages: a "Prices for: [pill]" line under
+   the page title. Identical component as the topbar one (same .veh-toggle
+   markup, same .veh-menu, same JS), with a slightly smaller pill so it
+   reads as in-flow content rather than as a chrome control. */
+.page-vehicle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-family: var(--font-body);
+}
+.page-vehicle-prefix {
+  font-size: 0.86rem;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+/* Inline modifier: shorter, smaller text. Same hover/open affordance. */
+.veh-toggle--inline .veh-current {
+  padding: 4px 8px 4px 10px;
+  font-size: 0.86rem;
+}
+.veh-toggle--inline .veh-current .veh-emoji {
+  font-size: 0.95rem;
+}
+/* Anchor the inline menu to the LEFT of its trigger so it expands toward
+   the page content instead of overflowing the right edge. The topbar
+   variant keeps `right: 0` (its default) so it doesn't run off the page
+   on narrow viewports — this only adjusts the inline instances. */
+.veh-toggle--inline .veh-menu {
+  right: auto;
+  left: 0;
+  min-width: 170px;
+}
+
 /* ══════════════════════════════════════
    MAP
    ══════════════════════════════════════ */
@@ -3275,7 +3310,9 @@ input[type="range"]::-moz-range-track {
   .veh-current { padding: 4px 8px 4px 10px; font-size: 0.82rem; }
   .veh-current .veh-label { display: none; } /* show emoji only on mobile */
   .veh-menu { min-width: 150px; }
-
+  /* Inline page-header pill has more space (it's in document flow, not in
+     the cramped topbar), so keep its label visible on mobile too. */
+  .veh-toggle--inline .veh-current .veh-label { display: inline; }
   .toll-tooltip { min-width: 220px; max-width: calc(100vw - 20px); }
 }
 

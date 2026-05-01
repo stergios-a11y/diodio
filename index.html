@@ -187,7 +187,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260501-0200" />
+  <link rel="stylesheet" href="css/style.css?v=20260501-0300" />
 </head>
 <body>
 
@@ -282,12 +282,12 @@
     </nav>
     <div class="topbar-right">
       <div class="veh-toggle" id="vehicle-toggle" data-i18n-aria-label="aria.vehicle">
-        <button class="veh-current" id="veh-current-btn" type="button" aria-haspopup="menu" aria-expanded="false">
-          <span class="veh-emoji" id="veh-current-emoji">🚗</span>
-          <span class="veh-label" id="veh-current-label" data-i18n="veh.full.cat2">Αυτοκίνητο</span>
+        <button class="veh-current" type="button" aria-haspopup="menu" aria-expanded="false">
+          <span class="veh-emoji">🚗</span>
+          <span class="veh-label" data-i18n="veh.full.cat2">Αυτοκίνητο</span>
           <span class="veh-caret" aria-hidden="true">▾</span>
         </button>
-        <div class="veh-menu" id="veh-menu" role="menu" hidden>
+        <div class="veh-menu" role="menu" hidden>
           <button class="veh-option" data-cat="cat1" type="button" role="menuitem">
             <span class="veh-emoji">🏍</span>
             <span class="veh-label" data-i18n="veh.full.cat1">Μοτοσικλέτα</span>
@@ -561,15 +561,37 @@
       <div class="page-header">
         <h1 class="page-title" data-i18n="routes.title">Διαδρομές μεταξύ πόλεων</h1>
         <p class="page-subtitle" data-i18n="routes.subtitle">Συνολικό κόστος διοδίων και χρόνος για κάθε διαδρομή.</p>
-      </div>
-      <div class="page-toolbar">
-        <label class="page-toolbar-label" for="routes-vehicle" data-i18n="routes.vehicle">Όχημα</label>
-        <select id="routes-vehicle" class="bar-select">
-          <option value="cat1" data-i18n="bar.moto">🏍 Μοτο</option>
-          <option value="cat2" selected data-i18n="bar.car">🚗 Αυτοκίνητο</option>
-          <option value="cat3" data-i18n="bar.van">🚐 Βαν</option>
-          <option value="cat4" data-i18n="bar.truck">🚛 Φορτηγό</option>
-        </select>
+        <!-- Inline vehicle picker. Identical component to the topbar one, just
+             smaller. All instances share global state via window.setVehicleCat
+             and re-sync on `vehiclechange`. -->
+        <div class="page-vehicle">
+          <span class="page-vehicle-prefix" data-i18n="page.vehicle.prefix">Τιμές για:</span>
+          <div class="veh-toggle veh-toggle--inline" data-i18n-aria-label="aria.vehicle">
+            <button class="veh-current" type="button" aria-haspopup="menu" aria-expanded="false">
+              <span class="veh-emoji">🚗</span>
+              <span class="veh-label" data-i18n="veh.full.cat2">Αυτοκίνητο</span>
+              <span class="veh-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="veh-menu" role="menu" hidden>
+              <button class="veh-option" data-cat="cat1" type="button" role="menuitem">
+                <span class="veh-emoji">🏍</span>
+                <span class="veh-label" data-i18n="veh.full.cat1">Μοτοσικλέτα</span>
+              </button>
+              <button class="veh-option" data-cat="cat2" type="button" role="menuitem">
+                <span class="veh-emoji">🚗</span>
+                <span class="veh-label" data-i18n="veh.full.cat2">Αυτοκίνητο</span>
+              </button>
+              <button class="veh-option" data-cat="cat3" type="button" role="menuitem">
+                <span class="veh-emoji">🚐</span>
+                <span class="veh-label" data-i18n="veh.full.cat3">Βαν</span>
+              </button>
+              <button class="veh-option" data-cat="cat4" type="button" role="menuitem">
+                <span class="veh-emoji">🚛</span>
+                <span class="veh-label" data-i18n="veh.full.cat4">Φορτηγό</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div id="routes-grid" class="routes-grid"></div>
       <footer class="site-footer">
@@ -593,6 +615,34 @@
       <div class="page-header">
         <h1 class="page-title" data-i18n="tolls.title">Όλα τα διόδια</h1>
         <p class="page-subtitle" data-i18n="tolls.subtitle">Τιμές, αυτοκινητόδρομος, και χρόνος παράκαμψης ανά κατεύθυνση.</p>
+        <div class="page-vehicle">
+          <span class="page-vehicle-prefix" data-i18n="page.vehicle.prefix">Τιμές για:</span>
+          <div class="veh-toggle veh-toggle--inline" data-i18n-aria-label="aria.vehicle">
+            <button class="veh-current" type="button" aria-haspopup="menu" aria-expanded="false">
+              <span class="veh-emoji">🚗</span>
+              <span class="veh-label" data-i18n="veh.full.cat2">Αυτοκίνητο</span>
+              <span class="veh-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="veh-menu" role="menu" hidden>
+              <button class="veh-option" data-cat="cat1" type="button" role="menuitem">
+                <span class="veh-emoji">🏍</span>
+                <span class="veh-label" data-i18n="veh.full.cat1">Μοτοσικλέτα</span>
+              </button>
+              <button class="veh-option" data-cat="cat2" type="button" role="menuitem">
+                <span class="veh-emoji">🚗</span>
+                <span class="veh-label" data-i18n="veh.full.cat2">Αυτοκίνητο</span>
+              </button>
+              <button class="veh-option" data-cat="cat3" type="button" role="menuitem">
+                <span class="veh-emoji">🚐</span>
+                <span class="veh-label" data-i18n="veh.full.cat3">Βαν</span>
+              </button>
+              <button class="veh-option" data-cat="cat4" type="button" role="menuitem">
+                <span class="veh-emoji">🚛</span>
+                <span class="veh-label" data-i18n="veh.full.cat4">Φορτηγό</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="page-toolbar tolls-toolbar">
         <input id="tolls-search" type="text" class="bar-input" placeholder="" data-i18n-placeholder="tolls.search" data-i18n-aria-label="aria.search.tolls" />
@@ -600,13 +650,6 @@
           <option value="" data-i18n="tolls.allhighways">Όλοι οι αυτοκινητόδρομοι</option>
         </select>
         <span class="toolbar-divider" aria-hidden="true"></span>
-        <label class="page-toolbar-label" for="tolls-vehicle" data-i18n="tolls.advisor.vehicle">Όχημα</label>
-        <select id="tolls-vehicle" class="bar-select">
-          <option value="cat1" data-i18n="bar.moto">🏍 Μοτο</option>
-          <option value="cat2" selected data-i18n="bar.car">🚗 Αυτοκίνητο</option>
-          <option value="cat3" data-i18n="bar.van">🚐 Βαν</option>
-          <option value="cat4" data-i18n="bar.truck">🚛 Φορτηγό</option>
-        </select>
         <label class="tolls-time-control" for="tolls-time-slider">
           <span class="tolls-time-label" data-i18n="tolls.advisor.time">Ανοχή</span>
           <input type="range" id="tolls-time-slider" min="2" max="15" value="5" step="1" class="tolls-time-slider" />
@@ -657,11 +700,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260501-0200"></script>
+  <script src="js/i18n.js?v=20260501-0300"></script>
   <script src="data/tolls.js?v=20260430-5600"></script>
   <script src="data/routes.js?v=20260427-0700"></script>
-  <script src="js/map.js?v=20260430-4800"></script>
-  <script src="js/calculator.js?v=20260501-0200"></script>
-  <script src="js/pages.js?v=20260427-0800"></script>
+  <script src="js/map.js?v=20260501-0300"></script>
+  <script src="js/calculator.js?v=20260430-2900"></script>
+  <script src="js/pages.js?v=20260501-0300"></script>
 </body>
 </html>
