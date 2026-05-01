@@ -1001,7 +1001,26 @@ const TOLL_DATA = [
     lat: 41.0134933, lng: 25.5333695,
     cat1: 1.90, cat2: 2.75, cat3: 6.90, cat4: 9.65,
     notes: "",
-    bypass_directions: null,
+    bypass_directions: {
+      eastbound: {
+        label: "Eastbound (towards Alexandroupoli)",
+        pre_exit:   { lat: 41.06200020479125, lng: 25.474030435914027 },
+        off_ramp:   { lat: 41.0602984312552,  lng: 25.475719001357888 },
+        on_ramp:    { lat: 40.960053890491324, lng: 25.64104961017274 },
+        post_merge: { lat: 40.95924259026973,  lng: 25.645834428779878 },
+        minutes: 14,
+        confidence: "verified"
+      },
+      westbound: {
+        label: "Westbound (towards Xanthi)",
+        pre_exit:   { lat: 40.95737030920195,  lng: 25.649266211171835 },
+        off_ramp:   { lat: 40.960997726853556, lng: 25.64363579014987 },
+        on_ramp:    { lat: 41.06086026446717,  lng: 25.476499034194763 },
+        post_merge: { lat: 41.06199577174795,  lng: 25.47433279449259 },
+        minutes: 14,
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "egnatia_alexandroupoli",
@@ -1014,7 +1033,26 @@ const TOLL_DATA = [
     lat: 40.9445389, lng: 26.2051426,
     cat1: 1.40, cat2: 2.00, cat3: 5.00, cat4: 7.00,
     notes: "Eastern terminus of main Egnatia line.",
-    bypass_directions: null,
+    bypass_directions: {
+      eastbound: {
+        label: "Eastbound (towards Ardanio)",
+        pre_exit:   { lat: 40.906658971612174, lng: 25.943000197612864 },
+        off_ramp:   { lat: 40.90868718901998,  lng: 25.94899467392369 },
+        on_ramp:    { lat: 40.950216671767635, lng: 26.22769129210645 },
+        post_merge: { lat: 40.95063487157983,  lng: 26.234880365554318 },
+        minutes: 16,
+        confidence: "verified"
+      },
+      westbound: {
+        label: "Westbound (towards Komotini)",
+        pre_exit:   { lat: 40.95078164556215, lng: 26.23464678961142 },
+        off_ramp:   { lat: 40.95127117398704, lng: 26.224262977248657 },
+        on_ramp:    { lat: 40.90833236698789, lng: 25.945407428709753 },
+        post_merge: { lat: 40.90593297800443, lng: 25.94088190082855 },
+        minutes: 16,
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "egnatia_promahonas",

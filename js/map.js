@@ -1294,6 +1294,7 @@ function openSidePanel(toll) {
       'Komotini':        { el: 'Κομοτηνή' },
       'Xanthi':          { el: 'Ξάνθη' },
       'Alexandroupoli':  { el: 'Αλεξανδρούπολη' },
+      'Ardanio':         { el: 'Αρδάνιο' },
       'Rio/Bridge':      { el: 'Ρίο/Γέφυρα' },
       'Bulgaria':        { el: 'Βουλγαρία' },
       'N. Macedonia':    { el: 'Β. Μακεδονία' },
