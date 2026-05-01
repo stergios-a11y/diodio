@@ -494,6 +494,7 @@ function haversineKm(a, b) {
   const A = Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(A), Math.sqrt(1 - A));
 }
+window.haversineKm = haversineKm;
 
 // Given a polyline (array of [lat, lng] pairs), find the midpoint by
 // array index plus the local bearing at that point. For routes with

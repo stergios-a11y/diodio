@@ -799,6 +799,11 @@ body {
 #legend.pushed ~ .map-floating-toggle {
   right: calc(var(--sp-w) + 14px);
 }
+/* When the analyze-route results panel is open, lift the toggle above it
+   so it stays visible/clickable. Uses :has() (modern browsers, 2022+). */
+body:has(#results-panel.open) .map-floating-toggle {
+  bottom: calc(var(--bar-actual-h, var(--bar-h)) + var(--panel-h) + 14px);
+}
 
 .legend-title {
   padding: 11px 14px 9px;
@@ -1701,6 +1706,91 @@ input[type="range"]::-moz-range-track {
   height: 30px;
   background: var(--line);
   align-self: center;
+}
+/* New analyze-stats layout — 3-row money/dist/time table mirroring the
+   per-toll side-panel comparison so the visual pattern is consistent.
+   The rp-cmp is the table; rp-cmp-tags is the count chip block to its right. */
+.rp-cmp {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  column-gap: 14px;
+  row-gap: 2px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+.rp-cmp-row { display: contents; }
+.rp-cmp-label {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.rp-cmp-money {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.rp-cmp-dist, .rp-cmp-time {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+}
+/* Διαφορά row: subtle separator above + bold label + soft horizontal-gradient
+   tint (transparent edges → green/amber center) so it reads as "summary" not
+   "second card." Matches the side-panel diff-row treatment. */
+.rp-cmp-row.diff .rp-cmp-label {
+  font-weight: 600;
+  color: var(--ink);
+  padding-top: 4px;
+  border-top: 1px dashed var(--line);
+  margin-top: 3px;
+}
+.rp-cmp-row.diff .rp-cmp-money,
+.rp-cmp-row.diff .rp-cmp-dist,
+.rp-cmp-row.diff .rp-cmp-time {
+  padding-top: 4px;
+  border-top: 1px dashed var(--line);
+  margin-top: 3px;
+}
+.rp-cmp-row.diff .savings { color: #2d7a3a; }
+.rp-cmp-row.diff .cost    { color: #a45533; }
+
+/* Right-side chip cluster: count summaries (5 διόδια · 3 αποφύγε · 2 πλήρωσε).
+   Visually separated from the money/time table by a left border. */
+.rp-cmp-tags {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 16px;
+  margin-left: 4px;
+  border-left: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+.rp-cmp-tags span { display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.1; }
+.rp-cmp-tags strong {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.92rem;
+  font-family: var(--font-body);
+}
+@media (max-width: 720px) {
+  /* On narrow screens, tags wrap below the table */
+  .rp-cmp-tags { padding-left: 0; margin-left: 0; border-left: 0; padding-top: 8px; border-top: 1px solid var(--line); width: 100%; justify-content: space-around; }
 }
 .rp-close {
   margin-left: auto;

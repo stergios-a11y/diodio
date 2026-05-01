@@ -586,21 +586,79 @@ function renderResults(a) {
   const isAvoidSide = r => r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID';
   const isPaySide   = r => r.verdict === 'PAY'   || r.verdict === 'MARGINAL_PAY';
 
-  const totalCost  = results.reduce((s, r) => s + r.toll[a.catKey], 0);
-  const savings    = results.filter(isAvoidSide).reduce((s, r) => s + r.toll[a.catKey], 0);
-  const extraMin   = results.filter(r => isAvoidSide(r) && r.dir).reduce((s, r) => s + r.dir.minutes, 0);
-  const avoidCount = results.filter(isAvoidSide).length;
-  const payCount   = results.filter(isPaySide).length;
+  const allTollCost = results.reduce((s, r) => s + r.toll[a.catKey], 0);
+  const savings     = results.filter(isAvoidSide).reduce((s, r) => s + r.toll[a.catKey], 0);
+  const recCost     = allTollCost - savings;
+  const extraMin    = results.filter(r => isAvoidSide(r) && r.dir).reduce((s, r) => s + r.dir.minutes, 0);
+  const avoidCount  = results.filter(isAvoidSide).length;
+  const payCount    = results.filter(isPaySide).length;
+
+  // Estimate initial extra km from straight-line off_ramp↔on_ramp × 0.25
+  // (typical sinuosity gap between local-road bypass and motorway segment).
+  // This is a rough placeholder shown immediately while we fetch real routes.
+  // Once fetches resolve, refineExtraKm() recomputes from actual Mapbox distances.
+  const hav = window.haversineKm || ((a, b) => 0);
+  let extraKm = results
+    .filter(r => isAvoidSide(r) && r.dir && r.dir.off_ramp && r.dir.on_ramp)
+    .reduce((s, r) => s + hav(r.dir.off_ramp, r.dir.on_ramp) * 0.25, 0);
 
   rpTitle.textContent = `${a.origin} → ${a.dest}`;
-  rpStats.innerHTML = `
-    <span class="rp-stat"><span class="rp-stat-label">${t('rp.total')}</span><strong>€${totalCost.toFixed(2)}</strong></span>
-    <span class="rp-stat green"><span class="rp-stat-label">${t('rp.save')}</span><strong>€${savings.toFixed(2)}</strong></span>
-    <span class="rp-stat red"><span class="rp-stat-label">${t('rp.extra')}</span><strong>+${extraMin} ${t('bar.time.label2')}</strong></span>
-    <span class="rp-stat-divider"></span>
-    <span class="rp-stat sm"><span class="rp-stat-label">${t('rp.tolls')}</span><strong>${results.length}</strong></span>
-    <span class="rp-stat sm"><span class="rp-stat-label">${t('verdict.avoid')}</span><strong>${avoidCount}</strong></span>
-    <span class="rp-stat sm"><span class="rp-stat-label">${t('verdict.pay')}</span><strong>${payCount}</strong></span>`;
+  // Table renderer — 3 rows × 4 cols (label / money / dist / time). Mirrors the
+  // side-panel comparison so a user already familiar with that pattern reads
+  // this instantly.
+  const renderStats = (kmValue) => {
+    const kmStr  = kmValue >= 1 ? `+${kmValue.toFixed(1)}` : `+${kmValue.toFixed(1)}`;
+    const minStr = `+${extraMin}`;
+    rpStats.innerHTML = `
+      <div class="rp-cmp">
+        <div class="rp-cmp-row">
+          <span class="rp-cmp-label">${t('rp.all.tolls')}</span>
+          <span class="rp-cmp-money">€${allTollCost.toFixed(2)}</span>
+          <span class="rp-cmp-dist">+0 ${t('unit.km')}</span>
+          <span class="rp-cmp-time">+0 ${t('bar.time.label2')}</span>
+        </div>
+        <div class="rp-cmp-row">
+          <span class="rp-cmp-label">${t('rp.with.bypass')}</span>
+          <span class="rp-cmp-money">€${recCost.toFixed(2)}</span>
+          <span class="rp-cmp-dist">${kmStr} ${t('unit.km')}</span>
+          <span class="rp-cmp-time">${minStr} ${t('bar.time.label2')}</span>
+        </div>
+        <div class="rp-cmp-row diff">
+          <span class="rp-cmp-label">${t('rp.diff')}</span>
+          <span class="rp-cmp-money savings">−€${savings.toFixed(2)}</span>
+          <span class="rp-cmp-dist cost">${kmStr} ${t('unit.km')}</span>
+          <span class="rp-cmp-time cost">${minStr} ${t('bar.time.label2')}</span>
+        </div>
+      </div>
+      <div class="rp-cmp-tags">
+        <span><strong>${results.length}</strong> ${t('rp.tolls')}</span>
+        <span><strong>${avoidCount}</strong> ${t('verdict.avoid')}</span>
+        <span><strong>${payCount}</strong> ${t('verdict.pay')}</span>
+      </div>`;
+  };
+  renderStats(extraKm);
+
+  // After all bypass routes resolve, recompute extra km from REAL Mapbox
+  // distances and re-render. Highway segment is approximated as straight-line
+  // pre_exit↔post_merge × 1.05 since we don't fetch the highway segment per toll.
+  if (typeof window.fetchRoute === 'function') {
+    const avoided = results.filter(r => isAvoidSide(r) && r.dir && r.dir.off_ramp && r.dir.on_ramp);
+    Promise.all(avoided.map(r =>
+      window.fetchRoute(r.dir.off_ramp, r.dir.on_ramp, 'bypass', r.dir.via).catch(() => null)
+    )).then(routes => {
+      let real = 0;
+      avoided.forEach((r, i) => {
+        const route = routes[i];
+        if (!route) return;
+        const bypassKm  = route.distanceKm;
+        const highwayKm = (r.dir.pre_exit && r.dir.post_merge)
+          ? hav(r.dir.pre_exit, r.dir.post_merge) * 1.05
+          : hav(r.dir.off_ramp, r.dir.on_ramp) * 1.05;
+        real += Math.max(0, bypassKm - highwayKm);
+      });
+      renderStats(real);
+    });
+  }
 
   let html = `<div class="rp-advice" id="rp-advice-el">${t('rp.advice.loading')}</div>`;
   html += '<div class="rp-chips">';
