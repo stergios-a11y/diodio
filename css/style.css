@@ -1769,7 +1769,9 @@ input[type="range"]::-moz-range-track {
 
 /* 5th column: tag info aligned vertically with the row it describes.
    Total-frontals tag for the highway row (top), pay/avoid split for
-   the bypass row (middle), nothing for the diff row. */
+   the bypass row (middle), nothing for the diff row.
+   Both rows use flex-start so the lead numbers (12, 8) align at the
+   same x-position regardless of the second item's presence. */
 .rp-cmp-tag {
   padding-left: 16px;
   margin-left: 4px;
@@ -1782,8 +1784,9 @@ input[type="range"]::-moz-range-track {
   white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 14px;
-  min-width: 130px;
+  justify-content: flex-start;
+  gap: 18px;
+  min-width: 160px;
 }
 .rp-cmp-tag strong {
   color: var(--ink);
@@ -1792,7 +1795,6 @@ input[type="range"]::-moz-range-track {
   font-family: var(--font-body);
   margin-right: 4px;
 }
-.rp-cmp-tag-split { justify-content: space-between; }
 /* The diff row's empty tag cell still needs the left border to extend cleanly,
    so let it inherit the border-left without content. */
 .rp-cmp-row.diff .rp-cmp-tag { padding-top: 4px; }
@@ -1914,7 +1916,9 @@ input[type="range"]::-moz-range-track {
 }
 /* Compact 3-row money/dist/time comparison inside each chip when expanded.
    Same conceptual layout as the side panel and the analyze stats header,
-   but smaller and tighter to fit inline within a chip. */
+   but smaller and tighter to fit inline within a chip.
+   First row is the column-headers strip (€ · χλμ · λεπ) which lets data
+   cells drop unit suffixes for tighter columns. */
 .chip-cmp {
   display: grid;
   grid-template-columns: 1fr auto auto auto;
@@ -1925,6 +1929,19 @@ input[type="range"]::-moz-range-track {
   width: 100%;
 }
 .chip-cmp-row { display: contents; }
+.chip-cmp-row.chip-cmp-head > * {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 3px;
+  text-align: right;
+}
+.chip-cmp-h-blank { /* corner cell — keeps grid alignment without text */ }
 .chip-cmp-label {
   font-size: 0.72rem;
   color: var(--ink-2);

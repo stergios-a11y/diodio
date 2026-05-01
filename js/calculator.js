@@ -623,7 +623,7 @@ function renderResults(a) {
           <span class="rp-cmp-money">€${recCost.toFixed(2)}</span>
           <span class="rp-cmp-dist">${kmStr} ${t('unit.km')}</span>
           <span class="rp-cmp-time">${minStr} ${t('bar.time.label2')}</span>
-          <span class="rp-cmp-tag rp-cmp-tag-split">
+          <span class="rp-cmp-tag">
             <span><strong>${payCount}</strong> ${t('verdict.pay')}</span>
             <span><strong>${avoidCount}</strong> ${t('verdict.avoid')}</span>
           </span>
@@ -662,9 +662,10 @@ function renderResults(a) {
         if (isAvoidSide(r)) panelExtraKm += addedKm;
         // Update this chip's km cells in place. Now that motorway is row 0 and
         // bypass is row 1, write km into distCells[1] (bypass) and distCells[2] (diff).
+        // Headers indicate the unit, so we write just the signed number.
         const cmpEl = document.querySelector(`.chip-cmp[data-toll-id="${r.toll.id}"]`);
         if (cmpEl) {
-          const kmStr = `+${addedKm.toFixed(1)} ${t('unit.km')}`;
+          const kmStr = `+${addedKm.toFixed(1)}`;
           const distCells = cmpEl.querySelectorAll('.chip-cmp-dist');
           if (distCells[1]) distCells[1].textContent = kmStr;
           if (distCells[2]) distCells[2].textContent = kmStr;
@@ -703,6 +704,12 @@ function renderResults(a) {
         : t('compare.bypass');
       cmpHtml = `
         <div class="chip-cmp" data-toll-id="${r.toll.id}">
+          <div class="chip-cmp-row chip-cmp-head">
+            <span class="chip-cmp-h-blank"></span>
+            <span class="chip-cmp-h">€</span>
+            <span class="chip-cmp-h">${t('unit.km')}</span>
+            <span class="chip-cmp-h">${t('bar.time.label2')}</span>
+          </div>
           <div class="chip-cmp-row">
             <span class="chip-cmp-label">${t('compare.highway')}</span>
             <span class="chip-cmp-money">€${frontal.toFixed(2)}</span>
@@ -712,14 +719,14 @@ function renderResults(a) {
           <div class="chip-cmp-row">
             <span class="chip-cmp-label">${bypassLabel}</span>
             <span class="chip-cmp-money">€${bypassMoney.toFixed(2)}</span>
-            <span class="chip-cmp-dist">${kmStr} ${t('unit.km')}</span>
-            <span class="chip-cmp-time">+${bypassMin} ${t('bar.time.label2')}</span>
+            <span class="chip-cmp-dist">${kmStr}</span>
+            <span class="chip-cmp-time">+${bypassMin}</span>
           </div>
           <div class="chip-cmp-row diff">
             <span class="chip-cmp-label">${t('rp.diff')}</span>
             <span class="chip-cmp-money ${moneyClass}">${moneySign}€${Math.abs(moneyDiff).toFixed(2)}</span>
-            <span class="chip-cmp-dist cost">${kmStr} ${t('unit.km')}</span>
-            <span class="chip-cmp-time cost">+${bypassMin} ${t('bar.time.label2')}</span>
+            <span class="chip-cmp-dist cost">${kmStr}</span>
+            <span class="chip-cmp-time cost">+${bypassMin}</span>
           </div>
         </div>`;
     } else {
