@@ -1294,8 +1294,8 @@ const TOLL_DATA = [
       westbound: {
         label: "Westbound (towards Rio/Bridge)",
         exit_name: "Δρέπανο", entry_name: "Ρίο",
-        pre_exit:   { lat: 38.32392340861477,  lng: 21.862382924026715 },
-        off_ramp:   { lat: 38.32451306101076,  lng: 21.856354772181373 },
+        pre_exit:   { lat: 38.324191521463355, lng: 21.863729623334613 },
+        off_ramp:   { lat: 38.3244561510736,   lng: 21.856471434144122 },
         on_ramp:    { lat: 38.29831537245027,  lng: 21.791565289732244 },
         post_merge: { lat: 38.29601207041289,  lng: 21.788687749133608 },
         minutes: 10,

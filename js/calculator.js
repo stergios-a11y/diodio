@@ -28,6 +28,14 @@ function updateSliderUI() {
   const max = parseFloat(slider.max) || 100;
   const pct = ((v - min) / (max - min)) * 100;
   slider.style.setProperty('--fill', pct + '%');
+  // Color the fill: green at the left (time-sensitive / "hurry"), shifting
+  // through amber to red as the user slides right ("frugal"). The hue ramp
+  // visually communicates "you're tolerating more delay for cost savings."
+  // 120° = green, 60° = yellow, 30° = orange, 10° = red. Stop at 10° (not 0°)
+  // so the color stays warm-red instead of going pure red which can feel
+  // alarming. Saturation/lightness held constant for a smooth ramp.
+  const hue = 120 - (pct / 100) * 110;   // 120 → 10 across 0-100%
+  slider.style.setProperty('--fill-color', `hsl(${hue.toFixed(0)}, 65%, 45%)`);
 }
 slider.addEventListener('input', updateSliderUI);
 window.addEventListener('langchange', updateSliderUI);
