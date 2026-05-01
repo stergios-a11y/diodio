@@ -1550,7 +1550,28 @@ const TOLL_DATA = [
     lat: 37.8359076, lng: 22.8079391,
     cat1: 2.00, cat2: 2.95, cat3: 7.45, cat4: 10.45,
     notes: "Start of Moreas motorway south of Corinth.",
-    bypass_directions: null,
+    bypass_directions: {
+      northbound: {
+        label: "Northbound",
+        pre_exit:   { lat: 37.81207018590236, lng: 22.77644928949518 },
+        off_ramp:   { lat: 37.8137155347305,  lng: 22.78020148282414 },
+        on_ramp:    { lat: 37.8975493456027,  lng: 22.898534388254525 },
+        post_merge: { lat: 37.89842370676025, lng: 22.89883826562125 },
+        minutes: 15,
+        via: [],
+        confidence: "verified"
+      },
+      southbound: {
+        label: "Southbound",
+        pre_exit:   { lat: 37.863463542744476, lng: 22.84297204863867 },
+        off_ramp:   { lat: 37.8629069903172,   lng: 22.83933238087728 },
+        on_ramp:    { lat: 37.81217461272463,  lng: 22.7758546482659 },
+        post_merge: { lat: 37.8112582664714,   lng: 22.773750664655875 },
+        minutes: 10,
+        via: [],
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "moreas_nestani",
