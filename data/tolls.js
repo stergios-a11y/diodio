@@ -1369,7 +1369,7 @@ const TOLL_DATA = [
         on_ramp:    { lat: 39.310875,    lng: 22.06474 },
         post_merge: { lat: 39.318198, lng: 22.057989 },
         minutes: 10,
-        via: [{ lat: 39.258, lng: 22.067 }],
+        via: [{ lat: 39.27803943, lng: 22.03960000 }],
         confidence: "verified"
       },
       southbound: {
@@ -1380,7 +1380,7 @@ const TOLL_DATA = [
         on_ramp:    { lat: 39.207087,    lng: 22.07409 },
         post_merge: { lat: 39.198466, lng: 22.077021 },
         minutes: 10,
-        via: [{ lat: 39.258, lng: 22.067 }],
+        via: [{ lat: 39.27803943, lng: 22.03960000 }],
         confidence: "verified"
       },
     },
