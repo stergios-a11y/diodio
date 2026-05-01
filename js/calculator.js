@@ -631,50 +631,108 @@ function renderResults(a) {
         </div>
       </div>
       <div class="rp-cmp-tags">
-        <span><strong>${results.length}</strong> ${t('rp.tolls')}</span>
+        <span><strong>${results.length}</strong> ${t('rp.frontal.tolls')}</span>
         <span><strong>${avoidCount}</strong> ${t('verdict.avoid')}</span>
         <span><strong>${payCount}</strong> ${t('verdict.pay')}</span>
       </div>`;
   };
   renderStats(extraKm);
 
-  // After all bypass routes resolve, recompute extra km from REAL Mapbox
-  // distances and re-render. Highway segment is approximated as straight-line
-  // pre_exit↔post_merge × 1.05 since we don't fetch the highway segment per toll.
+  // After bypass routes resolve, recompute extra km from REAL Mapbox distances
+  // for both the panel-level stats and each individual chip.
+  // Highway segment is approximated as straight-line pre_exit↔post_merge × 1.05
+  // since we don't fetch the per-toll highway segment.
   if (typeof window.fetchRoute === 'function') {
-    const avoided = results.filter(r => isAvoidSide(r) && r.dir && r.dir.off_ramp && r.dir.on_ramp);
-    Promise.all(avoided.map(r =>
+    const fetchable = results.filter(r => r.dir && r.dir.off_ramp && r.dir.on_ramp);
+    Promise.all(fetchable.map(r =>
       window.fetchRoute(r.dir.off_ramp, r.dir.on_ramp, 'bypass', r.dir.via).catch(() => null)
     )).then(routes => {
-      let real = 0;
-      avoided.forEach((r, i) => {
+      let panelExtraKm = 0;
+      fetchable.forEach((r, i) => {
         const route = routes[i];
         if (!route) return;
         const bypassKm  = route.distanceKm;
         const highwayKm = (r.dir.pre_exit && r.dir.post_merge)
           ? hav(r.dir.pre_exit, r.dir.post_merge) * 1.05
           : hav(r.dir.off_ramp, r.dir.on_ramp) * 1.05;
-        real += Math.max(0, bypassKm - highwayKm);
+        const addedKm = Math.max(0, bypassKm - highwayKm);
+        // Sum into panel total only for AVOIDED tolls (since panel shows
+        // recommended-strategy km, not all-bypass km).
+        if (isAvoidSide(r)) panelExtraKm += addedKm;
+        // Update this chip's km cells in place.
+        const cmpEl = document.querySelector(`.chip-cmp[data-toll-id="${r.toll.id}"]`);
+        if (cmpEl) {
+          const kmStr = `+${addedKm.toFixed(1)} ${t('unit.km')}`;
+          // First and third .chip-cmp-dist (rows 0 and 2 — bypass and diff)
+          const distCells = cmpEl.querySelectorAll('.chip-cmp-dist');
+          if (distCells[0]) distCells[0].textContent = kmStr;
+          if (distCells[2]) distCells[2].textContent = kmStr;
+        }
       });
-      renderStats(real);
+      renderStats(panelExtraKm);
     });
   }
 
   let html = `<div class="rp-advice" id="rp-advice-el">${t('rp.advice.loading')}</div>`;
   html += '<div class="rp-chips">';
   results.forEach(r => {
-    const bypassInfo = r.dir
-      ? `${t('sp.exit.tag')}${r.dir.exit_name} · ${t('sp.entry.tag')}${r.dir.entry_name} · +${r.dir.minutes} ${t('bar.time.label2')}`
-      : t('verdict.no.bypass.short');
     const verdictLabel = t(`verdict.${r.verdict.toLowerCase().replace('_', '.')}`);
     const tollName = stripTollPrefix(lang === 'el' ? r.toll.name_gr : r.toll.name_en);
+    const frontal  = r.toll[a.catKey];
+    let cmpHtml = '';
+    if (r.dir) {
+      // Compute bypass cost: ferry fare for ferry mode, else side-toll sum on bypass.
+      const isFerry = r.dir.mode === 'ferry' && r.dir.fare;
+      const bypassMoney = isFerry
+        ? (r.dir.fare[a.catKey] || 0)
+        : ((r.sideInfo && r.sideInfo.totals && r.sideInfo.totals[a.catKey]) || 0);
+      // Bypass extra km — quick haversine estimate while we wait for fetched
+      // routes to refine. Refined per-chip after Promise.all completes.
+      const bypassKm = (r.dir.off_ramp && r.dir.on_ramp)
+        ? hav(r.dir.off_ramp, r.dir.on_ramp) * 0.25
+        : 0;
+      const bypassMin   = r.dir.minutes || 0;
+      const moneyDiff   = frontal - bypassMoney;   // positive = bypass cheaper
+      const moneySign   = moneyDiff >= 0 ? '−' : '+';
+      const moneyClass  = Math.abs(moneyDiff) < 0.005 ? 'zero' : (moneyDiff > 0 ? 'savings' : 'cost');
+      const kmStr       = bypassKm >= 0.1 ? `+${bypassKm.toFixed(1)}` : '+0.0';
+      // Tags: exit/entry names if available
+      const tagText = r.dir.exit_name && r.dir.entry_name
+        ? `↗ ${r.dir.exit_name} → ${r.dir.entry_name}`
+        : '';
+      cmpHtml = `
+        <div class="chip-cmp" data-toll-id="${r.toll.id}">
+          <div class="chip-cmp-row">
+            <span class="chip-cmp-label">${t('compare.bypass')}</span>
+            <span class="chip-cmp-money">€${bypassMoney.toFixed(2)}</span>
+            <span class="chip-cmp-dist">${kmStr} ${t('unit.km')}</span>
+            <span class="chip-cmp-time">+${bypassMin} ${t('bar.time.label2')}</span>
+          </div>
+          <div class="chip-cmp-row">
+            <span class="chip-cmp-label">${t('compare.highway')}</span>
+            <span class="chip-cmp-money">€${frontal.toFixed(2)}</span>
+            <span class="chip-cmp-dist zero">—</span>
+            <span class="chip-cmp-time zero">—</span>
+          </div>
+          <div class="chip-cmp-row diff">
+            <span class="chip-cmp-label">${t('rp.diff')}</span>
+            <span class="chip-cmp-money ${moneyClass}">${moneySign}€${Math.abs(moneyDiff).toFixed(2)}</span>
+            <span class="chip-cmp-dist cost">${kmStr} ${t('unit.km')}</span>
+            <span class="chip-cmp-time cost">+${bypassMin} ${t('bar.time.label2')}</span>
+          </div>
+        </div>
+        ${tagText ? `<div class="chip-tags">${tagText}</div>` : ''}`;
+    } else {
+      // No bypass available — keep the original short reasoning as a single tag.
+      cmpHtml = `<div class="chip-tags chip-tags-noby">${t('verdict.no.bypass.short')}</div>`;
+    }
     html += `
       <div class="toll-chip verdict-${r.verdict}"
         onclick="const el=this.querySelector('.chip-reason');el.style.display=el.style.display==='block'?'none':'block'">
         <span class="chip-name">${tollName}</span>
-        <span class="chip-price">€${r.toll[a.catKey].toFixed(2)}</span>
+        <span class="chip-price">€${frontal.toFixed(2)}</span>
         <span class="chip-verdict">${verdictLabel}</span>
-        <span class="chip-reason">${r.reasoning}<br><small style="opacity:0.7">${bypassInfo}</small></span>
+        <div class="chip-reason">${cmpHtml}</div>
       </div>`;
   });
   html += '</div>';

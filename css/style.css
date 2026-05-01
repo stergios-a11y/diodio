@@ -1884,16 +1884,66 @@ input[type="range"]::-moz-range-track {
 .verdict-MARGINAL_AVOID .chip-verdict { background: var(--go-soft-bg);   color: var(--go-soft); }
 .verdict-MARGINAL_PAY   .chip-verdict { background: var(--stop-soft-bg); color: var(--stop-soft); }
 .chip-reason {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 0.72rem;
-  color: var(--ink-3);
   display: none;
   width: 100%;
-  padding-top: 6px;
+  padding-top: 7px;
   border-top: 1px dashed var(--line);
   margin-top: 4px;
-  line-height: 1.55;
+}
+/* Compact 3-row money/dist/time comparison inside each chip when expanded.
+   Same conceptual layout as the side panel and the analyze stats header,
+   but smaller and tighter to fit inline within a chip. */
+.chip-cmp {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  column-gap: 10px;
+  row-gap: 2px;
+  align-items: center;
+  font-family: var(--font-body);
+}
+.chip-cmp-row { display: contents; }
+.chip-cmp-label {
+  font-size: 0.72rem;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.chip-cmp-money {
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.chip-cmp-dist, .chip-cmp-time {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.chip-cmp-row.diff > * {
+  padding-top: 4px;
+  border-top: 1px dashed var(--line);
+  margin-top: 3px;
+}
+.chip-cmp-row.diff .chip-cmp-label { font-weight: 600; color: var(--ink); }
+.chip-cmp .savings { color: #2d7a3a; }
+.chip-cmp .cost    { color: #a45533; }
+.chip-cmp .zero    { color: var(--muted); }
+.chip-tags {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--muted);
+  letter-spacing: 0;
+  width: 100%;
+}
+.chip-tags-noby {
+  font-style: italic;
+  font-family: var(--font-display);
 }
 
 /* LEAFLET POPUPS */
