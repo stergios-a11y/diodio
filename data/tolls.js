@@ -886,7 +886,28 @@ const TOLL_DATA = [
     lat: 41.0435183, lng: 23.2952374,
     cat1: 1.60, cat2: 2.35, cat3: 5.85, cat4: 8.20,
     notes: "Branch spur north of Thessaloniki ring.",
-    bypass_directions: null,
+    bypass_directions: {
+      westbound: {
+        label: "Westbound",
+        pre_exit:   { lat: 41.04980356906589, lng: 23.328310091793938 },
+        off_ramp:   { lat: 41.04989366190203, lng: 23.32193955447729 },
+        on_ramp:    { lat: 40.98571157361187, lng: 23.191061398815762 },
+        post_merge: { lat: 40.98348574410169, lng: 23.188792952076902 },
+        minutes: 15,
+        via: [],
+        confidence: "verified"
+      },
+      eastbound: {
+        label: "Eastbound",
+        pre_exit:   { lat: 40.96147191579643,  lng: 23.16738772511192 },
+        off_ramp:   { lat: 40.96174378335145,  lng: 23.16926614699323 },
+        on_ramp:    { lat: 41.049253094670014, lng: 23.32832188853268 },
+        post_merge: { lat: 41.049837680615326, lng: 23.330505932938852 },
+        minutes: 18,
+        via: [],
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "egnatia_kavala",
