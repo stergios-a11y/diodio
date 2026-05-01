@@ -1709,10 +1709,11 @@ input[type="range"]::-moz-range-track {
 }
 /* New analyze-stats layout — 3-row money/dist/time table mirroring the
    per-toll side-panel comparison so the visual pattern is consistent.
-   The rp-cmp is the table; rp-cmp-tags is the count chip block to its right. */
+   The 5th column holds tag info (total frontals on row 1, paid+avoided
+   on row 2, empty on diff row) so tags align to the rows they describe. */
 .rp-cmp {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr auto auto auto auto;
   column-gap: 14px;
   row-gap: 2px;
   align-items: center;
@@ -1757,7 +1758,8 @@ input[type="range"]::-moz-range-track {
 }
 .rp-cmp-row.diff .rp-cmp-money,
 .rp-cmp-row.diff .rp-cmp-dist,
-.rp-cmp-row.diff .rp-cmp-time {
+.rp-cmp-row.diff .rp-cmp-time,
+.rp-cmp-row.diff .rp-cmp-tag {
   padding-top: 4px;
   border-top: 1px dashed var(--line);
   margin-top: 3px;
@@ -1765,15 +1767,10 @@ input[type="range"]::-moz-range-track {
 .rp-cmp-row.diff .savings { color: #2d7a3a; }
 .rp-cmp-row.diff .cost    { color: #a45533; }
 
-/* Right-side tag cluster: 2 stacked lines.
-   Line 1 (full width): total frontal tolls on the route.
-   Line 2: split — paid count on left, avoided count on right.
-   Visually separated from the money/time table by a left border. */
-.rp-cmp-tags {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 4px;
+/* 5th column: tag info aligned vertically with the row it describes.
+   Total-frontals tag for the highway row (top), pay/avoid split for
+   the bypass row (middle), nothing for the diff row. */
+.rp-cmp-tag {
   padding-left: 16px;
   margin-left: 4px;
   border-left: 1px solid var(--line);
@@ -1782,35 +1779,34 @@ input[type="range"]::-moz-range-track {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  flex-shrink: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   min-width: 130px;
 }
-.rp-cmp-tags-line {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  white-space: nowrap;
-}
-.rp-cmp-tags-line:first-child {
-  /* Line 1 is the totals headline — give it a subtle bottom rule and
-     center its single piece of content. */
-  justify-content: center;
-  padding-bottom: 3px;
-  border-bottom: 1px dashed var(--line);
-}
-.rp-cmp-tags strong {
+.rp-cmp-tag strong {
   color: var(--ink);
   font-weight: 700;
   font-size: 0.92rem;
   font-family: var(--font-body);
   margin-right: 4px;
 }
+.rp-cmp-tag-split { justify-content: space-between; }
+/* The diff row's empty tag cell still needs the left border to extend cleanly,
+   so let it inherit the border-left without content. */
+.rp-cmp-row.diff .rp-cmp-tag { padding-top: 4px; }
+
 @media (max-width: 720px) {
-  /* On narrow screens, tags wrap below the table */
-  .rp-cmp-tags { padding-left: 0; margin-left: 0; border-left: 0; padding-top: 8px; border-top: 1px solid var(--line); width: 100%; min-width: 0; }
-  .rp-cmp-tags-line:first-child { padding-bottom: 0; border-bottom: 0; }
-  .rp-cmp-tags-line { justify-content: space-around; }
+  /* On narrow screens, drop the 5th column and stack tags below */
+  .rp-cmp { grid-template-columns: 1fr auto auto auto; }
+  .rp-cmp-tag {
+    grid-column: 1 / -1;
+    padding-left: 0; margin-left: 0; border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-top: 8px; min-width: 0;
+    justify-content: space-around;
+  }
 }
 .rp-close {
   margin-left: auto;
@@ -1871,6 +1867,12 @@ input[type="range"]::-moz-range-track {
   cursor: pointer;
   transition: box-shadow 0.18s var(--ease), transform 0.1s;
   flex-wrap: wrap;
+  /* Expanded chips share a consistent width so multiple tile cleanly per
+     row. Narrow enough to fit 3 across at desktop; wraps gracefully on
+     mobile via the parent's flex-wrap. */
+  flex: 0 1 320px;
+  max-width: 360px;
+  min-width: 260px;
 }
 .toll-chip:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
 .toll-chip.verdict-PAY            { border-left-color: var(--stop); }
@@ -1916,10 +1918,11 @@ input[type="range"]::-moz-range-track {
 .chip-cmp {
   display: grid;
   grid-template-columns: 1fr auto auto auto;
-  column-gap: 10px;
+  column-gap: 7px;
   row-gap: 2px;
   align-items: center;
   font-family: var(--font-body);
+  width: 100%;
 }
 .chip-cmp-row { display: contents; }
 .chip-cmp-label {
