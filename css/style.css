@@ -44,7 +44,7 @@
   --topbar-h:   54px;
   --bar-h:      72px;
   --panel-h:    320px;
-  --sp-w:       420px;
+  --sp-w:       460px;
   --radius-sm:  3px;   /* scrollbars, tiny chips, internal corners */
   --radius:     5px;   /* default control & card corner */
   --radius-lg:  10px;  /* prominent panels, modals */
@@ -1244,11 +1244,21 @@ body {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
+  /* Define the column structure once at the container level so all rows
+     share the same column tracks (€s, χλμ, λεπ all line up vertically). */
+  display: grid;
+  grid-template-columns: 9px 1fr auto auto auto;
+  row-gap: 0;
 }
+/* Compare table rows: each row is a subgrid that inherits the parent's
+   5 column tracks, so values in column 3 (money), 4 (distance), and 5
+   (time) align cleanly across rows regardless of content width. */
 .sp-cmp-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;          /* span all 5 of the parent's columns */
   align-items: center;
-  gap: 9px;
+  column-gap: 11px;
   font-family: var(--font-body);
   font-size: 0.78rem;
   padding: 6px 0;
@@ -1263,13 +1273,14 @@ body {
 .sp-cmp-label {
   color: var(--ink-2);
   font-weight: 500;
-  flex: 1;
   letter-spacing: -0.005em;
 }
+/* The .sp-cmp-vals wrapper from the HTML still exists for semantic grouping,
+   but visually we want its three children to participate in the row's grid
+   directly. `display: contents` makes the wrapper invisible to layout so
+   .sp-cmp-money/dist/time become grid items of the parent .sp-cmp-row. */
 .sp-cmp-vals {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 11px;
+  display: contents;
   color: var(--ink);
   font-family: var(--font-mono);
   font-size: 0.72rem;
@@ -1281,19 +1292,23 @@ body {
   font-weight: 600;
   font-size: 0.85rem;
   letter-spacing: -0.015em;
-  min-width: 52px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 .sp-cmp-dist, .sp-cmp-time {
-  min-width: 56px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink);
 }
 
-/* Διαφορά row — sits at the bottom of the same table as a third row.
-   Slight tint to set it apart; bg switches green/amber based on net money. */
+/* Διαφορά row — no dot, so the label spans the first two grid columns. */
 .sp-cmp-row.sp-cmp-diff {
   margin-top: 4px;
-  padding: 8px 8px;
+  padding: 8px 0;       /* keep horizontal at 0 so column alignment is preserved with the rows above */
   border-top: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: rgba(0, 0, 0, 0.02);
@@ -1308,6 +1323,7 @@ body {
 .sp-cmp-diff-label {
   font-weight: 600;
   color: var(--ink);
+  grid-column: 1 / span 2;   /* fill the dot + label area */
 }
 /* Color-coded diff values: savings → green, cost → amber-red, zero → muted. */
 .sp-cmp-money.savings, .sp-cmp-dist.savings, .sp-cmp-time.savings { color: #2d7a3a; }

@@ -728,7 +728,7 @@ function openSidePanel(toll) {
       const isMobile = window.matchMedia('(max-width: 740px)').matches;
       const fitOpts = isMobile
         ? { padding: [60, 60], maxZoom: 14, animate: true }
-        : { paddingTopLeft: [60, 60], paddingBottomRight: [460, 60], maxZoom: 14, animate: true };
+        : { paddingTopLeft: [60, 60], paddingBottomRight: [500, 60], maxZoom: 14, animate: true };
       map.fitBounds(L.latLngBounds(points), fitOpts);
     } else {
       // Solo toll (no bypass) — just center and zoom in.
