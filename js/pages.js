@@ -186,17 +186,32 @@ function buildTollsTable() {
     timeSliderEl.style.setProperty('--fill', (((timeValue - min) / (max - min)) * 100) + '%');
   }
 
-  // Populate highway filter dropdown if empty
+  // Populate (or re-populate) the highway filter dropdown with full
+  // i18n'd names in the current language. Re-runs every buildTollsTable
+  // invocation so language switches update labels — preserves the
+  // currently-selected value across the rebuild.
   const hwySel = document.getElementById('tolls-highway-filter');
-  if (hwySel && hwySel.options.length <= 1) {
+  if (hwySel) {
+    const prevValue = hwySel.value;
     const seen = new Set();
     TOLL_DATA.forEach(t => seen.add(t.highway));
-    [...seen].sort().forEach(hwy => {
+    // Sort by translated label so the dropdown reads in alphabetical
+    // order in whichever language the user is viewing.
+    const hwys = [...seen].map(hwy => ({ code: hwy, label: t('hwy.' + hwy) }))
+                          .sort((a, b) => a.label.localeCompare(b.label, lang));
+    // Keep the leading "all" option that's already in the static markup;
+    // remove any existing data-driven options below it before re-adding.
+    while (hwySel.options.length > 1) hwySel.remove(1);
+    hwys.forEach(({ code, label }) => {
       const opt = document.createElement('option');
-      opt.value = hwy;
-      opt.textContent = hwy;
+      opt.value = code;
+      opt.textContent = label;
       hwySel.appendChild(opt);
     });
+    // Restore previous selection if it's still valid.
+    if (prevValue && [...hwySel.options].some(o => o.value === prevValue)) {
+      hwySel.value = prevValue;
+    }
   }
 
   // Compute per-direction verdicts. A toll has 1, 2, or 3 directions in
@@ -292,7 +307,6 @@ function buildTollsTable() {
   let html = '';
   rows.forEach(({ toll, verdicts }) => {
     const primary = stripTollPrefix(lang === 'el' ? toll.name_gr : toll.name_en);
-    const secondary = stripTollPrefix(lang === 'el' ? toll.name_en : toll.name_gr);
     const hwyColor = HIGHWAY_COLORS[toll.highway] || '#888';
 
     let bypassHtml = '';
@@ -342,7 +356,6 @@ function buildTollsTable() {
     html += `<tr>
       <td>
         <div class="tolls-name" data-toll-id="${toll.id}">${primary}</div>
-        <div class="tolls-name-gr">${secondary}</div>
       </td>
       <td><span class="tolls-hwy-chip"><span class="tolls-hwy-dot" style="background:${hwyColor}"></span>${toll.highway}</span></td>
       <td><span class="tolls-price${catKey === 'cat1' ? ' active' : ''}">€${(toll.cat1 ?? 0).toFixed(2)}</span></td>

@@ -2698,7 +2698,12 @@ input[type="range"]::-moz-range-track {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  /* Horizontal scroll on narrow viewports — the table has 8 columns of
+     data-dense content and tries hard to maintain readable widths;
+     allow scroll rather than squish columns into illegibility on
+     mobile. Vertical overflow stays clipped. */
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: var(--shadow-sm);
 }
 .tolls-table {
@@ -2706,6 +2711,14 @@ input[type="range"]::-moz-range-track {
   border-collapse: collapse;
   font-family: var(--font-body);
   font-size: 0.88rem;
+  /* Fixed layout so per-column widths are honored exactly — needed for
+     the four equal-width vehicle-price columns. With `auto`, longer
+     prices like €33.70 expand individual cat columns and they stop
+     looking aligned. */
+  table-layout: fixed;
+  /* Below this width, columns become unreadable. Triggers horizontal
+     scroll in .tolls-table-wrap on mobile. */
+  min-width: 760px;
 }
 .tolls-table thead th {
   background: var(--paper-2);
@@ -2777,12 +2790,44 @@ input[type="range"]::-moz-range-track {
   font-variation-settings: "opsz" 144, "SOFT" 30;
 }
 .tolls-table .tolls-name:hover { color: var(--aegean); text-decoration: underline; }
-.tolls-table .tolls-name-gr {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 0.74rem;
-  color: var(--muted);
-  margin-top: 2px;
+
+/* Per-column widths for table-layout: fixed. The four cat columns
+   (3-6) are equal at 90px; the others get hand-tuned widths so their
+   content (name, highway chip, bypass directions, verdict pill) fits
+   without overflow. Total ≈ 1100px on a 1280px viewport. */
+.tolls-table thead th:nth-child(1),
+.tolls-table tbody td:nth-child(1) { width: 22%; }    /* Name */
+.tolls-table thead th:nth-child(2),
+.tolls-table tbody td:nth-child(2) { width: 13%; }    /* Highway */
+.tolls-table thead th:nth-child(7),
+.tolls-table tbody td:nth-child(7) { width: 14%; }    /* Bypass */
+.tolls-table thead th:nth-child(8),
+.tolls-table tbody td:nth-child(8) { width: 23%; }    /* Verdict */
+
+/* Vehicle-price columns (cat1..cat4 = 3rd..6th columns). Equal width
+   so the four prices align in a clean money-table grid; right-align
+   the numbers since prices read better stacked on the right. */
+.tolls-table thead th:nth-child(3),
+.tolls-table thead th:nth-child(4),
+.tolls-table thead th:nth-child(5),
+.tolls-table thead th:nth-child(6),
+.tolls-table tbody td:nth-child(3),
+.tolls-table tbody td:nth-child(4),
+.tolls-table tbody td:nth-child(5),
+.tolls-table tbody td:nth-child(6) {
+  width: 7%;
+  padding-left: 6px;
+  padding-right: 10px;
+  text-align: right;
+}
+/* The sort-indicator pseudo-element sits on the right of the header
+   text — pull it inline when right-aligned so it reads as part of the
+   label rather than floating in trailing whitespace. */
+.tolls-table thead th:nth-child(3)::after,
+.tolls-table thead th:nth-child(4)::after,
+.tolls-table thead th:nth-child(5)::after,
+.tolls-table thead th:nth-child(6)::after {
+  margin-left: 2px;
 }
 .tolls-table .tolls-hwy-chip {
   display: inline-flex;

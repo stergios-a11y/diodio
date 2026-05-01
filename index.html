@@ -187,7 +187,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260501-0500" />
+  <link rel="stylesheet" href="css/style.css?v=20260501-0600" />
 </head>
 <body>
 
@@ -704,10 +704,10 @@
             <tr>
               <th data-sort="name" data-i18n="tolls.col.name">Διόδιο</th>
               <th data-sort="highway" data-i18n="tolls.col.highway">Αυτοκινητόδρομος</th>
-              <th data-sort="cat1" data-i18n="bar.moto">🏍</th>
-              <th data-sort="cat2" data-i18n="bar.car">🚗</th>
-              <th data-sort="cat3" data-i18n="bar.van">🚐</th>
-              <th data-sort="cat4" data-i18n="bar.truck">🚛</th>
+              <th data-sort="cat1" data-i18n-aria-label="bar.moto" aria-label="Μοτο">🏍</th>
+              <th data-sort="cat2" data-i18n-aria-label="bar.car" aria-label="Αυτοκίνητο">🚗</th>
+              <th data-sort="cat3" data-i18n-aria-label="bar.van" aria-label="Βαν">🚐</th>
+              <th data-sort="cat4" data-i18n-aria-label="bar.truck" aria-label="Φορτηγό">🚛</th>
               <th data-sort="bypass" data-i18n="tolls.col.bypass">Παράκαμψη</th>
               <th data-sort="verdict" data-i18n="tolls.col.verdict">Συμβουλή</th>
             </tr>
@@ -734,11 +734,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260501-0400"></script>
+  <script src="js/i18n.js?v=20260430-2500"></script>
   <script src="data/tolls.js?v=20260430-5600"></script>
   <script src="data/routes.js?v=20260427-0700"></script>
-  <script src="js/map.js?v=20260501-0500"></script>
+  <script src="js/map.js?v=20260430-4800"></script>
   <script src="js/calculator.js?v=20260430-2900"></script>
-  <script src="js/pages.js?v=20260501-0400"></script>
+  <script src="js/pages.js?v=20260501-0600"></script>
 </body>
 </html>
