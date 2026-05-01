@@ -787,31 +787,9 @@ const TOLL_DATA = [
     axis: "EW", bearing: 71,
     lat: 40.3671958, lng: 22.0602089,
     cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35,
-    notes: "",
-    bypass_directions: {
-      eastbound: {
-        label: "Eastbound (towards Thessaloniki)",
-        exit_name: "Βέροιας", entry_name: "Πολυμύλου",
-        pre_exit:   { lat: 40.5284, lng: 22.1854 },
-        off_ramp:   { lat: 40.5284, lng: 22.1854 },
-        on_ramp:    { lat: 40.368681, lng: 22.053816 },
-        post_merge: { lat: 40.368681, lng: 22.053816 },
-        minutes: 18,
-        via: [{ lat: 40.5284, lng: 22.1854 },{ lat: 40.480, lng: 22.150 },{ lat: 40.430, lng: 22.110 },{ lat: 40.3854, lng: 22.0542 }],
-        confidence: "approximate"
-      },
-      westbound: {
-        label: "Westbound (towards Kozani)",
-        exit_name: "Πολυμύλου", entry_name: "Βέροιας",
-        pre_exit:   { lat: 40.368681, lng: 22.053816 },
-        off_ramp:   { lat: 40.368681, lng: 22.053816 },
-        on_ramp:    { lat: 40.5284, lng: 22.1854 },
-        post_merge: { lat: 40.5284, lng: 22.1854 },
-        minutes: 18,
-        via: [{ lat: 40.3854, lng: 22.0542 },{ lat: 40.430, lng: 22.110 },{ lat: 40.480, lng: 22.150 },{ lat: 40.5284, lng: 22.1854 }],
-        confidence: "approximate"
-      },
-    },
+    notes: "Mountain section between Kozani and Veroia. No viable bypass — the alternative routes through the Pieria range are narrow village roads with switchbacks, adding 30+ minutes and unsuitable for trucks or winter driving.",
+    notes_gr: "Ορεινή διαδρομή ανάμεσα σε Κοζάνη και Βέροια. Δεν υπάρχει εύλογη παράκαμψη — οι εναλλακτικές διαδρομές μέσω Πιερίων είναι στενοί χωριάτικοι δρόμοι με στροφές, προσθέτουν 30+ λεπτά και είναι ακατάλληλες για φορτηγά ή χειμερινή οδήγηση.",
+    bypass_directions: null,
   },
   {
     id: "egnatia_ieropigi",
@@ -861,7 +839,26 @@ const TOLL_DATA = [
     lat: 40.6961219, lng: 22.895877,
     cat1: 0.45, cat2: 0.65, cat3: 1.70, cat4: 2.35,
     notes: "Western Thessaloniki bypass.",
-    bypass_directions: null,
+    bypass_directions: {
+      eastbound: {
+        label: "Eastbound (towards Strymoniko)",
+        pre_exit:   { lat: 40.69361470120117, lng: 22.845466064103693 },
+        off_ramp:   { lat: 40.69422531359529, lng: 22.84759784895866 },
+        on_ramp:    { lat: 40.6948553365291,  lng: 22.94901360910021 },
+        post_merge: { lat: 40.694926789685674, lng: 22.954590244231333 },
+        minutes: 12,
+        confidence: "verified"
+      },
+      westbound: {
+        label: "Westbound (towards Veroia)",
+        pre_exit:   { lat: 40.69519706833585, lng: 22.95571704421962 },
+        off_ramp:   { lat: 40.69513804206039, lng: 22.952230110950723 },
+        on_ramp:    { lat: 40.69496565041453, lng: 22.847185067837533 },
+        post_merge: { lat: 40.69371959208795, lng: 22.845126896953385 },
+        minutes: 12,
+        confidence: "verified"
+      },
+    },
   },
   {
     id: "egnatia_strymoniko",
