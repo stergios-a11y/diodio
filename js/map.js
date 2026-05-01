@@ -275,11 +275,14 @@ window.clearActiveRouteLayer = function() {
 // localStorage so repeat queries don't burn API calls.
 const routeCache = {};
 
-async function fetchRoute(exitPt, entryPt, mode, via) {
+async function fetchRoute(exitPt, entryPt, mode, via, opts) {
+  opts = opts || {};
+  const wantSteps = opts.steps === true;
   const viaKey = via?.length
     ? via.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join('|')
     : '';
-  const key = `${mode}:${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}${viaKey ? '|' + viaKey : ''}`;
+  const stepsKey = wantSteps ? ':S' : '';
+  const key = `${mode}${stepsKey}:${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}${viaKey ? '|' + viaKey : ''}`;
 
   if (routeCache[key]) return routeCache[key];
 
@@ -305,7 +308,8 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
     : [exitPt, entryPt];
   const coordStr = waypoints.map(p => `${p.lng},${p.lat}`).join(';');
   const exclude = mode === 'bypass' ? '&exclude=motorway' : '';
-  url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full${exclude}&access_token=${MAPBOX_TOKEN}`;
+  const stepsParam = wantSteps ? '&steps=true' : '';
+  url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full${exclude}${stepsParam}&access_token=${MAPBOX_TOKEN}`;
 
   try {
     const res = await fetch(url);
@@ -320,6 +324,19 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
       distanceKm:  r.distance / 1000,
       durationMin: r.duration / 60,
     };
+    // When steps=true, derive toll/non-toll segments from intersections[].classes.
+    // Each intersection's `geometry_index` points into the full-route polyline,
+    // and its `classes` array describes the road EXITING that intersection.
+    // We walk all intersections in order, group consecutive coords by toll
+    // status, and emit segments {coords, isToll, distanceKm}.
+    if (wantSteps) {
+      const segs = computeTollSegments(r);
+      if (segs) {
+        result.segments     = segs.segments;
+        result.tollKm       = segs.tollKm;
+        result.nonTollKm    = segs.nonTollKm;
+      }
+    }
     routeCache[key] = result;
     try { localStorage.setItem(`diodio.route.v5.${key}`, JSON.stringify(result)); } catch (e) {}
     return result;
@@ -329,15 +346,82 @@ async function fetchRoute(exitPt, entryPt, mode, via) {
   }
 }
 
+// Walk a Mapbox route's intersections and group the polyline into toll/non-toll
+// segments. Each intersection has a `geometry_index` (into the full route
+// polyline) and a `classes` array. A segment is "on toll" if the upstream
+// intersection's classes contain "toll".
+function computeTollSegments(route) {
+  if (!route.legs) return null;
+  const allCoords = route.geometry.coordinates;  // [[lng,lat], ...]
+  // Collect every intersection across all legs/steps in route order.
+  const intersections = [];
+  for (const leg of route.legs) {
+    if (!leg.steps) continue;
+    for (const step of leg.steps) {
+      if (!step.intersections) continue;
+      for (const inter of step.intersections) {
+        if (typeof inter.geometry_index !== 'number') continue;
+        intersections.push({
+          gi:      inter.geometry_index,
+          isToll:  Array.isArray(inter.classes) && inter.classes.includes('toll'),
+        });
+      }
+    }
+  }
+  if (intersections.length < 2) return null;
+  // Dedupe: intersections at the same geometry_index can repeat at step boundaries.
+  // Keep the first occurrence per gi.
+  const seen = new Set();
+  const cleaned = [];
+  for (const it of intersections) {
+    if (seen.has(it.gi)) continue;
+    seen.add(it.gi);
+    cleaned.push(it);
+  }
+  cleaned.sort((a, b) => a.gi - b.gi);
+  // Build segments: each segment spans from intersection[i].gi to intersection[i+1].gi
+  // and inherits intersection[i].isToll. Coords used are allCoords[gi..nextGi].
+  const segments = [];
+  let tollKm = 0, nonTollKm = 0;
+  for (let i = 0; i < cleaned.length - 1; i++) {
+    const a = cleaned[i], b = cleaned[i + 1];
+    const coordSlice = allCoords.slice(a.gi, b.gi + 1).map(c => [c[1], c[0]]);
+    if (coordSlice.length < 2) continue;
+    let segKm = 0;
+    for (let j = 0; j < coordSlice.length - 1; j++) {
+      segKm += haversineKm(
+        { lat: coordSlice[j][0],   lng: coordSlice[j][1] },
+        { lat: coordSlice[j+1][0], lng: coordSlice[j+1][1] }
+      );
+    }
+    segments.push({ coords: coordSlice, isToll: a.isToll, distanceKm: segKm });
+    if (a.isToll) tollKm += segKm; else nonTollKm += segKm;
+  }
+  // Coalesce adjacent same-class segments to reduce polyline count.
+  const merged = [];
+  for (const s of segments) {
+    const last = merged[merged.length - 1];
+    if (last && last.isToll === s.isToll) {
+      // Skip first coord of new segment to avoid duplicate joints
+      last.coords = last.coords.concat(s.coords.slice(1));
+      last.distanceKm += s.distanceKm;
+    } else {
+      merged.push({ coords: s.coords.slice(), isToll: s.isToll, distanceKm: s.distanceKm });
+    }
+  }
+  return { segments: merged, tollKm, nonTollKm };
+}
+
 // Backward-compat helper used by calculator.js
 window.fetchBypassRoute = async function(exitPt, entryPt, via) {
   const r = await fetchRoute(exitPt, entryPt, 'bypass', via);
   return r ? r.coords : null;
 };
 // Main analyze route: full origin → destination via motorway. Returns the
-// same {coords, distanceKm, durationMin} shape as fetchRoute, or null on failure.
+// same {coords, distanceKm, durationMin} shape as fetchRoute, plus
+// {segments, tollKm, nonTollKm} when intersection-class data is available.
 window.fetchMainRoute = async function(fromCoord, toCoord) {
-  return fetchRoute(fromCoord, toCoord, 'highway');
+  return fetchRoute(fromCoord, toCoord, 'highway', null, { steps: true });
 };
 window.fetchRoute = fetchRoute;
 

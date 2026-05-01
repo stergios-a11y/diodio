@@ -1746,6 +1746,21 @@ input[type="range"]::-moz-range-track {
   font-weight: 500;
   white-space: nowrap;
 }
+/* Sub-caption rendered under the km cell for the bypass row,
+   e.g. "από τα οποία 462 χλμ σε αυτοκινητόδρομο". Smaller, muted,
+   right-aligned, breaks out of nowrap to allow wrapping if very long. */
+.rp-cmp-dist-sub {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  color: var(--muted);
+  font-weight: 400;
+  margin-top: 1px;
+  white-space: normal;
+  text-align: right;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
 /* Διαφορά row: subtle separator above + bold label + soft horizontal-gradient
    tint (transparent edges → green/amber center) so it reads as "summary" not
    "second card." Matches the side-panel diff-row treatment. */

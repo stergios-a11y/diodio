@@ -103,12 +103,16 @@ function showError(msg) {
 function clearError() { errorPill.classList.remove('visible'); }
 
 // ── Route state ───────────────────────────────────────────
-let routeLayer   = null;
+// routeLayers is an array — when the route is split into toll/non-toll
+// segments we render each segment as its own polyline so they can be
+// colored independently (green = on toll road, blue = off toll road).
+let routeLayers = [];
 let bypassLayers = [];
 let routeMarkers = [];
 
 function clearRoute() {
-  if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+  routeLayers.forEach(l => map.removeLayer(l));
+  routeLayers = [];
   bypassLayers.forEach(l => map.removeLayer(l));
   bypassLayers = [];
   routeMarkers.forEach(m => map.removeLayer(m));
@@ -596,33 +600,55 @@ function renderResults(a) {
   // Estimate initial extra km from straight-line off_ramp↔on_ramp × 0.25
   // (typical sinuosity gap between local-road bypass and motorway segment).
   // This is a rough placeholder shown immediately while we fetch real routes.
-  // Once fetches resolve, refineExtraKm() recomputes from actual Mapbox distances.
+  // Once fetches resolve, the refinement below recomputes from actual Mapbox
+  // distances and also tracks how much of the original highway is "replaced"
+  // by each avoided bypass (so we can show "of which X on motorway").
   const hav = window.haversineKm || ((a, b) => 0);
   let extraKm = results
     .filter(r => isAvoidSide(r) && r.dir && r.dir.off_ramp && r.dir.on_ramp)
     .reduce((s, r) => s + hav(r.dir.off_ramp, r.dir.on_ramp) * 0.25, 0);
+  let replacedHwyKm = results
+    .filter(r => isAvoidSide(r) && r.dir && r.dir.pre_exit && r.dir.post_merge)
+    .reduce((s, r) => s + hav(r.dir.pre_exit, r.dir.post_merge) * 1.05, 0);
+
+  // Format helpers — absolute distance (just km, integer for >=10),
+  // absolute duration (Xh Ym for >= 60min, else N λεπ), delta sign.
+  const fmtKmAbs = km => km >= 100 ? `${Math.round(km)}` : km >= 10 ? `${km.toFixed(0)}` : `${km.toFixed(1)}`;
+  const fmtMinAbs = min => {
+    const m = Math.round(min);
+    if (m < 60) return `${m} ${t('bar.time.label2')}`;
+    const h = Math.floor(m / 60), mm = m % 60;
+    return mm === 0 ? `${h}h` : `${h}h ${mm.toString().padStart(2,'0')}m`;
+  };
+
+  const mainKm  = a.mainRouteKm  || 0;
+  const mainMin = (typeof a.mainRouteDurationMin === 'number') ? a.mainRouteDurationMin : 0;
 
   rpTitle.textContent = `${a.origin} → ${a.dest}`;
-  // Table renderer — 3 rows × 4 cols (label / money / dist / time). Mirrors the
-  // side-panel comparison so a user already familiar with that pattern reads
-  // this instantly.
-  const renderStats = (kmValue) => {
-    const kmStr  = kmValue >= 1 ? `+${kmValue.toFixed(1)}` : `+${kmValue.toFixed(1)}`;
-    const minStr = `+${extraMin}`;
+  // Table renderer — 3 rows × 5 cols (label / money / dist / time / tag).
+  // First two rows show ABSOLUTE totals so the user sees the actual distance
+  // they'll drive in each scenario. Diff row stays delta-formatted.
+  const renderStats = (kmValue, replacedKm) => {
+    const bypKm   = mainKm + kmValue;            // total km if we take the recommended bypasses
+    const bypMin  = mainMin + extraMin;          // total min likewise
+    const onHwyKm = Math.max(0, mainKm - replacedKm);  // of bypass scenario, how much still on motorway
+    const subLine = onHwyKm > 0 && replacedKm > 0
+      ? `<span class="rp-cmp-dist-sub">${t('rp.of.which.on.hw', {km: fmtKmAbs(onHwyKm)})}</span>`
+      : '';
     rpStats.innerHTML = `
       <div class="rp-cmp">
         <div class="rp-cmp-row">
           <span class="rp-cmp-label">${t('rp.all.tolls')}</span>
           <span class="rp-cmp-money">€${allTollCost.toFixed(2)}</span>
-          <span class="rp-cmp-dist">+0 ${t('unit.km')}</span>
-          <span class="rp-cmp-time">+0 ${t('bar.time.label2')}</span>
+          <span class="rp-cmp-dist">${fmtKmAbs(mainKm)} ${t('unit.km')}</span>
+          <span class="rp-cmp-time">${fmtMinAbs(mainMin)}</span>
           <span class="rp-cmp-tag rp-cmp-tag-total"><strong>${results.length}</strong> ${t('rp.frontal.tolls')}</span>
         </div>
         <div class="rp-cmp-row">
           <span class="rp-cmp-label">${t('rp.with.bypass')}</span>
           <span class="rp-cmp-money">€${recCost.toFixed(2)}</span>
-          <span class="rp-cmp-dist">${kmStr} ${t('unit.km')}</span>
-          <span class="rp-cmp-time">${minStr} ${t('bar.time.label2')}</span>
+          <span class="rp-cmp-dist">${fmtKmAbs(bypKm)} ${t('unit.km')}${subLine}</span>
+          <span class="rp-cmp-time">${fmtMinAbs(bypMin)}</span>
           <span class="rp-cmp-tag">
             <span><strong>${payCount}</strong> ${t('verdict.pay')}</span>
             <span><strong>${avoidCount}</strong> ${t('verdict.avoid')}</span>
@@ -631,24 +657,25 @@ function renderResults(a) {
         <div class="rp-cmp-row diff">
           <span class="rp-cmp-label">${t('rp.diff')}</span>
           <span class="rp-cmp-money savings">−€${savings.toFixed(2)}</span>
-          <span class="rp-cmp-dist cost">${kmStr} ${t('unit.km')}</span>
-          <span class="rp-cmp-time cost">${minStr} ${t('bar.time.label2')}</span>
+          <span class="rp-cmp-dist cost">+${fmtKmAbs(Math.max(0, kmValue))} ${t('unit.km')}</span>
+          <span class="rp-cmp-time cost">+${extraMin} ${t('bar.time.label2')}</span>
           <span class="rp-cmp-tag"></span>
         </div>
       </div>`;
   };
-  renderStats(extraKm);
+  renderStats(extraKm, replacedHwyKm);
 
   // After bypass routes resolve, recompute extra km from REAL Mapbox distances
-  // for both the panel-level stats and each individual chip.
-  // Highway segment is approximated as straight-line pre_exit↔post_merge × 1.05
-  // since we don't fetch the per-toll highway segment.
+  // for both the panel-level stats and each individual chip. Also recompute
+  // the "replaced highway km" sum using each bypass's actual highway-segment
+  // straight-line distance × 1.05.
   if (typeof window.fetchRoute === 'function') {
     const fetchable = results.filter(r => r.dir && r.dir.off_ramp && r.dir.on_ramp);
     Promise.all(fetchable.map(r =>
       window.fetchRoute(r.dir.off_ramp, r.dir.on_ramp, 'bypass', r.dir.via).catch(() => null)
     )).then(routes => {
       let panelExtraKm = 0;
+      let panelReplacedHwy = 0;
       fetchable.forEach((r, i) => {
         const route = routes[i];
         if (!route) return;
@@ -659,7 +686,10 @@ function renderResults(a) {
         const addedKm = Math.max(0, bypassKm - highwayKm);
         // Sum into panel total only for AVOIDED tolls (since panel shows
         // recommended-strategy km, not all-bypass km).
-        if (isAvoidSide(r)) panelExtraKm += addedKm;
+        if (isAvoidSide(r)) {
+          panelExtraKm += addedKm;
+          panelReplacedHwy += highwayKm;
+        }
         // Update this chip's km cells in place. Now that motorway is row 0 and
         // bypass is row 1, write km into distCells[1] (bypass) and distCells[2] (diff).
         // Headers indicate the unit, so we write just the signed number.
@@ -671,7 +701,7 @@ function renderResults(a) {
           if (distCells[2]) distCells[2].textContent = kmStr;
         }
       });
-      renderStats(panelExtraKm);
+      renderStats(panelExtraKm, panelReplacedHwy);
     });
   }
 
@@ -785,13 +815,27 @@ async function analyze() {
     if (!mainRoute || !mainRoute.coords?.length) throw new Error(t('err.route'));
     const routeCoords = mainRoute.coords;
 
-    // 4. Draw main route in green (motorway = green per Greek convention)
-    routeLayer = L.polyline(routeCoords, {
-      color: '#2e7a4a', weight: 4, opacity: 0.6,
+    // 4. Draw main route — if Mapbox returned segment classes, color each
+    //    segment by its toll status (green = on toll road, blue = off).
+    //    Falls back to a single-color polyline when segment data isn't available.
+    const drawSegment = (coords, isToll) => L.polyline(coords, {
+      color:   isToll ? '#2e7a4a' : '#2a6b9e',
+      weight:  4,
+      opacity: 0.7,
+      lineCap: 'round',
+      lineJoin: 'round',
     }).addTo(map);
+
+    if (mainRoute.segments && mainRoute.segments.length) {
+      mainRoute.segments.forEach(s => routeLayers.push(drawSegment(s.coords, s.isToll)));
+    } else {
+      // Legacy single-color fallback (also used by routes without intersection data).
+      routeLayers.push(drawSegment(routeCoords, true));
+    }
     if (window.setActiveRouteLayer) window.setActiveRouteLayer(routeCoords);
 
-    map.fitBounds(routeLayer.getBounds().pad(0.15));
+    const allBounds = L.latLngBounds(routeCoords);
+    map.fitBounds(allBounds.pad(0.15));
 
     // 5. Snap tolls to route
     const matchedTolls = tollsOnRoute(routeCoords);
@@ -805,7 +849,13 @@ async function analyze() {
     //    ('cat1'..'cat4') as returned by window.getVehicleCat().
     const catKey = vehicle;
 
-    lastAnalysis = { origin, dest, matchedTolls, catKey, timeValue, travelDir };
+    lastAnalysis = {
+      origin, dest, matchedTolls, catKey, timeValue, travelDir,
+      mainRouteKm: mainRoute.distanceKm,
+      mainRouteDurationMin: mainRoute.durationMin,
+      mainRouteTollKm: mainRoute.tollKm || 0,
+      mainRouteNonTollKm: mainRoute.nonTollKm || 0,
+    };
 
     // 7. Render everything (markers, bypass lines, panel, AI summary)
     renderResults(lastAnalysis);
