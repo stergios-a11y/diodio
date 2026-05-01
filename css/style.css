@@ -785,7 +785,6 @@ body {
 #legend::-webkit-scrollbar { width: 4px; }
 #legend::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: var(--radius-sm); }
 #legend.hidden { opacity: 0; transform: translateY(-8px); pointer-events: none; }
-#legend.pushed { right: calc(var(--sp-w) + 14px); }
 
 /* ══════════════════════════════════════
    MAP CONTROLS STACK (top-right of map)
@@ -3304,7 +3303,6 @@ input[type="range"]::-moz-range-track {
     min-width: 175px;
     max-width: calc(100vw - 12px);
   }
-  #legend.pushed { right: 6px; top: auto; bottom: calc(var(--bar-h) + 220px); }
 
   /* Side panel as bottom sheet — leaves 50% of screen for the map above */
   #toll-side-panel {

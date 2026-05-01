@@ -711,25 +711,23 @@ const TOLL_DATA = [
     bypass_directions: {
       eastbound: {
         label: "Eastbound (towards Thessaloniki)",
-        exit_name: "Αράχθου", entry_name: "Ιωαννίνων",
-        pre_exit:   { lat: 39.6125, lng: 20.9854 },
-        off_ramp:   { lat: 39.6125, lng: 20.9854 },
-        on_ramp:    { lat: 39.6584, lng: 20.8542 },
-        post_merge: { lat: 39.6584, lng: 20.8542 },
+        exit_name: "Ιωαννίνων", entry_name: "Αράχθου",
+        pre_exit:   { lat: 39.60088616926436, lng: 20.898774366086105 },
+        off_ramp:   { lat: 39.60016237267173, lng: 20.901826097409597 },
+        on_ramp:    { lat: 39.71646225585296, lng: 21.004595622271072 },
+        post_merge: { lat: 39.715840223370826, lng: 21.008353519640792 },
         minutes: 15,
-        via: [{ lat: 39.6125, lng: 20.9854 },{ lat: 39.625, lng: 20.960 },{ lat: 39.640, lng: 20.920 },{ lat: 39.6584, lng: 20.8542 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
       westbound: {
         label: "Westbound (towards Igoumenitsa)",
-        exit_name: "Ιωαννίνων", entry_name: "Αράχθου",
-        pre_exit:   { lat: 39.6584, lng: 20.8542 },
-        off_ramp:   { lat: 39.6584, lng: 20.8542 },
-        on_ramp:    { lat: 39.6125, lng: 20.9854 },
-        post_merge: { lat: 39.6125, lng: 20.9854 },
+        exit_name: "Αράχθου", entry_name: "Ιωαννίνων",
+        pre_exit:   { lat: 39.716995747605225, lng: 21.005480612170853 },
+        off_ramp:   { lat: 39.71849168134225,  lng: 21.002453508327058 },
+        on_ramp:    { lat: 39.60003599469195,  lng: 20.90726354695499 },
+        post_merge: { lat: 39.60041895750276,  lng: 20.903192915140952 },
         minutes: 15,
-        via: [{ lat: 39.6584, lng: 20.8542 },{ lat: 39.640, lng: 20.920 },{ lat: 39.625, lng: 20.960 },{ lat: 39.6125, lng: 20.9854 }],
-        confidence: "approximate"
+        confidence: "verified"
       },
     },
   },

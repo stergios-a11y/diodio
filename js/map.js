@@ -659,7 +659,6 @@ function clearInspectLayers() {
 
 function closeSidePanel() {
   document.getElementById('toll-side-panel')?.classList.remove('open');
-  legendEl.classList.remove('pushed');
   document.body.classList.remove('panel-open');
   clearInspectLayers();
   restoreAll();
@@ -863,7 +862,6 @@ function openSidePanel(toll) {
   sidePanelOpen = true;
   sidePanelOpenedAt = Date.now();
   currentTollOpen = toll;
-  legendEl.classList.add('pushed');
   document.body.classList.add('panel-open');
 
   // Single source of truth for the currently active direction filter,
