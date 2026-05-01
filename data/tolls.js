@@ -1464,6 +1464,17 @@ const TOLL_DATA = [
         via: [],
         confidence: "verified"
       },
+      southbound: {
+        label: "Southbound",
+        exit_name: "Τρικάλων", entry_name: "Καρδίτσας",
+        pre_exit:   { lat: 39.57528634404937,  lng: 21.81328503029463 },
+        off_ramp:   { lat: 39.572218522029196, lng: 21.813248291625253 },
+        on_ramp:    { lat: 39.47647925433001,  lng: 21.903677430548964 },
+        post_merge: { lat: 39.47664490068392,  lng: 21.9072819806736 },
+        minutes: 12,
+        via: [],
+        confidence: "verified"
+      },
     },
   },
 

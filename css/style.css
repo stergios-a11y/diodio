@@ -1306,19 +1306,33 @@ body {
 }
 
 /* Διαφορά row — no dot, so the label spans the first two grid columns. */
+/* Διαφορά row — sits at the bottom of the same table as a third row.
+   Soft horizontal-gradient tint (transparent at edges → tinted in center)
+   so the row feels like an integrated summary, not a hard-edged stripe. */
 .sp-cmp-row.sp-cmp-diff {
   margin-top: 4px;
-  padding: 8px 0;       /* keep horizontal at 0 so column alignment is preserved with the rows above */
+  padding: 8px 0;       /* keep horizontal at 0 so column alignment is preserved */
   border-top: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.02);
+  background: transparent;
   transition: background 0.18s var(--ease);
 }
 .sp-cmp-row.sp-cmp-diff.savings {
-  background: rgba(46, 122, 74, 0.07);
+  background: linear-gradient(
+    to right,
+    rgba(46, 122, 74, 0.0)  0%,
+    rgba(46, 122, 74, 0.08) 20%,
+    rgba(46, 122, 74, 0.08) 80%,
+    rgba(46, 122, 74, 0.0)  100%
+  );
 }
 .sp-cmp-row.sp-cmp-diff.cost {
-  background: rgba(184, 80, 45, 0.07);
+  background: linear-gradient(
+    to right,
+    rgba(184, 80, 45, 0.0)  0%,
+    rgba(184, 80, 45, 0.08) 20%,
+    rgba(184, 80, 45, 0.08) 80%,
+    rgba(184, 80, 45, 0.0)  100%
+  );
 }
 .sp-cmp-diff-label {
   font-weight: 600;
