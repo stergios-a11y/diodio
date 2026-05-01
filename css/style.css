@@ -817,10 +817,13 @@ body {
    Mirrors the existing `#page-map:not(.page-active) #legend` pattern. */
 #page-map:not(.page-active) #map-controls,
 #page-map:not(.page-active) #mc-basemap-popover { display: none; }
-/* When the toll side-panel is open and pushes content, slide the controls
-   left along with the legend so they stay visible. */
-#legend.pushed ~ .map-controls,
-.map-controls.pushed { right: calc(var(--sp-w) + 14px); }
+/* Hide controls + open popover whenever the toll side-panel is open.
+   The user is examining a specific toll — they're not changing basemap
+   or filtering side tolls in that moment. When the panel closes the
+   controls reappear. Matches the same hide-on-panel-open pattern that
+   already applies to #bottom-bar and #legend on mobile. */
+body.panel-open #map-controls,
+body.panel-open #mc-basemap-popover { display: none; }
 
 .mc-btn {
   display: flex;
@@ -3289,6 +3292,13 @@ input[type="range"]::-moz-range-track {
 @media (max-width: 640px) {
   .topbar-sep     { display: none; }
 
+  /* Hide Leaflet's +/- zoom controls on mobile. Pinch-to-zoom and
+     double-tap-to-zoom are universally familiar mobile gestures, and the
+     buttons add no functionality while occupying valuable top-left
+     real estate near the topbar. Standard map-app convention (Google
+     Maps, Apple Maps) hides them on mobile. */
+  .leaflet-control-zoom { display: none; }
+
   #legend {
     right: 6px;
     min-width: 175px;
@@ -3316,8 +3326,6 @@ input[type="range"]::-moz-range-track {
   body.panel-open #map-container { bottom: 50vh !important; }
   body.panel-open #results-panel { display: none; }
   body.panel-open #legend { display: none; }
-  body.panel-open #map-controls,
-  body.panel-open #mc-basemap-popover { display: none; }
 
   /* Tighter side panel content on mobile so more fits in the smaller sheet */
   .sp-header { padding: 9px 14px; padding-top: 14px; }
