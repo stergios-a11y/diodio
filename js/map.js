@@ -860,6 +860,8 @@ function openSidePanel(toll) {
             highwayLine.setStyle({ opacity: visible ? 0.7 : 0, dashArray: null });
             updateArrow(highwayArrow, highwayRes.coords, 'dir-arrow-highway');
             highwayArrow.setOpacity(visible ? 1 : 0);
+            // Refine pill bearing from real route geometry (ferry-mode bridge).
+            refineTollBearingFromRoute(toll, highwayRes.coords);
           }
           if (leg1 && leg2) {
             // Bypass coords: leg1 (drive to embarkation) + leg2 (drive from
@@ -926,6 +928,9 @@ function openSidePanel(toll) {
           // setIcon (inside updateArrow) replaces the marker's DOM, so any
           // previously-applied setOpacity is lost. Re-apply.
           highwayArrow.setOpacity(visible ? 1 : 0);
+          // Refine the toll's pill bearing from the actual route geometry —
+          // far more accurate than the bypass-corridor approximation.
+          refineTollBearingFromRoute(toll, highwayRes.coords);
         }
         if (bypassRes && bypassRes.coords.length > 1) {
           bypassLine.setLatLngs(bypassRes.coords);
@@ -1381,15 +1386,23 @@ const sideMarkers    = [];  // { toll, marker } for side tolls only
 const ZOOM_THRESHOLD_FRONTAL_PILL = 11;
 
 // Build the divIcon for a toll marker. Frontals AND bridges get a pill
-// shape oriented perpendicular to the road/bridge (using each toll's
-// `bearing` field). At low zoom they revert to the same small circle as
-// side tolls so the overview is not crowded. Side tolls always render as
-// yellow dots (booths on ramps, not main-line plazas).
+// shape oriented perpendicular to the road/bridge.
 //
-// The `bearing` field is computed automatically from the bypass corridor
-// (in tolls.js); a `bearing_manual` field, if present, takes precedence —
-// use it to override specific tolls where the auto-computed value is off
-// (e.g. on highway sections that curve sharply between bypass endpoints).
+// Bearing source priority (highest wins):
+//   1. `bearing_route`   — computed from the actual Mapbox highway route
+//                          geometry once the user has clicked this toll.
+//                          Most accurate; samples coords ~100m on either
+//                          side of the toll's projection onto the route.
+//   2. `bearing_manual`  — explicit user override (rarely needed once
+//                          bearing_route exists, but kept for cases where
+//                          the route happens to curve through the toll
+//                          location.
+//   3. `bearing`         — auto-computed at build time from the bypass
+//                          corridor endpoints. Coarse, used as default
+//                          before the user clicks.
+//
+// At low zoom (< ZOOM_THRESHOLD_FRONTAL_PILL) frontals/bridges revert
+// to the same small circle as side tolls so the overview isn't crowded.
 function makeTollMarkerIcon(toll, isActive) {
   const isSide   = toll.type === 'side';
   const isPillEligible = toll.type === 'frontal' || toll.type === 'bridge';
@@ -1404,8 +1417,10 @@ function makeTollMarkerIcon(toll, isActive) {
   if (showAsPill) {
     const longSide  = isActive ? 30 : 26;
     const shortSide = isActive ? 12 : 10;
-    // Manual override beats auto-computed bearing.
-    const rawBearing = (typeof toll.bearing_manual === 'number')
+    // Bearing source priority: route > manual > auto.
+    const rawBearing = (typeof toll.bearing_route === 'number')
+      ? toll.bearing_route
+      : (typeof toll.bearing_manual === 'number')
       ? toll.bearing_manual
       : (typeof toll.bearing === 'number' ? toll.bearing : 0);
     const rot = ((rawBearing % 180) + 180) % 180;
@@ -1427,6 +1442,124 @@ function makeTollMarkerIcon(toll, isActive) {
     iconAnchor: [size / 2, size / 2],
   });
 }
+
+// ── Compute pill bearing from actual route geometry ─────────────────
+//
+// When the user clicks a toll, the highway route polyline is fetched
+// from Mapbox. That polyline IS the ground truth for the road's local
+// shape at the toll. We use it to refine the toll's pill orientation:
+// find the polyline coord closest to the toll's lat/lng, walk ~100m
+// in each direction, and take the bearing of the resulting segment.
+// This produces a perfectly-perpendicular pill regardless of how
+// curving the road is between the bypass corridor endpoints.
+//
+// The result is cached on the toll object as `bearing_route` and
+// reused on subsequent panel opens / re-renders.
+
+function _haversineMeters(p1, p2) {
+  const R = 6_371_000;
+  const toRad = d => d * Math.PI / 180;
+  const lat1 = toRad(p1[0]), lat2 = toRad(p2[0]);
+  const dlat = lat2 - lat1, dlon = toRad(p2[1] - p1[1]);
+  const a = Math.sin(dlat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+function _bearingDeg(p1, p2) {
+  const toRad = d => d * Math.PI / 180;
+  const lat1 = toRad(p1[0]), lat2 = toRad(p2[0]);
+  const dlon = toRad(p2[1] - p1[1]);
+  const x = Math.sin(dlon) * Math.cos(lat2);
+  const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dlon);
+  return (Math.atan2(x, y) * 180 / Math.PI + 360) % 360;
+}
+
+// Refine the toll's bearing using the highway route polyline. `coords` is
+// an array of [lat, lng] pairs (Mapbox returns lng,lat — the caller flips).
+// On success, sets toll.bearing_route and calls setIcon to update the marker.
+function refineTollBearingFromRoute(toll, coords) {
+  if (!Array.isArray(coords) || coords.length < 3) return;
+  if (toll.type !== 'frontal' && toll.type !== 'bridge') return;
+  // Don't override an explicit user value.
+  if (typeof toll.bearing_manual === 'number') return;
+
+  const tollPt = [toll.lat, toll.lng];
+  // 1. Find the route coord closest to the toll.
+  let nearestIdx = -1, nearestDist = Infinity;
+  for (let i = 0; i < coords.length; i++) {
+    const d = _haversineMeters(tollPt, coords[i]);
+    if (d < nearestDist) { nearestDist = d; nearestIdx = i; }
+  }
+  // If the nearest coord is more than 800m away, this route doesn't pass
+  // through the toll (e.g. a different direction's route). Skip.
+  if (nearestDist > 800) return;
+
+  // 2. Walk the polyline backward and forward from nearestIdx until the
+  //    cumulative distance reaches ~100m. Use those two points to compute
+  //    the local bearing.
+  const TARGET_OFFSET_M = 100;
+
+  function findOffset(start, dir) {
+    let cum = 0;
+    let prev = coords[start];
+    let i = start + dir;
+    while (i >= 0 && i < coords.length) {
+      cum += _haversineMeters(prev, coords[i]);
+      if (cum >= TARGET_OFFSET_M) return i;
+      prev = coords[i];
+      i += dir;
+    }
+    // Hit the end of the polyline before reaching target — return endpoint.
+    const last = i - dir;
+    return (last !== start && last >= 0 && last < coords.length) ? last : null;
+  }
+
+  const beforeIdx = findOffset(nearestIdx, -1);
+  const afterIdx  = findOffset(nearestIdx, +1);
+  if (beforeIdx == null || afterIdx == null || beforeIdx === afterIdx) return;
+
+  const b = _bearingDeg(coords[beforeIdx], coords[afterIdx]);
+  toll.bearing_route = Math.round(((b % 180) + 180) % 180);
+
+  // Update the marker icon if it's currently rendered as a pill.
+  const entry = allMarkers.find(m => m.toll === toll);
+  if (entry && map.getZoom() >= ZOOM_THRESHOLD_FRONTAL_PILL) {
+    const isActive = currentTollOpen && currentTollOpen.id === toll.id;
+    entry.marker.setIcon(makeTollMarkerIcon(toll, isActive));
+  }
+}
+window.refineTollBearingFromRoute = refineTollBearingFromRoute;
+
+// Hydrate bearing_route from any cached highway routes in localStorage.
+// On a fresh page load we re-derive the bearings of tolls the user has
+// previously clicked, so their pills are correctly oriented from the
+// start instead of waiting for another click. Skipped silently if the
+// browser blocks localStorage. Cheap — at most one parse per toll.
+function _hydrateBearingsFromCache() {
+  if (typeof TOLL_DATA === 'undefined') return;
+  for (const toll of TOLL_DATA) {
+    if (toll.type !== 'frontal' && toll.type !== 'bridge') continue;
+    if (typeof toll.bearing_route === 'number') continue;       // already set
+    if (typeof toll.bearing_manual === 'number') continue;       // explicit override wins
+    const dirs = toll.bypass_directions;
+    if (!dirs) continue;
+    // Try each direction's highway route in turn.
+    for (const dir of Object.values(dirs)) {
+      if (!dir?.pre_exit || !dir?.post_merge || dir.mode === 'ferry') continue;
+      const key = `highway:${dir.pre_exit.lat.toFixed(5)},${dir.pre_exit.lng.toFixed(5)};${dir.post_merge.lat.toFixed(5)},${dir.post_merge.lng.toFixed(5)}`;
+      try {
+        const stored = localStorage.getItem(`diodio.route.v5.${key}`);
+        if (!stored) continue;
+        const parsed = JSON.parse(stored);
+        if (parsed?.coords?.length > 2) {
+          refineTollBearingFromRoute(toll, parsed.coords);
+          break;
+        }
+      } catch (e) { /* ignore */ }
+    }
+  }
+}
+// Defer slightly so TOLL_DATA + map are ready, and non-blocking.
+setTimeout(_hydrateBearingsFromCache, 50);
 
 TOLL_DATA.forEach(toll => {
   const isSide = toll.type === 'side';
