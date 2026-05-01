@@ -549,27 +549,23 @@ const TOLL_DATA = [
     cat1: 2.00, cat2: 2.90, cat3: 7.25, cat4: 10.20,
     notes: "North of Thessaloniki towards Kavala / Halkidiki junction.",
     bypass_directions: {
-      northbound: {
-        label: "Northbound (towards Kavala)",
-        exit_name: "Προφήτη", entry_name: "Λαγκαδά",
-        pre_exit:   { lat: 40.684178, lng: 23.257014 },
-        off_ramp:   { lat: 40.684178, lng: 23.257014 },
-        on_ramp:    { lat: 40.739312, lng: 23.018035 },
-        post_merge: { lat: 40.739312, lng: 23.018035 },
+      eastbound: {
+        label: "Eastbound (towards Kavala)",
+        pre_exit:   { lat: 40.736451148947104, lng: 23.003523669323354 },
+        off_ramp:   { lat: 40.73742112020524,  lng: 23.006870672554978 },
+        on_ramp:    { lat: 40.6843411883298,   lng: 23.260170926482097 },
+        post_merge: { lat: 40.68681023646236,  lng: 23.264207325729974 },
         minutes: 18,
-        via: [{ lat: 40.6854, lng: 23.2584 },{ lat: 40.700, lng: 23.220 },{ lat: 40.720, lng: 23.170 },{ lat: 40.7512, lng: 23.0584 }],
-        confidence: "auto"
+        confidence: "verified"
       },
-      southbound: {
-        label: "Southbound (towards Thessaloniki)",
-        exit_name: "Λαγκαδά", entry_name: "Προφήτη",
-        pre_exit:   { lat: 40.739312, lng: 23.018035 },
-        off_ramp:   { lat: 40.739312, lng: 23.018035 },
-        on_ramp:    { lat: 40.684178, lng: 23.257014 },
-        post_merge: { lat: 40.684178, lng: 23.257014 },
+      westbound: {
+        label: "Westbound (towards Thessaloniki)",
+        pre_exit:   { lat: 40.684764877930846, lng: 23.25938372435227 },
+        off_ramp:   { lat: 40.68440321267142,  lng: 23.256239048712494 },
+        on_ramp:    { lat: 40.73961865901709,  lng: 23.012291218186164 },
+        post_merge: { lat: 40.738396129151646, lng: 23.008344154709178 },
         minutes: 18,
-        via: [{ lat: 40.7512, lng: 23.0584 },{ lat: 40.720, lng: 23.170 },{ lat: 40.700, lng: 23.220 },{ lat: 40.6854, lng: 23.2584 }],
-        confidence: "auto"
+        confidence: "verified"
       },
     },
   },
