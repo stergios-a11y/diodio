@@ -2137,7 +2137,6 @@ const mcSideBtn = document.getElementById('mc-side-btn');
 if (mcSideBtn) {
   mcSideBtn.addEventListener('click', function() {
     sideTollsVisible = !sideTollsVisible;
-    this.classList.toggle('is-on', sideTollsVisible);
     this.setAttribute('aria-pressed', sideTollsVisible ? 'true' : 'false');
     sideMarkers.forEach(({ marker }) => {
       if (sideTollsVisible) {

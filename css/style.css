@@ -840,20 +840,29 @@ body {
 .mc-btn[aria-expanded="true"],
 .mc-btn[aria-pressed="true"] { background: var(--aegean-lt); color: var(--aegean-dark); }
 
-/* Side-tolls dot indicator: bottom-right of the button when on. */
-.mc-side-state-dot {
-  position: absolute;
-  bottom: 5px; right: 5px;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #c89e1a;          /* matches the side-toll yellow */
-  border: 1.5px solid var(--paper);
-  opacity: 0;
-  transition: opacity 0.15s var(--ease);
+/* Side-tolls button — special-cased so the on-state uses YELLOW (matching
+   the actual side-toll markers on the map) instead of the generic aegean
+   tint other pressed buttons get. The visual rhyme — yellow button
+   controls yellow dots — makes the button's purpose obvious without a
+   text label. The toll dot inside the SVG (the small filled circle at
+   the end of the off-ramp branch) is the most prominent on/off signal:
+   bright yellow when active, washed-out grey when not. */
+#mc-side-btn[aria-pressed="true"] {
+  background: #fef6d8;          /* very light yellow */
+  color: #4a3500;               /* dark brown — readable on yellow */
 }
-#mc-side-btn.is-on .mc-side-state-dot { opacity: 1; }
-/* When side-tolls is OFF, mute the icon stroke a bit to signal disabled. */
-#mc-side-btn:not(.is-on) svg { opacity: 0.6; }
+#mc-side-btn[aria-pressed="true"] .mc-side-toll-dot {
+  fill: #c89e1a;                /* same yellow used for actual side-toll markers */
+}
+#mc-side-btn[aria-pressed="false"] {
+  /* Off-state: mute the entire icon so it reads as inactive. The strokes
+     stay; the toll-dot fades. */
+  color: var(--ink-3);
+}
+#mc-side-btn[aria-pressed="false"] .mc-side-toll-dot {
+  fill: var(--ink-3);
+  opacity: 0.45;
+}
 
 /* Basemap popover: anchored to the right under the basemap button. Same
    visual language as the .veh-menu / .overflow-menu — small dropdown card
