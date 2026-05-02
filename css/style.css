@@ -1910,7 +1910,12 @@ input[type="range"]::-moz-range-track {
    ══════════════════════════════════════ */
 #results-panel {
   position: fixed;
-  bottom: var(--bar-h); left: 0; right: 0;
+  /* Was bottom: var(--bar-h) — that left a strip of the panel's head
+     visible when closed (the bar-h gap sat above the original horizontal
+     bottom-bar; now that the bottom-bar is a small floating card, the
+     strip leaks into view at the bottom). Anchored to the viewport
+     bottom now, so the closed translateY(100%) hides it completely. */
+  bottom: 0; left: 0; right: 0;
   z-index: 400;
   background: var(--paper);
   border-top: 1px solid var(--line-strong);
@@ -4162,15 +4167,16 @@ input[type="range"]::-moz-range-track {
    ════════════════════════════════════════════════════════════════ */
 
 #bottom-bar {
-  /* Override of the horizontal strip from earlier in this file. */
+  /* Desktop: pinned to top-left under the topbar, narrow card.
+     Mobile: see media query below — repositions to bottom-centered for
+     thumb-reach on phones. */
   position: fixed;
-  left: 50%;
-  bottom: 16px;
-  transform: translateX(-50%);
-  width: calc(100% - 24px);
-  max-width: 640px;
-  height: auto;
+  top: calc(var(--topbar-h, 56px) + 12px);
+  left: 12px;
   z-index: 500;
+  width: 380px;
+  max-width: calc(100vw - 24px);
+  height: auto;
   background: var(--paper);
   border: 1px solid var(--line-strong);
   border-radius: 16px;
@@ -4179,9 +4185,13 @@ input[type="range"]::-moz-range-track {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* Override the gap & alignment from the original rule. */
   align-items: stretch;
 }
+
+/* The Leaflet zoom buttons live in the top-left by default — same place we
+   want our floating panel. Remove them globally; users can still zoom via
+   pinch / scroll wheel. (Originally hidden only on mobile via line 3299.) */
+.leaflet-control-zoom { display: none !important; }
 
 /* Vehicle pills — segmented control. The thumb is an absolutely-positioned
    pill that slides between options based on data-active="0..3" on the
@@ -4239,6 +4249,15 @@ input[type="range"]::-moz-range-track {
 }
 .fp-pill .fp-pill-icon {
   flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1;
+  /* Emoji on macOS Safari sometimes renders with awkward vertical alignment;
+     this baseline tweak keeps the icon centered next to the label. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
 }
 .fp-pill.is-active {
   color: var(--paper);
@@ -4365,11 +4384,16 @@ input[type="range"]::-moz-range-track {
    query). The map underneath still receives the analyse output. */
 body.panel-open #bottom-bar { display: none !important; }
 
-/* Narrow screens: tighten spacing, allow the route row to wrap. */
-@media (max-width: 480px) {
+/* Narrow screens: panel returns to bottom-centered for thumb-reach.
+   Tighten spacing, allow the route row to wrap. */
+@media (max-width: 640px) {
   #bottom-bar {
+    top: auto;
+    left: 50%;
     bottom: 12px;
+    transform: translateX(-50%);
     width: calc(100% - 16px);
+    max-width: 640px;
     padding: 10px 12px;
     gap: 8px;
     border-radius: 14px;
@@ -4380,6 +4404,7 @@ body.panel-open #bottom-bar { display: none !important; }
     padding: 7px 2px;
   }
   .fp-pill .fp-pill-icon {
+    font-size: 14px;
     width: 16px;
     height: 16px;
   }
