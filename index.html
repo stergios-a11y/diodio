@@ -187,7 +187,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260502-1900" />
+  <link rel="stylesheet" href="css/style.css?v=20260502-2000" />
 </head>
 <body>
 
@@ -281,31 +281,8 @@
       <a class="nav-link" data-page="tolls" data-i18n="nav.tolls">Διόδια</a>
     </nav>
     <div class="topbar-right">
-      <div class="veh-toggle" id="vehicle-toggle" data-i18n-aria-label="aria.vehicle">
-        <button class="veh-current" type="button" aria-haspopup="menu" aria-expanded="false">
-          <span class="veh-emoji">🚗</span>
-          <span class="veh-label" data-i18n="veh.full.cat2">Αυτοκίνητο</span>
-          <span class="veh-caret" aria-hidden="true">▾</span>
-        </button>
-        <div class="veh-menu" role="menu" hidden>
-          <button class="veh-option" data-cat="cat1" type="button" role="menuitem">
-            <span class="veh-emoji">🏍</span>
-            <span class="veh-label" data-i18n="veh.full.cat1">Μοτοσικλέτα</span>
-          </button>
-          <button class="veh-option" data-cat="cat2" type="button" role="menuitem">
-            <span class="veh-emoji">🚗</span>
-            <span class="veh-label" data-i18n="veh.full.cat2">Αυτοκίνητο</span>
-          </button>
-          <button class="veh-option" data-cat="cat3" type="button" role="menuitem">
-            <span class="veh-emoji">🚐</span>
-            <span class="veh-label" data-i18n="veh.full.cat3">Βαν</span>
-          </button>
-          <button class="veh-option" data-cat="cat4" type="button" role="menuitem">
-            <span class="veh-emoji">🚛</span>
-            <span class="veh-label" data-i18n="veh.full.cat4">Φορτηγό</span>
-          </button>
-        </div>
-      </div>
+      <!-- Vehicle picker removed from topbar in R43 — replaced by the
+           floating-panel pills below. See #bottom-bar for the new control. -->
       <button class="btn-lang-flag" id="lang-toggle" title="Switch language / Αλλαγή γλώσσας">
         <span class="flag-option flag-el" data-lang="el">🇬🇷</span>
         <span class="flag-option flag-en" data-lang="en">🇬🇧</span>
@@ -605,81 +582,93 @@
        content during print. Also serves as the source for the Download button. -->
   <div id="print-view"></div>
 
+  <!-- Floating bottom panel (R43). All primary inputs in one card hovering
+       over the map. Layout is vertical: vehicle pills on top, then the
+       tolerance question + slider, then origin/destination + analyse.
+       Element IDs preserved so calculator.js bindings keep working:
+         #tv-slider, #tv-val, #tv-tier, #origin, #dest, #swap-btn, #analyse-btn
+       The previous prose-vs-pill mode of the tolerance control was removed
+       — the floating panel has room to always show the question + slider. -->
   <div id="bottom-bar">
-    <span class="bar-label" data-i18n="bar.from">Από</span>
-    <input class="bar-input" id="origin" placeholder="πχ Αθήνα" autocomplete="off" data-i18n-aria-label="aria.origin" data-i18n-placeholder="bar.origin.placeholder" style="flex:1;max-width:150px" />
-    <button class="swap-btn" id="swap-btn" data-i18n-title="bar.swap" title="Αντιστροφή διαδρομής">⇄</button>
-    <span class="bar-label" data-i18n="bar.to">Προς</span>
-    <input class="bar-input" id="dest" placeholder="πχ Λάρισα" autocomplete="off" data-i18n-aria-label="aria.dest" data-i18n-placeholder="bar.dest.placeholder" style="flex:1;max-width:150px" />
-    <div class="bar-sep"></div>
 
-    <!-- Tolerance control: starts in "prose mode" on first visit (full sentence
-         + slider visible inline), switches to "pill mode" on first slider
-         interaction (small icon + number button that opens a popover). State
-         persists in localStorage as `mydiodia.tip.tolerance.v1`. The slider is
-         a single element that moves between .tv-compact (prose mode) and
-         .tv-popover-slot (pill mode) via appendChild — one source of truth.
-         Wired up by calculator.js. -->
-    <div class="tv-control" id="tv-control">
-
-      <!-- Prose mode: shown to first-visit users. Same content as before. -->
-      <div class="tv-compact tv-mode-prose">
-        <div class="tv-compact-sentence">
-          <span class="lbl tv-desktop" data-i18n="bar.time.prefix">Θα οδηγούσα</span>
-          <span class="lbl tv-mobile" data-i18n="bar.time.short.prefix">Δεκτή παράκαμψη:</span>
-          <span class="val" id="tv-val-pill">
-            <span class="val-num" id="tv-val">5</span>
-            <span class="val-tier" id="tv-tier"></span>
-          </span>
-          <span class="lbl lbl-suffix tv-desktop" data-i18n="bar.time.suffix">επιπλέον λεπτά για να γλιτώσω €1 σε διόδια</span>
-          <span class="lbl lbl-suffix tv-mobile" data-i18n="bar.time.short.suffix">λεπ. ανά €1</span>
-        </div>
-        <input type="range" id="tv-slider" min="2" max="15" value="5" step="1" data-i18n-aria-label="aria.time.slider" />
-      </div>
-
-      <!-- Pill mode: shown to returning visitors and after first interaction. -->
-      <button class="tv-pill tv-mode-pill" id="tv-pill" type="button"
-              aria-haspopup="dialog" aria-expanded="false"
-              data-i18n-aria-label="aria.tolerance.pill">
-        <svg class="tv-pill-icon" width="14" height="14" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="13" r="8"/>
-          <path d="M12 9v4l2 2"/>
-          <path d="M9 2h6"/>
-        </svg>
-        <span class="tv-pill-num" id="tv-pill-num">5</span>
-        <span class="tv-pill-caret" aria-hidden="true">▾</span>
+    <!-- Row 1: vehicle pills (segmented control). Click any pill to set the
+         active vehicle category. JS wiring lives in calculator.js — pills
+         call window.setVehicleCat(cat) and re-sync on `vehiclechange` so
+         other places in the app (e.g. routes/tolls page inline pickers)
+         stay in sync. The dark sliding thumb tracks the active pill via a
+         CSS transform tied to `data-active="0..3"`. -->
+    <div class="fp-pills" id="fp-pills" data-active="1" role="radiogroup" data-i18n-aria-label="aria.vehicle">
+      <div class="fp-pills-thumb" aria-hidden="true"></div>
+      <button class="fp-pill" type="button" role="radio" aria-checked="false" data-cat="cat1" data-i18n-aria-label="veh.full.cat1">
+        <svg class="fp-pill-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6M14 8l-3 9M14 8h3l2 4M14 8l-2-3-2 1"/></svg>
+        <span class="fp-pill-label" data-i18n="veh.full.cat1">Μοτοσικλέτα</span>
       </button>
+      <button class="fp-pill" type="button" role="radio" aria-checked="true" data-cat="cat2" data-i18n-aria-label="veh.full.cat2">
+        <svg class="fp-pill-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l2-5a2 2 0 0 1 1.9-1.4h10.2A2 2 0 0 1 19 8l2 5"/><path d="M3 13v4a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-1h10v1a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-4"/><circle cx="7" cy="15" r="1.2"/><circle cx="17" cy="15" r="1.2"/></svg>
+        <span class="fp-pill-label" data-i18n="veh.full.cat2">Αυτοκίνητο</span>
+      </button>
+      <button class="fp-pill" type="button" role="radio" aria-checked="false" data-cat="cat3" data-i18n-aria-label="veh.full.cat3">
+        <svg class="fp-pill-icon" width="22" height="20" viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="14" height="9" rx="1"/><path d="M16 10h6l3 4v2h-9z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="20" cy="17.5" r="1.6"/></svg>
+        <span class="fp-pill-label" data-i18n="veh.full.cat3">Βαν</span>
+      </button>
+      <button class="fp-pill" type="button" role="radio" aria-checked="false" data-cat="cat4" data-i18n-aria-label="veh.full.cat4">
+        <svg class="fp-pill-icon" width="22" height="20" viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="11" height="11" rx="1"/><path d="M13 9h8l4 5v2H13z"/><circle cx="6.5" cy="17.5" r="1.7"/><circle cx="11" cy="17.5" r="1.7"/><circle cx="20" cy="17.5" r="1.7"/></svg>
+        <span class="fp-pill-label" data-i18n="veh.full.cat4">Φορτηγό</span>
+      </button>
+    </div>
 
-      <!-- Popover: opened from the pill on desktop. On mobile this becomes an
-           in-place inline panel via the same .is-open class. The slider is
-           appended into .tv-popover-slot when the popover opens, and moved
-           back into .tv-compact when it closes. This keeps the slider as a
-           single DOM element with one set of event listeners. -->
-      <div class="tv-popover" id="tv-popover" role="dialog"
-           aria-labelledby="tv-popover-title" hidden>
-        <div class="tv-popover-arrow" aria-hidden="true"></div>
-        <div class="tv-popover-question" id="tv-popover-title"
-             data-i18n="bar.time.popover.question">
-          Πόσα επιπλέον λεπτά θα οδηγούσες για να γλιτώσεις €1 σε διόδια;
-        </div>
-        <div class="tv-popover-row">
-          <div class="tv-popover-slot" id="tv-popover-slot"></div>
-          <span class="tv-popover-val" id="tv-popover-val">5</span>
-        </div>
-        <div class="tv-popover-tier" id="tv-popover-tier"></div>
+    <!-- Row 2: tolerance question. Displayed above the slider as a soft
+         prompt explaining what the number means. -->
+    <div class="fp-question" data-i18n="bar.time.question.long">
+      πόσο χρόνο διατίθεσαι να χάσεις για εξοικονόμιση 1 ευρώ;
+    </div>
+
+    <!-- Row 3: tolerance slider. The <input> retains id="tv-slider" so
+         calculator.js keeps wiring it up identically. The value display is
+         #tv-val, also preserved. The semantic tier label (#tv-tier) is
+         displayed alongside the number — "βιαστικός" / "ισορροπημένος" etc. -->
+    <div class="fp-slider-row">
+      <input type="range" id="tv-slider" min="1" max="15" value="5" step="1" data-i18n-aria-label="aria.time.slider" />
+      <div class="fp-slider-value">
+        <span class="fp-slider-num" id="tv-val">5</span>
+        <span class="fp-slider-unit" data-i18n="bar.time.unit">λεπτά</span>
       </div>
+    </div>
+    <!-- Tier label sits below the slider — shows the meaning of the
+         current value in words (hurry / balanced / thrifty / frugal). -->
+    <div class="fp-slider-tier"><span id="tv-tier"></span></div>
 
+    <!-- Row 4: origin → destination + analyse button. -->
+    <div class="fp-route-row">
+      <input class="fp-input" id="origin" placeholder="πχ Αθήνα" autocomplete="off"
+             data-i18n-aria-label="aria.origin" data-i18n-placeholder="bar.origin.placeholder" />
+      <button class="fp-swap" id="swap-btn" data-i18n-title="bar.swap" title="Αντιστροφή διαδρομής" aria-label="swap">⇄</button>
+      <input class="fp-input" id="dest" placeholder="πχ Λάρισα" autocomplete="off"
+             data-i18n-aria-label="aria.dest" data-i18n-placeholder="bar.dest.placeholder" />
+      <button class="fp-analyse analyse-btn" id="analyse-btn" type="button" onclick="analyze()">
+        <div class="btn-spinner"></div>
+        <span id="btn-text" data-i18n="bar.analyse">Ανάλυση</span>
+      </button>
     </div>
 
-    <div class="bar-sep"></div>
-    <button class="analyse-btn" id="analyse-btn" onclick="analyze()">
-      <div class="btn-spinner"></div>
-      <span id="btn-text" data-i18n="bar.analyse">Ανάλυση</span>
-    </button>
     <div class="error-pill" id="error-pill"></div>
+
+    <!-- Hidden vestigial elements that calculator.js still references but
+         are no longer part of the active UI. Keeping them in DOM avoids
+         null-checks scattered across the JS. The mode-switch logic was
+         deleted in calculator.js. -->
+    <div hidden>
+      <div id="tv-control">
+        <div id="tv-pill"><span id="tv-pill-num">5</span></div>
+        <div id="tv-popover">
+          <div id="tv-popover-slot"></div>
+          <span id="tv-popover-val">5</span>
+          <div id="tv-popover-tier"></div>
+        </div>
+      </div>
     </div>
+  </div>
+
   </main>
 
   <main id="page-routes" class="page">
@@ -859,11 +848,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260502-1900"></script>
-  <script src="data/tolls.js?v=20260502-1900"></script>
-  <script src="data/routes.js?v=20260502-1900"></script>
-  <script src="js/map.js?v=20260502-1900"></script>
-  <script src="js/calculator.js?v=20260502-1900"></script>
-  <script src="js/pages.js?v=20260502-1900"></script>
+  <script src="js/i18n.js?v=20260502-2000"></script>
+  <script src="data/tolls.js?v=20260502-2000"></script>
+  <script src="data/routes.js?v=20260502-2000"></script>
+  <script src="js/map.js?v=20260502-2000"></script>
+  <script src="js/calculator.js?v=20260502-2000"></script>
+  <script src="js/pages.js?v=20260502-2000"></script>
 </body>
 </html>

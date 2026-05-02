@@ -4149,3 +4149,256 @@ input[type="range"]::-moz-range-track {
    calculator.js). The popup writes its own self-contained HTML with
    inline styles. No @media print rules needed. */
 #print-view { display: none; }
+
+
+/* ════════════════════════════════════════════════════════════════
+   FLOATING PANEL (R43)
+   ────────────────────────────────────────────────────────────────
+   Replaces the horizontal bottom-bar strip. Card hovers above the
+   bottom of the viewport, holds vehicle pills + tolerance + From/To
+   inputs + Analyse button in a single vertical stack. The previous
+   #bottom-bar selector is overridden here — no need to delete the
+   earlier rule, the override below wins on cascade order.
+   ════════════════════════════════════════════════════════════════ */
+
+#bottom-bar {
+  /* Override of the horizontal strip from earlier in this file. */
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 640px;
+  height: auto;
+  z-index: 500;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 24px rgba(26, 31, 46, 0.12), 0 2px 6px rgba(26, 31, 46, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Override the gap & alignment from the original rule. */
+  align-items: stretch;
+}
+
+/* Vehicle pills — segmented control. The thumb is an absolutely-positioned
+   pill that slides between options based on data-active="0..3" on the
+   parent. Each .fp-pill is a transparent button overlaying the thumb. */
+.fp-pills {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--paper-2);
+  border-radius: 999px;
+  padding: 4px;
+  isolation: isolate;
+}
+.fp-pills-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 4);
+  background: var(--ink);
+  border-radius: 999px;
+  transition: transform 220ms cubic-bezier(.2, .8, .2, 1);
+  z-index: 0;
+}
+.fp-pills[data-active="0"] .fp-pills-thumb { transform: translateX(0); }
+.fp-pills[data-active="1"] .fp-pills-thumb { transform: translateX(100%); }
+.fp-pills[data-active="2"] .fp-pills-thumb { transform: translateX(200%); }
+.fp-pills[data-active="3"] .fp-pills-thumb { transform: translateX(300%); }
+
+.fp-pill {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: 0;
+  padding: 8px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: color 220ms ease;
+  /* Truncate long labels on narrow screens rather than overflow the pill. */
+  min-width: 0;
+}
+.fp-pill .fp-pill-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.fp-pill .fp-pill-icon {
+  flex-shrink: 0;
+}
+.fp-pill.is-active {
+  color: var(--paper);
+}
+.fp-pill:focus-visible {
+  outline: 2px solid var(--aegean);
+  outline-offset: 2px;
+}
+
+/* Question line — soft prompt above the slider. */
+.fp-question {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.35;
+  padding: 0 4px;
+  margin-top: 2px;
+}
+
+/* Slider row — slider + numeric value readout. The slider's inline width
+   is governed by flex; the readout is fixed. */
+.fp-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
+}
+.fp-slider-row input[type="range"] {
+  flex: 1;
+  min-width: 0;
+}
+.fp-slider-value {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  min-width: 56px;
+  justify-content: flex-end;
+}
+.fp-slider-num {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.fp-slider-unit {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.fp-slider-tier {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-align: right;
+  padding: 0 4px;
+  min-height: 14px;
+  margin-top: -4px;
+}
+
+/* Route row — origin / swap / destination / analyse. Wraps on narrow
+   screens; on desktop everything fits in one line. */
+.fp-route-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+.fp-input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.92rem;
+  padding: 0 12px;
+  outline: none;
+  border-radius: var(--radius);
+  transition: all 0.18s var(--ease);
+}
+.fp-input::placeholder { color: var(--muted); }
+.fp-input:focus {
+  border-color: var(--aegean);
+  box-shadow: 0 0 0 3px var(--aegean-lt);
+}
+.fp-swap {
+  flex-shrink: 0;
+  height: 40px; width: 40px;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  color: var(--ink-2);
+  font-size: 1.05rem;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all 0.18s var(--ease);
+  display: flex; align-items: center; justify-content: center;
+}
+.fp-swap:hover {
+  background: var(--aegean-lt);
+  border-color: var(--aegean);
+  color: var(--aegean);
+  transform: rotate(180deg);
+}
+.fp-analyse {
+  flex-shrink: 0;
+  height: 40px;
+  /* All other analyse-btn styling cascades from the existing .analyse-btn
+     rule earlier in this file (gradient, hover, etc.). We only override
+     the height/padding for the floating-panel context. */
+  padding: 0 18px;
+  font-size: 0.9rem;
+}
+
+/* Defensive: hide any vestigial #vehicle-toggle if it ever shows up. */
+#vehicle-toggle { display: none !important; }
+
+/* Hide the floating panel when the results panel is open — same as the
+   earlier `body.panel-open #bottom-bar { display: none }` rule, but
+   applied unconditionally (the original was inside a mobile media
+   query). The map underneath still receives the analyse output. */
+body.panel-open #bottom-bar { display: none !important; }
+
+/* Narrow screens: tighten spacing, allow the route row to wrap. */
+@media (max-width: 480px) {
+  #bottom-bar {
+    bottom: 12px;
+    width: calc(100% - 16px);
+    padding: 10px 12px;
+    gap: 8px;
+    border-radius: 14px;
+  }
+  .fp-pill {
+    font-size: 0.72rem;
+    gap: 3px;
+    padding: 7px 2px;
+  }
+  .fp-pill .fp-pill-icon {
+    width: 16px;
+    height: 16px;
+  }
+  .fp-question {
+    font-size: 0.74rem;
+  }
+  .fp-route-row {
+    flex-wrap: wrap;
+  }
+  .fp-input {
+    flex: 1 1 calc(50% - 24px);
+  }
+  .fp-analyse {
+    flex: 1 1 100%;
+  }
+}
+
+/* Very narrow: hide pill text labels, leave icons only. */
+@media (max-width: 380px) {
+  .fp-pill .fp-pill-label { display: none; }
+  .fp-pill { padding: 9px 0; }
+}
