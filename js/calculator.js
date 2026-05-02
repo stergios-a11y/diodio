@@ -1477,6 +1477,77 @@ function openPrintWindow() {
     // populating the view. Fall back to a no-op.
     return;
   }
+
+  // R34: pre-load every <img src="https://api.mapbox.com/...">  in the main
+  // window (where mydiodia.gr referrer is sent correctly), convert each to
+  // a data URL via canvas, and write the resulting self-contained HTML into
+  // the popup. This avoids two related problems:
+  //   1. Popup windows have inconsistent referrer behavior across browsers,
+  //      so Mapbox token referrer-restriction can reject the popup's image
+  //      requests even though the same URL works in the main window.
+  //   2. Even when images load in the popup, Chrome's "Save as PDF" can
+  //      omit external <img> resources rendered in popup contexts.
+  // The data-URL approach sidesteps both — popup gets a fully self-contained
+  // document with no network requests at all.
+  //
+  // If a conversion fails (CORS, network), we fall back to keeping the
+  // original URL — best-effort rather than blocking the entire print.
+  inlineMapImagesAsDataUrls(view).then(() => openPrintWindowWithLoadedImages(view));
+}
+
+// Convert every <img data-print-asset> in the print view from a URL src
+// to an inline data URL. Resolves once all conversions finish (success or
+// failure). Modifies the elements in place. Runs in the main window where
+// referrer + CORS work correctly.
+function inlineMapImagesAsDataUrls(view) {
+  const imgs = [...view.querySelectorAll('img[data-print-asset]')];
+  if (!imgs.length) return Promise.resolve();
+  return Promise.all(imgs.map(img => {
+    // If this image was already converted on a previous print, skip it
+    // (data URLs start with "data:"; URLs start with "https:").
+    if (img.src.startsWith('data:')) return Promise.resolve();
+    // We need a CORS-clean fetch to convert via canvas. The original <img>
+    // in the DOM doesn't have crossOrigin set. Create a fresh Image() with
+    // crossOrigin="anonymous" pointing to the same URL — Mapbox responds
+    // with Access-Control-Allow-Origin: * for static images, so this works.
+    return new Promise(resolve => {
+      const probe = new Image();
+      probe.crossOrigin = 'anonymous';
+      probe.referrerPolicy = 'strict-origin-when-cross-origin';
+      const done = () => resolve();
+      probe.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          // Match the natural image dimensions for a 1:1 conversion.
+          canvas.width  = probe.naturalWidth  || 600;
+          canvas.height = probe.naturalHeight || 400;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(probe, 0, 0);
+          // PNG keeps map labels crisp; JPEG would soften them.
+          const dataUrl = canvas.toDataURL('image/png');
+          img.src = dataUrl;
+        } catch (e) {
+          // CORS taint — leave the original URL. Popup will try to load it
+          // and may or may not succeed.
+          console.warn('[mydiodia] map image canvas conversion failed:', e);
+        }
+        done();
+      };
+      probe.onerror = () => {
+        console.warn('[mydiodia] map image preload failed:', probe.src);
+        done();
+      };
+      // Hard cap — if the image is genuinely unreachable, don't strand the
+      // print flow forever. 5 seconds is enough for normal Mapbox latency.
+      setTimeout(done, 5000);
+      probe.src = img.src;
+    });
+  }));
+}
+
+// After images are inlined (or failed), open the popup and write the
+// fully self-contained HTML into it.
+function openPrintWindowWithLoadedImages(view) {
   const w = window.open('', '_blank', 'width=820,height=1000');
   if (!w) {
     // Popup blocked — fall back to native print as a last resort. The user
@@ -1484,10 +1555,6 @@ function openPrintWindow() {
     window.print();
     return;
   }
-  // Inline-CSS print document. Self-contained — no external resources, so
-  // no async loading concerns before print(). Sized for A4 with sensible
-  // margins. Colors chosen to print well on b/w printers (verdict badges
-  // use outlined style rather than fills so they survive grayscale).
   const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
   const docTitle = (lastAnalysis ? `${lastAnalysis.origin} → ${lastAnalysis.dest} · ` : '')
     + t('print.title');
