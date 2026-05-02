@@ -38,64 +38,15 @@ const VEHICLE_META = {
   cat3: { emoji: '🚐', labelKey: 'sp.van',        fullKey: 'veh.full.cat3' },
   cat4: { emoji: '🚛', labelKey: 'sp.truck',      fullKey: 'veh.full.cat4' },
 };
-let _currentVehicleCat = (() => {
-  try {
-    const stored = localStorage.getItem('diodio.vehicle');
-    if (stored && VEHICLE_META[stored]) return stored;
-  } catch (e) {}
-  return 'cat2';
-})();
+// R47: Vehicle defaults to cat2 (car) on EVERY page load — we no longer
+// read localStorage on init. Persisting across reloads was confusing
+// when users expected a fresh start each visit. The user's choice still
+// propagates within a session via the `vehiclechange` event, and we
+// still write to localStorage on change in case future code wants to
+// read it back, but init no longer honors it.
+let _currentVehicleCat = 'cat2';
 window.getVehicleCat = () => _currentVehicleCat;
 window.getVehicleMeta = () => VEHICLE_META[_currentVehicleCat] || VEHICLE_META.cat2;
-
-// ─── Toll price accessor ─────────────────────────────────────────
-// Centralised lookup for "what does this toll charge for this vehicle in this
-// direction?" — read by map markers, the side panel, route analysis, and the
-// routes matrix. The schema (since R26) is:
-//
-//   toll.cat1..4                      flat fallback (kept for backward compat)
-//   toll.prices_by_direction = {      optional override block, populated for
-//     northbound: { cat1..4 },        all 48 frontals as of R26 (currently
-//     southbound: { cat1..4 },        with values identical to the flat
-//     ...                             fields, so behaviour is unchanged).
-//   }                                 The structure is in place so future
-//                                     per-direction divergence is a one-line
-//                                     data edit, no code change.
-//
-// Direction param is normalised: 'northbound'|'southbound'|'eastbound'|'westbound',
-// or undefined (returns flat fallback). Side tolls and bridges always have a
-// single price set since they're already direction-specific by construction
-// (a side toll IS a direction).
-window.getTollPrice = function(toll, catKey, direction) {
-  if (!toll || !catKey) return 0;
-  if (direction && toll.prices_by_direction && toll.prices_by_direction[direction]) {
-    const p = toll.prices_by_direction[direction][catKey];
-    if (typeof p === 'number') return p;
-  }
-  return typeof toll[catKey] === 'number' ? toll[catKey] : 0;
-};
-
-// Given a toll and a from→to city pair, infer which direction the driver
-// passes through this toll. Used by route analysis and the routes matrix
-// to look up direction-specific prices via getTollPrice. Returns one of
-// 'northbound'|'southbound'|'eastbound'|'westbound', or undefined if it
-// can't be determined (in which case getTollPrice falls back to flat).
-//
-// The logic uses the toll's `axis` field (set during data entry as 'NS'
-// or 'EW') and the city coordinates. For tolls without an axis (rare),
-// we infer from the toll's own bearing.
-window.directionFromCityPair = function(toll, fromCity, toCity) {
-  if (!toll || !fromCity || !toCity) return undefined;
-  const axis = toll.axis;
-  if (axis === 'NS') {
-    return toCity.lat > fromCity.lat ? 'northbound' : 'southbound';
-  }
-  if (axis === 'EW') {
-    return toCity.lng > fromCity.lng ? 'eastbound' : 'westbound';
-  }
-  return undefined;
-};
-
 window.setVehicleCat = function(cat) {
   if (!VEHICLE_META[cat] || cat === _currentVehicleCat) return;
   _currentVehicleCat = cat;
@@ -360,28 +311,16 @@ const routeCache = {};
 async function fetchRoute(exitPt, entryPt, mode, via, opts) {
   opts = opts || {};
   const wantSteps = opts.steps === true;
-  // Localized turn-by-turn instructions: el for Greek users, en for everyone
-  // else. Mapbox accepts only language codes it has translations for; for
-  // unsupported codes, the response falls back to English silently.
-  const lang = (typeof getCurrentLang === 'function' && getCurrentLang() === 'el') ? 'el' : 'en';
   const viaKey = via?.length
     ? via.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join('|')
     : '';
   const stepsKey = wantSteps ? ':S' : '';
-  // Cache key includes language: a Greek user and an English user requesting
-  // the same route get separate cached responses with their respective
-  // localised step instructions.
-  const langKey = wantSteps ? `:${lang}` : '';
-  const key = `${mode}${stepsKey}${langKey}:${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}${viaKey ? '|' + viaKey : ''}`;
+  const key = `${mode}${stepsKey}:${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}${viaKey ? '|' + viaKey : ''}`;
 
   if (routeCache[key]) return routeCache[key];
 
-  // localStorage cache: bumped from v5 → v6 in R28 (added instructions[]
-  // field; old entries lack it and would render as "Directions unavailable"
-  // without a refetch). Old v5 entries are abandoned; localStorage will GC
-  // them as it fills.
   try {
-    const stored = localStorage.getItem(`diodio.route.v6.${key}`);
+    const stored = localStorage.getItem(`diodio.route.v5.${key}`);
     if (stored) {
       const parsed = JSON.parse(stored);
       routeCache[key] = parsed;
@@ -402,9 +341,7 @@ async function fetchRoute(exitPt, entryPt, mode, via, opts) {
     : [exitPt, entryPt];
   const coordStr = waypoints.map(p => `${p.lng},${p.lat}`).join(';');
   const exclude = mode === 'bypass' ? '&exclude=motorway' : '';
-  // steps + language only attached when we want instructions; saves bytes
-  // on the toll-segment-only highway calls.
-  const stepsParam = wantSteps ? `&steps=true&language=${lang}` : '';
+  const stepsParam = wantSteps ? '&steps=true' : '';
   url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full${exclude}${stepsParam}&access_token=${MAPBOX_TOKEN}`;
 
   try {
@@ -420,66 +357,21 @@ async function fetchRoute(exitPt, entryPt, mode, via, opts) {
       distanceKm:  r.distance / 1000,
       durationMin: r.duration / 60,
     };
+    // When steps=true, derive toll/non-toll segments from intersections[].classes.
+    // Each intersection's `geometry_index` points into the full-route polyline,
+    // and its `classes` array describes the road EXITING that intersection.
+    // We walk all intersections in order, group consecutive coords by toll
+    // status, and emit segments {coords, isToll, distanceKm}.
     if (wantSteps) {
-      // Toll-segment classification (existing behaviour).
       const segs = computeTollSegments(r);
       if (segs) {
         result.segments     = segs.segments;
         result.tollKm       = segs.tollKm;
         result.nonTollKm    = segs.nonTollKm;
       }
-      // R28: extract turn-by-turn instructions from legs[].steps[]. Each
-      // step has a maneuver.instruction string already localised by Mapbox
-      // (because we passed &language=). Distance is in metres → km.
-      //
-      // Mapbox's first step is ALWAYS the trivial prelude — "Head north on X"
-      // / "Drive south on X" — with no actionable content (the user is
-      // already in their car, on the road, going the right direction by
-      // definition). Skip it. We start from index 1 of the first leg.
-      // For multi-leg routes (waypoint-via), subsequent legs' first steps
-      // are usually short transitions and worth keeping.
-      //
-      // Also filter out the always-trailing "you have arrived" step in
-      // both EL and EN — unhelpful in a printed reference.
-      const allSteps = [];
-      const legs = r.legs || [];
-      for (let li = 0; li < legs.length; li++) {
-        const leg = legs[li];
-        const steps = leg.steps || [];
-        // First leg: skip step[0] (the depart prelude). Other legs: keep all.
-        const startIdx = (li === 0) ? 1 : 0;
-        for (let si = startIdx; si < steps.length; si++) {
-          const step = steps[si];
-          const text = step.maneuver?.instruction || step.name || '';
-          const m = step.distance || 0;
-          if (!text) continue;
-          if (/arrived|έχετε φτάσει|έφτασες|φτάσατε/i.test(text)) continue;
-          allSteps.push({
-            text,
-            km: m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`,
-            // Stash maneuver type so we can detect "off ramp" / "on ramp"
-            // in the calculator.js exit/entry-name derivation logic.
-            type: step.maneuver?.type || '',
-            modifier: step.maneuver?.modifier || '',
-            roadName: step.name || '',
-          });
-        }
-      }
-      // Dedupe consecutive identical instructions (happens at waypoints).
-      // Cap at 10 — longer printed direction lists crowd the page.
-      const seen = new Set();
-      const dedupe = [];
-      for (const s of allSteps) {
-        const key = s.text + '|' + s.km;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        dedupe.push(s);
-        if (dedupe.length >= 10) break;
-      }
-      result.instructions = dedupe;
     }
     routeCache[key] = result;
-    try { localStorage.setItem(`diodio.route.v6.${key}`, JSON.stringify(result)); } catch (e) {}
+    try { localStorage.setItem(`diodio.route.v5.${key}`, JSON.stringify(result)); } catch (e) {}
     return result;
   } catch (e) {
     console.warn('[mydiodia] route fetch error', mode, key, e);
@@ -720,7 +612,7 @@ function buildHoverTooltip(toll) {
     <div class="tt-prices">
       <div class="price-cell">
         <span class="vehicle-icon">${window.getVehicleMeta().emoji}</span>
-        <span class="price-val"><span class="eur">€</span>${window.getTollPrice(toll, window.getVehicleCat()).toFixed(2)}</span>
+        <span class="price-val"><span class="eur">€</span>${toll[window.getVehicleCat()].toFixed(2)}</span>
       </div>
     </div>
     ${notes}`;
@@ -1433,7 +1325,7 @@ function openSidePanel(toll) {
       : (typeof window.bypassSideTollCost === 'function'
           ? window.bypassSideTollCost(toll, dirKey, dir)
           : { totals: {} });
-    const highwayCost = window.getTollPrice(toll, catKey, dirKey);
+    const highwayCost = toll[catKey] || 0;
     const bypassCost = isFerry ? (dir.fare[catKey] || 0) : (sideInfo.totals[catKey] || 0);
     const fmtMoney = c => `€${c.toFixed(2)}`;
 
@@ -1699,7 +1591,7 @@ function openSidePanel(toll) {
       <div class="sp-hwy-badge" style="--hwy-color:${color}">${t('hwy.' + toll.highway)}</div>
       <div class="sp-name">${primaryName}</div>
       <div class="sp-name-gr">${secondaryName}</div>
-      <div class="sp-price-row"><span><span class="sp-emoji">${window.getVehicleMeta().emoji}</span><span class="sp-vlabel">${t(window.getVehicleMeta().labelKey)}</span></span><strong>€${window.getTollPrice(toll, window.getVehicleCat()).toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span><span class="sp-emoji">${window.getVehicleMeta().emoji}</span><span class="sp-vlabel">${t(window.getVehicleMeta().labelKey)}</span></span><strong>€${toll[window.getVehicleCat()].toFixed(2)}</strong></div>
     </div>
     ${
       // Hide Direction section when it's redundant — frontal toll charges both directions

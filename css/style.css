@@ -822,7 +822,7 @@ body {
    controls reappear. Matches the same hide-on-panel-open pattern that
    already applies to #bottom-bar and #legend on mobile. */
 body.panel-open #map-controls,
-body.panel-open #mc-basemap-popover { display: none; }
+body.panel-open #mc-basemap-popover { display: none !important; }
 
 .mc-btn {
   display: flex;
@@ -4217,6 +4217,13 @@ input[type="range"]::-moz-range-track {
   width: 380px;
   max-width: calc(100vw - 24px);
   height: auto;
+  /* R46: explicit max-height so the panel never extends beyond ~half the
+     viewport. Without this, on a short laptop viewport the panel can feel
+     like it dominates the whole left edge. The content is short enough
+     that internal scroll should never engage in normal use, but it's a
+     defensive guard. */
+  max-height: 50vh;
+  overflow-y: auto;
   background: var(--paper);
   border: 1px solid var(--line-strong);
   border-radius: 16px;
@@ -4224,7 +4231,8 @@ input[type="range"]::-moz-range-track {
   box-shadow: 0 8px 24px rgba(26, 31, 46, 0.12), 0 2px 6px rgba(26, 31, 46, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  /* R46: tightened from 10px → 8px so the panel renders more compactly. */
+  gap: 8px;
   align-items: stretch;
 }
 
@@ -4357,7 +4365,10 @@ input[type="range"]::-moz-range-track {
   color: var(--muted);
   text-align: right;
   padding: 0 4px;
-  min-height: 14px;
+  /* R46: was min-height 14px which reserved space even when empty. Let it
+     collapse naturally — the tier text fills it when present. */
+  min-height: 0;
+  line-height: 1.2;
   margin-top: -4px;
 }
 
