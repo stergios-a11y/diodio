@@ -957,6 +957,105 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
+/* ──────────────────────────────────────────────────────────────────
+   Static-map thumbnail for the printout (R31)
+   ────────────────────────────────────────────────────────────────── */
+
+// Google Encoded Polyline Algorithm — converts a [[lat,lng], ...] array into
+// the compact ASCII string that Mapbox Static Images accepts as a path
+// overlay. Spec: developers.google.com/maps/documentation/utilities/polylinealgorithm
+function encodePolyline(points) {
+  let result = '';
+  let prevLat = 0, prevLng = 0;
+  for (const [lat, lng] of points) {
+    const eLat = Math.round(lat * 1e5);
+    const eLng = Math.round(lng * 1e5);
+    result += encodeNum(eLat - prevLat) + encodeNum(eLng - prevLng);
+    prevLat = eLat;
+    prevLng = eLng;
+  }
+  return result;
+}
+function encodeNum(num) {
+  num = num < 0 ? ~(num << 1) : (num << 1);
+  let out = '';
+  while (num >= 0x20) {
+    out += String.fromCharCode((0x20 | (num & 0x1f)) + 63);
+    num >>= 5;
+  }
+  out += String.fromCharCode(num + 63);
+  return out;
+}
+
+// Decimate a polyline to roughly `targetPoints` points by uniform sampling.
+// Not Douglas-Peucker — this is a thumbnail, not a navigational chart, and
+// 60mm-wide rendering doesn't notice the difference. Always preserves the
+// first and last points so the path stays anchored to origin/destination.
+function decimatePolyline(coords, targetPoints) {
+  if (!coords || coords.length <= targetPoints) return coords || [];
+  const step = (coords.length - 1) / (targetPoints - 1);
+  const out = [];
+  for (let i = 0; i < targetPoints - 1; i++) {
+    out.push(coords[Math.round(i * step)]);
+  }
+  out.push(coords[coords.length - 1]);
+  return out;
+}
+
+// Build a Mapbox Static Images API URL for the printable thumbnail.
+// Inputs:
+//   coords      — full route [[lat,lng], ...]
+//   from, to    — endpoint {lat,lng} objects
+//   tollMarkers — [{lat,lng,verdict,index}, ...] for verdict-colored numbered pins
+// Returns a URL string, or null if route data is missing.
+//
+// Mapbox URL length is capped around 8KB. With ~80 polyline points + ~12 pins
+// we land around 1.5KB, comfortable. The Mapbox token is the same one used
+// elsewhere in the app — referrer restriction works because the popup window
+// inherits document.referrer from the opener (mydiodia.gr).
+function buildStaticMapUrl(coords, from, to, tollMarkers) {
+  if (!coords || coords.length < 2 || !from || !to) return null;
+  const token = (typeof MAPBOX_TOKEN !== 'undefined' && MAPBOX_TOKEN)
+    || (typeof window !== 'undefined' && window.MAPBOX_TOKEN);
+  if (!token) return null;
+
+  const decimated = decimatePolyline(coords, 80);
+  const polyline  = encodePolyline(decimated);
+  // path-{strokeWidth}+{color}-{opacity}({polyline}) — Mapbox path overlay.
+  // Aegean blue from the design tokens. Prints clean on b/w too — comes out
+  // as a medium grey line with good contrast against the basemap.
+  const path = `path-4+2a6b9e-0.85(${encodeURIComponent(polyline)})`;
+
+  // Endpoint pins. Mapbox URL uses lng,lat order. pin-l (large) for endpoints
+  // so they're visually distinct from the toll pins below.
+  const fromPin = `pin-l-a+2e7a4a(${from.lng.toFixed(5)},${from.lat.toFixed(5)})`;
+  const toPin   = `pin-l-b+b8502d(${to.lng.toFixed(5)},${to.lat.toFixed(5)})`;
+
+  // Toll pins. pin-s (small) with numeric labels matching the printed list
+  // — driver can match "pin labeled 3 on the map" to "item 3 in the toll list"
+  // at a glance. Mapbox supports numeric labels 0-99; routes today max out
+  // around 11 tolls so this is safely in range.
+  // Color by verdict using the same palette as the screen UI.
+  const verdictColor = {
+    AVOID: '2e7a4a',
+    MARGINAL_AVOID: 'c49320',
+    PAY: 'b8502d',
+    MARGINAL_PAY: 'c49320',
+  };
+  const tollPins = (tollMarkers || []).map(m => {
+    const color = verdictColor[m.verdict] || '5e6578';
+    const label = (m.index >= 0 && m.index <= 99) ? m.index : '';
+    return `pin-s-${label}+${color}(${m.lng.toFixed(5)},${m.lat.toFixed(5)})`;
+  }).join(',');
+
+  // Compose overlays in z-order (path first, then markers on top).
+  const overlays = [path, fromPin, toPin, tollPins].filter(Boolean).join(',');
+
+  // 'auto' centers/zooms to fit overlays. 600x600@2x = 1200×1200 actual pixels;
+  // at 60mm print width that's ~250 DPI, sharp on any printer.
+  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${overlays}/auto/600x600@2x?access_token=${token}`;
+}
+
 function buildPrintView(a, results, stats) {
   const view = document.getElementById('print-view');
   if (!view) return;
@@ -1069,17 +1168,48 @@ function buildPrintView(a, results, stats) {
     // object once the bypass routes resolve (see refineBypassDirections).
     // Only AVOID/MARGINAL_AVOID get them — those are the ones the user is
     // actually expected to drive.
+    //
+    // R30: rewrite the first and last steps to use the toll's named exit /
+    // entry interchanges instead of Mapbox's raw road-network phrasing. The
+    // route prelude header above ("Exit at X, re-enter at Y") and the steps
+    // list now reference the same names — internally consistent for the
+    // driver. Mapbox's distance metric is preserved (still describes the
+    // ramp / merge length). Middle steps are kept verbatim.
+    //
+    // If exit/entry names aren't available (toll has neither explicit data
+    // nor derivable Mapbox info), the original Mapbox text stays — better
+    // raw text than nothing.
     let stepsHtml = '';
-    let stepsText = [];
     const tollSteps = a.bypassSteps && a.bypassSteps[r.toll.id];
     const showSteps = (r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID') && Array.isArray(tollSteps) && tollSteps.length;
     if (showSteps) {
+      // Build a presentation copy so we don't mutate the cached step array.
+      // Maps each step to {text, km} for rendering.
+      const renderSteps = tollSteps.map(s => ({ text: s.text, km: s.km }));
+
+      // Capitalize first letter for use as a standalone step. Header line
+      // uses lowercase ("..., re-enter at Y") but step list reads better
+      // capitalized ("3. Re-enter at Y" / "3. Επανείσοδος στον κόμβο Y").
+      // Both Greek and Latin scripts handle .toUpperCase() correctly for
+      // the simple lowercase→uppercase mapping here.
+      const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+      // Replace step 0 with "Exit at <name>" if we have an exit name.
+      if (exit && renderSteps.length >= 1) {
+        renderSteps[0].text = `${cap(t('print.exit_at'))} ${exit}`;
+      }
+      // Replace last step with "Re-enter at <name>" if we have an entry name.
+      // Skip if there's only one step (would overwrite the same step twice
+      // with conflicting labels — keep the exit-replacement in that case).
+      if (entry && renderSteps.length >= 2) {
+        renderSteps[renderSteps.length - 1].text = `${cap(t('print.enter_at'))} ${entry}`;
+      }
+
       stepsHtml = `
         <div class="pv-toll-steps-label">${t('print.directions')}:</div>
         <ol class="pv-toll-steps">
-          ${tollSteps.map(s => `<li>${escapeHtml(s.text)}<span class="pv-step-dist"> · ${s.km}</span></li>`).join('')}
+          ${renderSteps.map(s => `<li>${escapeHtml(s.text)}<span class="pv-step-dist"> · ${s.km}</span></li>`).join('')}
         </ol>`;
-      stepsText = tollSteps;
     }
 
     return `
@@ -1110,7 +1240,26 @@ function buildPrintView(a, results, stats) {
     ? adviceText.replace(/^💡\s*/, '')
     : '—';
 
+  // Build the static-map thumbnail URL. Toll pins use the result index so
+  // the printed map's numbered pins line up with the numbered toll list
+  // below — driver can match "pin 3 on the map" to "item 3 in the list".
+  // If route data is missing (rare), the helper returns null and we skip
+  // the map block entirely; document still prints fine without it.
+  const tollMarkers = results.map((r, i) => ({
+    lat: r.toll.lat,
+    lng: r.toll.lng,
+    verdict: r.verdict,
+    index: i + 1,
+  }));
+  const mapUrl = buildStaticMapUrl(a.routeCoords, a.fromCoord, a.toCoord, tollMarkers);
+  // The data-print-asset attribute marks the <img> so openPrintWindow can
+  // wait for it to load before triggering the print dialog.
+  const mapHtml = mapUrl
+    ? `<aside class="pv-map"><img src="${escapeHtml(mapUrl)}" alt="${escapeHtml(a.origin + ' → ' + a.dest)}" data-print-asset="map" /></aside>`
+    : '';
+
   view.innerHTML = `
+    ${mapHtml}
     <header class="pv-head">
       <div class="pv-brand">mydiodia.gr</div>
       <h1 class="pv-h1">${t('print.title')}</h1>
@@ -1331,6 +1480,28 @@ function openPrintWindow() {
   .pv-toll-steps li { margin: 1pt 0; page-break-inside: avoid; }
   .pv-step-dist { color: #8a8f9e; font-size: 8.5pt; font-variant-numeric: tabular-nums; }
   .pv-foot { margin-top: 18pt; padding-top: 8pt; border-top: 1px solid #ddd5bf; font-size: 8pt; color: #8a8f9e; text-align: center; }
+
+  /* Static-map thumbnail. Float-right so the route header and meta lines
+     wrap around its left side. The summary table is full-width below it
+     because pv-summary's h2 has top margin > the map's height in normal
+     cases — and we put a clear:right on h2s downstream just in case the
+     header is short. Fixed 60mm × 60mm = 1/3 of an A4's printable width;
+     image is requested at 2x for sharpness. */
+  .pv-map {
+    float: right;
+    width: 60mm;
+    height: 60mm;
+    margin: 0 0 8pt 12pt;
+    border: 1px solid #ddd5bf;
+    border-radius: 3pt;
+    overflow: hidden;
+    background: #f3eedf;
+  }
+  .pv-map img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  /* Once we're past the toll list, clear any remaining float so the
+     footer isn't pushed against the map. */
+  .pv-foot { clear: both; }
+
   /* Force color rendering even on grayscale-default Chrome */
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 </style>
@@ -1345,7 +1516,10 @@ ${view.innerHTML}
   // Defer print() to the next tick to give the new window time to layout.
   // Some browsers (Safari especially) need the document to be parsed and
   // styled before they'll respect a programmatic print() call.
+  let printed = false;
   const triggerPrint = () => {
+    if (printed) return;
+    printed = true;
     try {
       w.focus();
       w.print();
@@ -1357,15 +1531,45 @@ ${view.innerHTML}
       console.warn('[mydiodia] print failed', e);
     }
   };
+
+  // R31: wait for [data-print-asset] images (currently just the static map)
+  // to load before triggering print. Otherwise the map slot prints blank.
+  // Hard cap at 4s so a slow Mapbox response doesn't block the user
+  // indefinitely — we'd rather print without the map than not at all.
+  const waitForAssets = () => {
+    const assets = w.document.querySelectorAll('img[data-print-asset]');
+    if (!assets.length) {
+      setTimeout(triggerPrint, 50);
+      return;
+    }
+    let pending = assets.length;
+    const onResolved = () => {
+      pending--;
+      if (pending <= 0) setTimeout(triggerPrint, 50);
+    };
+    assets.forEach(img => {
+      if (img.complete && img.naturalWidth > 0) {
+        onResolved();
+      } else {
+        img.addEventListener('load', onResolved, { once: true });
+        img.addEventListener('error', onResolved, { once: true });
+      }
+    });
+    // Hard cap so a slow/blocked image doesn't strand the print dialog.
+    setTimeout(triggerPrint, 4000);
+  };
+
   // Wait for the document to actually load. window.open with about:blank
   // may fire load synchronously OR asynchronously depending on the browser.
+  let waitFired = false;
+  const waitOnce = () => { if (waitFired) return; waitFired = true; waitForAssets(); };
   if (w.document.readyState === 'complete') {
-    setTimeout(triggerPrint, 50);
+    waitOnce();
   } else {
-    w.addEventListener('load', () => setTimeout(triggerPrint, 50));
+    w.addEventListener('load', waitOnce);
     // Belt-and-braces: also fire after a max wait, in case 'load' never fires
     // (rare but happens on some mobile browsers with about:blank).
-    setTimeout(triggerPrint, 500);
+    setTimeout(waitOnce, 500);
   }
 }
 
@@ -1456,6 +1660,12 @@ async function analyze() {
       mainRouteDurationMin: mainRoute.durationMin,
       mainRouteTollKm: mainRoute.tollKm || 0,
       mainRouteNonTollKm: mainRoute.nonTollKm || 0,
+      // R31: stash route geometry + endpoint coords so the print view can
+      // build a static map URL from them. routeCoords is [[lat,lng], ...]
+      // matching what fetchMainRoute returns. Decimated at print time.
+      routeCoords,
+      fromCoord,
+      toCoord,
     };
 
     // 7. Render everything (markers, bypass lines, panel, AI summary)
