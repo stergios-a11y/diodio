@@ -1108,8 +1108,12 @@ function buildBypassMapUrl(toll, dir, bypassCoords) {
   const path = `path-4+2e7a4a-0.85(${encodeURIComponent(polyline)})`;
 
   // Toll pin: red (--stop), no label needed — color signals "the thing
-  // you're skipping". pin-m for medium prominence vs the small ramp pins.
-  const tollPin = `pin-m+b8502d(${toll.lng.toFixed(5)},${toll.lat.toFixed(5)})`;
+  // you're skipping". pin-l (large) so it visually outweighs the small
+  // numbered ramp pins; helps the eye land on "what gets avoided" first.
+  // (Mapbox Static Images supports only pin-s and pin-l — there is no
+  // pin-m. An invalid pin token causes the whole image request to 422,
+  // which is how this got missed in R32.)
+  const tollPin = `pin-l+b8502d(${toll.lng.toFixed(5)},${toll.lat.toFixed(5)})`;
 
   // Off-ramp ("1") and on-ramp ("2") pins, small green to match the path.
   const offPin = `pin-s-1+2e7a4a(${dir.off_ramp.lng.toFixed(5)},${dir.off_ramp.lat.toFixed(5)})`;
