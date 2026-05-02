@@ -431,26 +431,42 @@ async function fetchRoute(exitPt, entryPt, mode, via, opts) {
       // R28: extract turn-by-turn instructions from legs[].steps[]. Each
       // step has a maneuver.instruction string already localised by Mapbox
       // (because we passed &language=). Distance is in metres → km.
-      // Filter out trivial "head north" type prelude steps (< 50 m) and
-      // the always-trailing "you have arrived" step which is unhelpful in
-      // a printed reference. Cap at 10 entries — printed bypass directions
-      // longer than 10 lines are rarely useful and crowd the page.
+      //
+      // Mapbox's first step is ALWAYS the trivial prelude — "Head north on X"
+      // / "Drive south on X" — with no actionable content (the user is
+      // already in their car, on the road, going the right direction by
+      // definition). Skip it. We start from index 1 of the first leg.
+      // For multi-leg routes (waypoint-via), subsequent legs' first steps
+      // are usually short transitions and worth keeping.
+      //
+      // Also filter out the always-trailing "you have arrived" step in
+      // both EL and EN — unhelpful in a printed reference.
       const allSteps = [];
-      for (const leg of (r.legs || [])) {
-        for (const step of (leg.steps || [])) {
+      const legs = r.legs || [];
+      for (let li = 0; li < legs.length; li++) {
+        const leg = legs[li];
+        const steps = leg.steps || [];
+        // First leg: skip step[0] (the depart prelude). Other legs: keep all.
+        const startIdx = (li === 0) ? 1 : 0;
+        for (let si = startIdx; si < steps.length; si++) {
+          const step = steps[si];
           const text = step.maneuver?.instruction || step.name || '';
           const m = step.distance || 0;
           if (!text) continue;
-          if (m < 50 && allSteps.length > 0) continue;  // skip trivial prelude
-          if (/arrived|έχετε φτάσει|έφτασες/i.test(text)) continue;
+          if (/arrived|έχετε φτάσει|έφτασες|φτάσατε/i.test(text)) continue;
           allSteps.push({
             text,
             km: m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`,
+            // Stash maneuver type so we can detect "off ramp" / "on ramp"
+            // in the calculator.js exit/entry-name derivation logic.
+            type: step.maneuver?.type || '',
+            modifier: step.maneuver?.modifier || '',
+            roadName: step.name || '',
           });
         }
       }
-      // Cap & dedupe consecutive identical instructions (rare but happens
-      // at waypoints).
+      // Dedupe consecutive identical instructions (happens at waypoints).
+      // Cap at 10 — longer printed direction lists crowd the page.
       const seen = new Set();
       const dedupe = [];
       for (const s of allSteps) {

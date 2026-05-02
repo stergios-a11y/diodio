@@ -994,18 +994,55 @@ function buildPrintView(a, results, stats) {
       ? window.getTollPrice(r.toll, a.catKey, a.travelDir)
       : (r.toll[a.catKey] || 0);
 
-    // Exit/entry interchange names — shown for every toll with bypass info,
-    // not just AVOIDs. The 19 frontals from R17–R22 don't carry these labels
-    // in the data; we skip them gracefully (the verdict-specific body text
-    // still appears, just without the route prelude).
-    const exit  = r.dir?.exit_name  || '';
-    const entry = r.dir?.entry_name || '';
-    const min   = r.dir?.minutes    || 0;
+    // Exit/entry interchange names. Three sources, in priority order:
+    //   1. r.dir.exit_name / entry_name      — explicit data labels (best)
+    //   2. derived from bypass step instructions (fallback for the 20 tolls
+    //      from R17–R22 that lack explicit labels in tolls.js)
+    //   3. nothing                            — toll has no bypass at all
+    let exit  = r.dir?.exit_name  || '';
+    let entry = r.dir?.entry_name || '';
+    const min = r.dir?.minutes    || 0;
+
+    // Source 2: derive from Mapbox directions response. Each step has
+    // type ('off ramp', 'on ramp', 'turn', 'merge', etc.) and a roadName.
+    // - First "off ramp" or first turn AFTER prelude → exit road name
+    // - Last "on ramp" or "merge" → entry road name
+    // We ALSO walk the instruction text for "toward X" / "προς X" patterns,
+    // which are usually more user-friendly (named destinations) than raw
+    // road names like "EO 1".
+    if ((!exit || !entry) && a.bypassSteps && a.bypassSteps[r.toll.id]) {
+      const steps = a.bypassSteps[r.toll.id];
+      // First step after the prelude (already trimmed in fetchRoute) is
+      // typically the off-ramp. Look for an "off ramp" maneuver type, or
+      // fall back to the first step's road name.
+      const firstOff = steps.find(s => s.type === 'off ramp') || steps[0];
+      const lastOn = [...steps].reverse().find(s =>
+        s.type === 'on ramp' || s.type === 'merge'
+      ) || steps[steps.length - 1];
+
+      // Try to extract "toward X" / "προς X" destination from instruction
+      const towardRe = lang === 'el' ? /προς\s+([^,.()]+)/i : /toward\s+([^,.()]+)/i;
+      const tryToward = (s) => {
+        if (!s) return '';
+        const m = s.text.match(towardRe);
+        return m ? m[1].trim() : '';
+      };
+
+      if (!exit) {
+        exit = tryToward(firstOff) || firstOff?.roadName || '';
+      }
+      if (!entry) {
+        entry = tryToward(lastOn) || lastOn?.roadName || '';
+      }
+    }
 
     let routeLine = '';
     if (exit && entry) {
       const minSuffix = min > 0 ? ` (+${min} ${t('bar.time.label2')})` : '';
       routeLine = `${t('print.exit_at')} ${exit}, ${t('print.enter_at')} ${entry}${minSuffix}`;
+    } else if (exit) {
+      // Derived only one — still useful, render it solo
+      routeLine = `${t('print.exit_at')} ${exit}`;
     }
 
     // Verdict-specific body. AVOID-side: emphasise savings. PAY-side:
@@ -1201,22 +1238,149 @@ function downloadPrintViewAsText(filenameStem) {
 
 // Wire up the two action buttons. Idempotent — safe if calculator.js is
 // loaded multiple times during dev.
+// Print the take-away document.
+//
+// PREVIOUS APPROACH (R27/R28): use window.print() with a print stylesheet that
+// hides everything except #print-view. This kept failing in the field —
+// likely because the screen-vs-print cascade with off-screen positioning is
+// genuinely fragile across browsers, and once even one rule misfires the
+// printed output is broken.
+//
+// CURRENT APPROACH (R29): open a new window, write a self-contained HTML
+// document with inline CSS into it, and call print() on THAT window. This
+// has been the reliable cross-browser pattern for two decades — there's no
+// CSS cascade conflict possible because the new window has its own document.
+// Trade-off is a popup; modern browsers allow window.open synchronously
+// inside a user-initiated click handler, so this works without popup-blocker
+// friction.
+//
+// We also keep the in-page #print-view DOM populated (for the Download
+// button), but never rely on it being visible at print time.
+function openPrintWindow() {
+  const view = document.getElementById('print-view');
+  if (!view || !view.innerHTML.trim()) {
+    // Nothing to print yet — the user clicked before the analyze finished
+    // populating the view. Fall back to a no-op.
+    return;
+  }
+  const w = window.open('', '_blank', 'width=820,height=1000');
+  if (!w) {
+    // Popup blocked — fall back to native print as a last resort. The user
+    // will probably get a broken layout but at least something happens.
+    window.print();
+    return;
+  }
+  // Inline-CSS print document. Self-contained — no external resources, so
+  // no async loading concerns before print(). Sized for A4 with sensible
+  // margins. Colors chosen to print well on b/w printers (verdict badges
+  // use outlined style rather than fills so they survive grayscale).
+  const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
+  const docTitle = (lastAnalysis ? `${lastAnalysis.origin} → ${lastAnalysis.dest} · ` : '')
+    + t('print.title');
+  const html = `<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+<meta charset="utf-8">
+<title>${escapeHtml(docTitle)}</title>
+<style>
+  @page { margin: 18mm 16mm; size: A4; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+    font-size: 10pt;
+    line-height: 1.45;
+    color: #1a1f2e;
+    background: white;
+    margin: 0;
+    padding: 18px;
+  }
+  .pv-head { margin-bottom: 14pt; padding-bottom: 10pt; border-bottom: 2px solid #1a1f2e; }
+  .pv-brand { font-size: 9pt; letter-spacing: 0.06em; color: #5e6578; text-transform: uppercase; margin-bottom: 4pt; }
+  .pv-h1 { font-size: 16pt; font-weight: 700; margin: 0 0 2pt 0; letter-spacing: -0.02em; }
+  .pv-route { font-size: 13pt; color: #2a6b9e; font-weight: 600; margin-bottom: 8pt; }
+  .pv-meta { font-size: 9pt; color: #3a4050; }
+  .pv-meta span { margin-right: 18pt; }
+  .pv-meta strong { color: #1a1f2e; font-weight: 600; }
+  h2 { font-size: 11pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #5e6578; margin: 14pt 0 6pt 0; padding-bottom: 3pt; border-bottom: 1px solid #b8ad8e; }
+  .pv-stats .rp-cmp { display: block; }
+  .pv-stats .rp-cmp-row { display: block; margin: 0; padding: 4pt 0; border-bottom: 1px dotted #ddd5bf; }
+  .pv-stats .rp-cmp-row.diff { border-bottom: none; font-weight: 600; }
+  .pv-stats .rp-cmp-row > * { display: inline-block; margin-right: 14pt; font-size: 9.5pt; }
+  .pv-stats .rp-cmp-label { font-weight: 600; color: #5e6578; min-width: 90pt; }
+  .pv-stats .rp-cmp-money { color: #1a1f2e; font-weight: 600; }
+  .pv-stats .rp-cmp-money.savings { color: #2e7a4a; }
+  .pv-stats .rp-cmp-money.cost { color: #b8502d; }
+  .pv-stats .rp-cmp-tag { color: #5e6578; font-size: 8.5pt; }
+  .pv-stats .rp-cmp-dist-sub { display: block; font-size: 8pt; color: #8a8f9e; }
+  .pv-advice p { margin: 0; padding: 6pt 8pt; background: #faf7f0; border-left: 3px solid #c49320; font-size: 9.5pt; }
+  .pv-toll { page-break-inside: avoid; break-inside: avoid; padding: 5pt 0; border-bottom: 1px dotted #ddd5bf; }
+  .pv-toll:last-child { border-bottom: none; }
+  .pv-toll-head { font-size: 10pt; line-height: 1.3; }
+  .pv-toll-num { display: inline-block; min-width: 22pt; color: #8a8f9e; font-variant-numeric: tabular-nums; }
+  .pv-toll-name { font-weight: 600; color: #1a1f2e; margin-right: 8pt; }
+  .pv-toll-verdict { display: inline-block; font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 1pt 6pt; border-radius: 999pt; margin-right: 6pt; border: 1pt solid; }
+  .pv-toll-verdict--avoid { color: #2e7a4a; border-color: #2e7a4a; }
+  .pv-toll-verdict--marginal_avoid { color: #c49320; border-color: #c49320; }
+  .pv-toll-verdict--pay { color: #b8502d; border-color: #b8502d; }
+  .pv-toll-verdict--marginal_pay { color: #c49320; border-color: #c49320; }
+  .pv-toll-price { float: right; font-weight: 600; color: #1a1f2e; font-variant-numeric: tabular-nums; }
+  .pv-toll-route { margin-top: 3pt; margin-left: 22pt; font-size: 9.5pt; color: #1a1f2e; font-weight: 500; }
+  .pv-toll-detail { margin-top: 2pt; margin-left: 22pt; font-size: 9pt; color: #3a4050; }
+  .pv-toll-steps-label { margin-top: 4pt; margin-left: 22pt; font-size: 8.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #5e6578; }
+  .pv-toll-steps { margin: 2pt 0 4pt 0; padding-left: 44pt; font-size: 9pt; color: #3a4050; }
+  .pv-toll-steps li { margin: 1pt 0; page-break-inside: avoid; }
+  .pv-step-dist { color: #8a8f9e; font-size: 8.5pt; font-variant-numeric: tabular-nums; }
+  .pv-foot { margin-top: 18pt; padding-top: 8pt; border-top: 1px solid #ddd5bf; font-size: 8pt; color: #8a8f9e; text-align: center; }
+  /* Force color rendering even on grayscale-default Chrome */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+</style>
+</head>
+<body>
+${view.innerHTML}
+</body>
+</html>`;
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  // Defer print() to the next tick to give the new window time to layout.
+  // Some browsers (Safari especially) need the document to be parsed and
+  // styled before they'll respect a programmatic print() call.
+  const triggerPrint = () => {
+    try {
+      w.focus();
+      w.print();
+      // Close after print dialog dismisses. setTimeout because print() is
+      // synchronous in most browsers but the close() needs to happen AFTER
+      // the user picks "Print" or "Cancel".
+      setTimeout(() => { try { w.close(); } catch (e) {} }, 300);
+    } catch (e) {
+      console.warn('[mydiodia] print failed', e);
+    }
+  };
+  // Wait for the document to actually load. window.open with about:blank
+  // may fire load synchronously OR asynchronously depending on the browser.
+  if (w.document.readyState === 'complete') {
+    setTimeout(triggerPrint, 50);
+  } else {
+    w.addEventListener('load', () => setTimeout(triggerPrint, 50));
+    // Belt-and-braces: also fire after a max wait, in case 'load' never fires
+    // (rare but happens on some mobile browsers with about:blank).
+    setTimeout(triggerPrint, 500);
+  }
+}
+
+// Wire up the two action buttons. Idempotent — safe if calculator.js is
+// loaded multiple times during dev.
 (function wireResultsActions() {
   const printBtn    = document.getElementById('rp-action-print');
   const downloadBtn = document.getElementById('rp-action-download');
   if (printBtn && !printBtn.dataset.wired) {
     printBtn.dataset.wired = '1';
-    printBtn.addEventListener('click', () => {
-      // Print view is already populated from the last renderResults call.
-      // No need to rebuild — but if the user toggled vehicle/lang since,
-      // renderResults would have re-fired and rebuilt it already.
-      window.print();
-    });
+    printBtn.addEventListener('click', openPrintWindow);
   }
   if (downloadBtn && !downloadBtn.dataset.wired) {
     downloadBtn.dataset.wired = '1';
     downloadBtn.addEventListener('click', () => {
-      // Filename from origin→dest, sanitized
       const stem = lastAnalysis
         ? `${lastAnalysis.origin}-${lastAnalysis.dest}`
         : 'route';
