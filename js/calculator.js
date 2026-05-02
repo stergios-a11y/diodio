@@ -1301,6 +1301,7 @@ function buildPrintView(a, results, stats) {
     const bypassMapHtml = bypassMapUrl
       ? `<aside class="pv-toll-map">
            <img src="${escapeHtml(bypassMapUrl)}" alt="" data-print-asset="bypass-map"
+                referrerpolicy="origin"
                 onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
            <div class="pv-toll-map-fallback" style="display:none;">
              <strong>Map failed to load.</strong><br>
@@ -1492,96 +1493,24 @@ function openPrintWindow() {
     // populating the view. Fall back to a no-op.
     return;
   }
-
-  // R34: pre-load every <img src="https://api.mapbox.com/...">  in the main
-  // window (where mydiodia.gr referrer is sent correctly), convert each to
-  // a data URL via canvas, and write the resulting self-contained HTML into
-  // the popup. This avoids two related problems:
-  //   1. Popup windows have inconsistent referrer behavior across browsers,
-  //      so Mapbox token referrer-restriction can reject the popup's image
-  //      requests even though the same URL works in the main window.
-  //   2. Even when images load in the popup, Chrome's "Save as PDF" can
-  //      omit external <img> resources rendered in popup contexts.
-  // The data-URL approach sidesteps both — popup gets a fully self-contained
-  // document with no network requests at all.
+  // R36: removed the R34 canvas pre-load + data-URL conversion. Mapbox
+  // doesn't reliably send Access-Control-Allow-Origin on Static Images
+  // responses (especially failed-auth responses), which tainted the canvas
+  // and caused toDataURL() to throw. Result: every image silently fell back
+  // to the original URL inside the popup, where the about:blank referrer
+  // got rejected by Mapbox's token allowlist anyway.
   //
-  // If a conversion fails (CORS, network), we fall back to keeping the
-  // original URL — best-effort rather than blocking the entire print.
-  inlineMapImagesAsDataUrls(view).then(() => openPrintWindowWithLoadedImages(view));
+  // The actual fix is the meta-referrer tag in the popup head plus the
+  // referrerpolicy="origin" attribute on each <img>. Both force the popup
+  // to send Referer: https://mydiodia.gr on image requests, which matches
+  // the token's allowlist. No pre-load needed.
+  writePrintPopup(view);
 }
 
-// Convert every <img data-print-asset> in the print view from a URL src
-// to an inline data URL. Resolves once all conversions finish (success or
-// failure). Modifies the elements in place. Runs in the main window where
-// referrer + CORS work correctly.
-function inlineMapImagesAsDataUrls(view) {
-  const imgs = [...view.querySelectorAll('img[data-print-asset]')];
-  if (!imgs.length) return Promise.resolve();
-  console.log(`[mydiodia] preloading ${imgs.length} map image(s) for print...`);
-  let succeeded = 0, failed = 0;
-  return Promise.all(imgs.map((img, idx) => {
-    // If this image was already converted on a previous print, skip it
-    // (data URLs start with "data:"; URLs start with "https:").
-    if (img.src.startsWith('data:')) {
-      succeeded++;
-      return Promise.resolve();
-    }
-    const originalUrl = img.src;
-    // We need a CORS-clean fetch to convert via canvas. The original <img>
-    // in the DOM doesn't have crossOrigin set. Create a fresh Image() with
-    // crossOrigin="anonymous" pointing to the same URL — Mapbox responds
-    // with Access-Control-Allow-Origin: * for static images, so this works.
-    return new Promise(resolve => {
-      const probe = new Image();
-      probe.crossOrigin = 'anonymous';
-      probe.referrerPolicy = 'strict-origin-when-cross-origin';
-      let resolved = false;
-      const done = (outcome) => {
-        if (resolved) return;
-        resolved = true;
-        if (outcome === 'success') succeeded++;
-        else failed++;
-        resolve();
-      };
-      probe.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width  = probe.naturalWidth  || 600;
-          canvas.height = probe.naturalHeight || 400;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(probe, 0, 0);
-          const dataUrl = canvas.toDataURL('image/png');
-          img.src = dataUrl;
-          console.log(`[mydiodia] map ${idx + 1}: converted to data URL (${(dataUrl.length / 1024).toFixed(0)} KB)`);
-          done('success');
-        } catch (e) {
-          // CORS taint — leave the original URL. Popup will try to load it
-          // and may or may not succeed. If Mapbox doesn't send CORS headers,
-          // this is the failure mode you'll see.
-          console.warn(`[mydiodia] map ${idx + 1}: canvas conversion failed (CORS taint)`, e.name, e.message, '— URL:', originalUrl);
-          done('fail');
-        }
-      };
-      probe.onerror = (ev) => {
-        console.warn(`[mydiodia] map ${idx + 1}: image fetch failed (network/auth) — URL:`, originalUrl);
-        done('fail');
-      };
-      // Hard cap — if the image is genuinely unreachable, don't strand the
-      // print flow forever. 5 seconds is enough for normal Mapbox latency.
-      setTimeout(() => {
-        if (!resolved) console.warn(`[mydiodia] map ${idx + 1}: timed out after 5s — URL:`, originalUrl);
-        done('fail');
-      }, 5000);
-      probe.src = originalUrl;
-    });
-  })).then(() => {
-    console.log(`[mydiodia] preload done: ${succeeded} succeeded, ${failed} failed`);
-  });
-}
-
-// After images are inlined (or failed), open the popup and write the
-// fully self-contained HTML into it.
-function openPrintWindowWithLoadedImages(view) {
+// Open the popup and write the print HTML into it. Images load directly
+// from Mapbox; the meta-referrer + img referrerpolicy attributes ensure
+// the popup sends a token-acceptable Referer.
+function writePrintPopup(view) {
   const w = window.open('', '_blank', 'width=820,height=1000');
   if (!w) {
     // Popup blocked — fall back to native print as a last resort. The user
@@ -1596,6 +1525,14 @@ function openPrintWindowWithLoadedImages(view) {
 <html lang="${lang}">
 <head>
 <meta charset="utf-8">
+<!-- R36: force the popup's image requests to send Referer:https://mydiodia.gr
+     (origin only, no path). The about:blank popup's default referrer behavior
+     is browser-dependent and often empty/null, which causes Mapbox's URL-
+     restricted token to return 403 Forbidden. Setting referrer to "origin"
+     guarantees a referrer matching the token's mydiodia.gr/* allowlist.
+     Per Mapbox docs: subpaths are allowed under the listed URL, so the
+     bare origin matches mydiodia.gr/*. -->
+<meta name="referrer" content="origin">
 <title>${escapeHtml(docTitle)}</title>
 <style>
   @page { margin: 18mm 16mm; size: A4; }
