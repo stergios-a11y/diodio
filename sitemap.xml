@@ -3,13 +3,13 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <url>
-    <loc>https://mydiodia.com/</loc>
-    <lastmod>2026-05-01</lastmod>
+    <loc>https://mydiodia.gr/</loc>
+    <lastmod>2026-05-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="el" href="https://mydiodia.com/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://mydiodia.com/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://mydiodia.com/" />
+    <xhtml:link rel="alternate" hreflang="el" href="https://mydiodia.gr/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://mydiodia.gr/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mydiodia.gr/" />
   </url>
 
 </urlset>

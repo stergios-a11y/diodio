@@ -1,11 +1,11 @@
 # mydiodia — Greek toll road advisor
-# https://mydiodia.com/
+# https://mydiodia.gr/
 
 User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://mydiodia.com/sitemap.xml
+Sitemap: https://mydiodia.gr/sitemap.xml
 
 # Don't crawl deploy artifacts or upstream tile providers from this site
 Disallow: /node_modules/

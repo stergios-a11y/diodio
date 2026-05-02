@@ -31,18 +31,18 @@
   <link rel="manifest" href="site.webmanifest" />
 
   <!-- Canonical & language alternates -->
-  <link rel="canonical" href="https://mydiodia.com/" />
-  <link rel="alternate" hreflang="el" href="https://mydiodia.com/" />
-  <link rel="alternate" hreflang="en" href="https://mydiodia.com/" />
-  <link rel="alternate" hreflang="x-default" href="https://mydiodia.com/" />
+  <link rel="canonical" href="https://mydiodia.gr/" />
+  <link rel="alternate" hreflang="el" href="https://mydiodia.gr/" />
+  <link rel="alternate" hreflang="en" href="https://mydiodia.gr/" />
+  <link rel="alternate" hreflang="x-default" href="https://mydiodia.gr/" />
 
   <!-- OpenGraph (social previews) -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="mydiodia" />
   <meta property="og:title" content="mydiodia — Διόδια Ελλάδας 2026, Χάρτης, Τιμές & Σύμβουλος Παράκαμψης" />
   <meta property="og:description" content="Διαδραστικός χάρτης για όλα τα διόδια στους ελληνικούς αυτοκινητοδρόμους. Δες τιμές 2026 και βρες ποια διόδια αξίζει να παρακάμψεις." />
-  <meta property="og:url" content="https://mydiodia.com/" />
-  <meta property="og:image" content="https://mydiodia.com/og-image.png" />
+  <meta property="og:url" content="https://mydiodia.gr/" />
+  <meta property="og:image" content="https://mydiodia.gr/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="Διαδραστικός χάρτης διοδίων Ελλάδας — mydiodia" />
@@ -53,7 +53,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="mydiodia — Διόδια Ελλάδας 2026" />
   <meta name="twitter:description" content="Δες τιμές 2026, υπολόγισε το κόστος, και βρες ποια διόδια αξίζει να παρακάμψεις." />
-  <meta name="twitter:image" content="https://mydiodia.com/og-image.png" />
+  <meta name="twitter:image" content="https://mydiodia.gr/og-image.png" />
 
   <!-- Structured data: WebApplication + Dataset + FAQPage.
        Helps Google show rich snippets and understand this is an interactive
@@ -66,10 +66,10 @@
     "@graph": [
       {
         "@type": "WebApplication",
-        "@id": "https://mydiodia.com/#app",
+        "@id": "https://mydiodia.gr/#app",
         "name": "mydiodia",
         "alternateName": "mydiodia — Greece Toll Road Advisor",
-        "url": "https://mydiodia.com/",
+        "url": "https://mydiodia.gr/",
         "description": "Interactive map and bypass advisor for tolls on Greek motorways. Shows 2026 prices for all four vehicle classes, calculates total route cost, and recommends which tolls to pay vs. bypass based on your time-vs-money preference.",
         "applicationCategory": "TravelApplication",
         "operatingSystem": "Any (web-based)",
@@ -102,10 +102,10 @@
       },
       {
         "@type": "Dataset",
-        "@id": "https://mydiodia.com/#dataset",
+        "@id": "https://mydiodia.gr/#dataset",
         "name": "Greek Motorway Toll Prices and Bypass Routes 2026",
         "description": "Curated dataset of all toll booths on Greek motorways (A1/PATHE, A2/Egnatia, A5/Nea Odos, A6/Attiki Odos, A7/Moreas, A8/Olympia Odos, E65/Kentriki Odos, plus Rio-Antirrio bridge and Aktio-Preveza tunnel). Includes per-booth prices for all four vehicle categories, geographic coordinates, and pre-curated bypass routes with estimated extra travel time.",
-        "url": "https://mydiodia.com/",
+        "url": "https://mydiodia.gr/",
         "keywords": ["tolls", "Greece", "motorways", "διόδια", "αυτοκινητόδρομοι", "PATHE", "Egnatia", "Olympia Odos"],
         "spatialCoverage": {
           "@type": "Place",
@@ -127,7 +127,7 @@
       },
       {
         "@type": "FAQPage",
-        "@id": "https://mydiodia.com/#faq",
+        "@id": "https://mydiodia.gr/#faq",
         "mainEntity": [
           {
             "@type": "Question",
@@ -187,7 +187,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260501-1000" />
+  <link rel="stylesheet" href="css/style.css?v=20260502-0100" />
 </head>
 <body>
 
@@ -788,11 +788,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260430-2500"></script>
-  <script src="data/tolls.js?v=20260501-1900"></script>
-  <script src="data/routes.js?v=20260427-0700"></script>
-  <script src="js/map.js?v=20260501-2000"></script>
-  <script src="js/calculator.js?v=20260430-2900"></script>
-  <script src="js/pages.js?v=20260427-0800"></script>
+  <script src="js/i18n.js?v=20260502-0100"></script>
+  <script src="data/tolls.js?v=20260502-0100"></script>
+  <script src="data/routes.js?v=20260502-0100"></script>
+  <script src="js/map.js?v=20260502-0100"></script>
+  <script src="js/calculator.js?v=20260502-0100"></script>
+  <script src="js/pages.js?v=20260502-0100"></script>
 </body>
 </html>
