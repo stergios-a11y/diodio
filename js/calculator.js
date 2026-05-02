@@ -1486,6 +1486,90 @@ function downloadPrintViewAsText(filenameStem) {
 // ensures images load eagerly during render.
 function triggerNativePrint() {
   const view = document.getElementById('print-view');
+
+  // R39 DIAGNOSTIC. Before calling window.print(), gather state and show
+  // it in an alert so the user can copy/paste the result back. This is
+  // intentionally synchronous and modal — easier than asking the user to
+  // open DevTools. Once we know what's broken, the code goes away.
+  //
+  // Skipped if the user dismisses the diagnostic toggle from console
+  // (window._mydiodiaSkipDiag = true), in case they want to print without
+  // the alert in a session.
+  if (!window._mydiodiaSkipDiag) {
+    try {
+      const lines = [];
+      lines.push('=== mydiodia print diagnostic ===');
+      lines.push('R39 / cache: 20260502-1600');
+      lines.push('');
+
+      // 1. Does the view exist? Does it have content?
+      lines.push('--- print-view ---');
+      lines.push('exists: ' + !!view);
+      if (view) {
+        lines.push('innerHTML.length: ' + view.innerHTML.length);
+        lines.push('children count: ' + view.children.length);
+        const rect = view.getBoundingClientRect();
+        lines.push('rect: ' + Math.round(rect.width) + 'x' + Math.round(rect.height) + ' at (' + Math.round(rect.left) + ',' + Math.round(rect.top) + ')');
+        const cs = window.getComputedStyle(view);
+        lines.push('computed: position=' + cs.position + ' display=' + cs.display + ' visibility=' + cs.visibility);
+        lines.push('computed: left=' + cs.left + ' top=' + cs.top);
+      }
+
+      // 2. How many <img> tags inside print-view, and how many loaded?
+      if (view) {
+        const imgs = view.querySelectorAll('img');
+        let loaded = 0, broken = 0, pending = 0;
+        imgs.forEach(img => {
+          if (img.complete && img.naturalWidth > 0) loaded++;
+          else if (img.complete && img.naturalWidth === 0) broken++;
+          else pending++;
+        });
+        lines.push('');
+        lines.push('--- images in print-view ---');
+        lines.push('total: ' + imgs.length);
+        lines.push('loaded: ' + loaded);
+        lines.push('broken (404/403): ' + broken);
+        lines.push('still loading: ' + pending);
+        // Show URL of first broken img so we can verify it's a Mapbox issue
+        for (const img of imgs) {
+          if (img.complete && img.naturalWidth === 0) {
+            lines.push('first broken URL: ' + img.src.slice(0, 100));
+            break;
+          }
+        }
+      }
+
+      // 3. How many @media print rules in stylesheets? (catches CSS-not-deployed)
+      let mediaPrintRules = 0;
+      try {
+        for (const sheet of document.styleSheets) {
+          try {
+            for (const rule of sheet.cssRules || []) {
+              if (rule.media && rule.media.mediaText && rule.media.mediaText.includes('print')) mediaPrintRules++;
+            }
+          } catch (e) { /* cross-origin stylesheet, skip */ }
+        }
+      } catch (e) {}
+      lines.push('');
+      lines.push('--- stylesheets ---');
+      lines.push('@media print rules found: ' + mediaPrintRules);
+
+      // 4. Body direct children count
+      lines.push('');
+      lines.push('--- body ---');
+      lines.push('direct children: ' + document.body.children.length);
+
+      const report = lines.join('\n');
+      console.log(report);
+      const proceed = confirm(report + '\n\n--- Click OK to continue and print, or Cancel to abort ---');
+      if (!proceed) return;
+    } catch (e) {
+      console.error('[mydiodia] diagnostic failed:', e);
+      alert('Diagnostic failed: ' + e.message + '\n\nPlease share this with the developer.');
+      return;
+    }
+  }
+
   if (!view || !view.innerHTML.trim()) {
     // Nothing to print yet — analysis hasn't populated the view.
     return;
