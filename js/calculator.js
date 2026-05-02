@@ -782,13 +782,19 @@ function renderResults(a) {
   // for both the panel-level stats and each individual chip. Also recompute
   // the "replaced highway km" sum using each bypass's actual highway-segment
   // straight-line distance × 1.05.
+  // R28: also pass steps:true so the response includes turn-by-turn
+  // instructions, which we stash on the analysis for the printed/downloaded
+  // take-away document.
   if (typeof window.fetchRoute === 'function') {
     const fetchable = results.filter(r => r.dir && r.dir.off_ramp && r.dir.on_ramp);
     Promise.all(fetchable.map(r =>
-      window.fetchRoute(r.dir.off_ramp, r.dir.on_ramp, 'bypass', r.dir.via).catch(() => null)
+      window.fetchRoute(r.dir.off_ramp, r.dir.on_ramp, 'bypass', r.dir.via, { steps: true }).catch(() => null)
     )).then(routes => {
       let panelExtraKm = 0;
       let panelReplacedHwy = 0;
+      // Build a tollId → instructions[] map; the print view renderer reads
+      // this lazily off the analysis object.
+      a.bypassSteps = a.bypassSteps || {};
       fetchable.forEach((r, i) => {
         const route = routes[i];
         if (!route) return;
@@ -797,11 +803,16 @@ function renderResults(a) {
           ? hav(r.dir.pre_exit, r.dir.post_merge) * 1.05
           : hav(r.dir.off_ramp, r.dir.on_ramp) * 1.05;
         const addedKm = Math.max(0, bypassKm - highwayKm);
-        // Sum into panel total only for AVOIDED tolls (since panel shows
-        // recommended-strategy km, not all-bypass km).
         if (isAvoidSide(r)) {
           panelExtraKm += addedKm;
           panelReplacedHwy += highwayKm;
+        }
+        // Stash steps for the print view (rendered only for AVOID-side; the
+        // tollLine renderer gates on verdict). We store for ALL fetched tolls
+        // anyway because the user could change tolerance and flip a PAY into
+        // an AVOID without us refetching.
+        if (Array.isArray(route.instructions)) {
+          a.bypassSteps[r.toll.id] = route.instructions;
         }
         // Update this chip's km cells in place. Now that motorway is row 0 and
         // bypass is row 1, write km into distCells[1] (bypass) and distCells[2] (diff).
@@ -815,6 +826,9 @@ function renderResults(a) {
         }
       });
       renderStats(panelExtraKm, panelReplacedHwy);
+      // Rebuild the print view now that bypass steps are available.
+      // buildPrintView reads from a.bypassSteps, so this picks them up.
+      buildPrintView(a, results, { savings, extraMin, allTollCost, recCost, avoidCount, payCount });
     });
   }
 
@@ -915,7 +929,7 @@ function renderResults(a) {
    Printable / downloadable take-away view.
 
    Populated each time renderResults runs. The DOM lives in #print-view
-   (hidden by default). Two ways out:
+   (off-screen by default). Two ways out:
 
    1. PRINT button → window.print(). The print stylesheet hides everything
       except #print-view, so the user gets a clean document. The browser's
@@ -928,6 +942,21 @@ function renderResults(a) {
    Both paths share one source of truth (the DOM in #print-view) so the
    formats can never drift apart.
    ────────────────────────────────────────────────────────────────── */
+
+// Tiny HTML escape — toll names occasionally contain ampersands or quotes
+// in the source data, and bypass-step instructions from Mapbox can include
+// any character. Keeps rendered output safe and prevents accidental tag
+// injection if data ever surfaces user-supplied text.
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function buildPrintView(a, results, stats) {
   const view = document.getElementById('print-view');
   if (!view) return;
@@ -951,48 +980,82 @@ function buildPrintView(a, results, stats) {
     hour: '2-digit', minute: '2-digit',
   });
 
-  // Per-toll instruction line. Short enough to read at a glance, includes
-  // the actionable detail: exit/entry interchange names + extra time + savings.
+  // Per-toll instruction line. Includes the actionable bypass detail
+  // whenever exit/entry interchange names are known — irrespective of
+  // verdict — so the printed document is a complete reference (the user
+  // might reverse a PAY decision on the road if traffic conditions change,
+  // and even AVOID-shaped bypasses should explain why each toll is what
+  // it is). Verdict still drives the body-text labels: AVOIDed tolls show
+  // savings; PAID tolls explain why bypassing isn't recommended.
   const tollLine = (r, idx) => {
     const name = (lang === 'el' ? r.toll.name_gr : r.toll.name_en) || r.toll.id;
-    // Verdict→label/badge text. Marginal verdicts get the same words as
-    // their definite siblings; the body text carries the nuance.
     const verdictText = t(`verdict.${r.verdict.toLowerCase().replace('_', '.')}`);
     const price = (typeof window !== 'undefined' && window.getTollPrice)
       ? window.getTollPrice(r.toll, a.catKey, a.travelDir)
       : (r.toll[a.catKey] || 0);
 
-    let detail = '';
+    // Exit/entry interchange names — shown for every toll with bypass info,
+    // not just AVOIDs. The 19 frontals from R17–R22 don't carry these labels
+    // in the data; we skip them gracefully (the verdict-specific body text
+    // still appears, just without the route prelude).
+    const exit  = r.dir?.exit_name  || '';
+    const entry = r.dir?.entry_name || '';
+    const min   = r.dir?.minutes    || 0;
+
+    let routeLine = '';
+    if (exit && entry) {
+      const minSuffix = min > 0 ? ` (+${min} ${t('bar.time.label2')})` : '';
+      routeLine = `${t('print.exit_at')} ${exit}, ${t('print.enter_at')} ${entry}${minSuffix}`;
+    }
+
+    // Verdict-specific body. AVOID-side: emphasise savings. PAY-side:
+    // explain why bypassing isn't worth it. Marginal verdicts share the
+    // body text of their definite siblings; the verdict badge already
+    // signals the "borderline" nature.
+    let body = '';
     if (r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID') {
-      // Bypass instructions — the actionable part of the document
-      const exit = r.dir?.exit_name || '';
-      const entry = r.dir?.entry_name || '';
-      const min = r.dir?.minutes || 0;
       const isFerry = r.dir?.mode === 'ferry' && r.dir?.fare;
       const sideCost = isFerry
         ? (r.dir.fare[a.catKey] || 0)
         : ((r.sideInfo?.totals?.[a.catKey]) || 0);
       const saved = Math.max(0, price - sideCost);
-      const parts = [];
-      if (exit && entry) parts.push(`${t('print.exit_at')} ${exit}, ${t('print.enter_at')} ${entry}`);
-      if (min > 0) parts.push(`+${min} ${t('bar.time.label2')} ${t('print.detour')}`);
-      if (saved > 0.005) parts.push(`${t('print.saves')} €${saved.toFixed(2)}`);
-      detail = parts.join(' · ');
+      if (saved > 0.005) body = `${t('print.saves')} €${saved.toFixed(2)}`;
     } else if (r.verdict === 'PAY' && !r.dir) {
-      detail = t('print.no_bypass');
+      body = t('print.no_bypass');
     } else if (r.verdict === 'PAY' && r.dir) {
-      detail = t('print.bypass_more');
+      body = t('print.bypass_more');
+    } else if (r.verdict === 'MARGINAL_PAY' && r.dir) {
+      body = t('print.bypass_more');
+    }
+
+    // Step-by-step bypass directions (Mapbox-derived). Stored on the analysis
+    // object once the bypass routes resolve (see refineBypassDirections).
+    // Only AVOID/MARGINAL_AVOID get them — those are the ones the user is
+    // actually expected to drive.
+    let stepsHtml = '';
+    let stepsText = [];
+    const tollSteps = a.bypassSteps && a.bypassSteps[r.toll.id];
+    const showSteps = (r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID') && Array.isArray(tollSteps) && tollSteps.length;
+    if (showSteps) {
+      stepsHtml = `
+        <div class="pv-toll-steps-label">${t('print.directions')}:</div>
+        <ol class="pv-toll-steps">
+          ${tollSteps.map(s => `<li>${escapeHtml(s.text)}<span class="pv-step-dist"> · ${s.km}</span></li>`).join('')}
+        </ol>`;
+      stepsText = tollSteps;
     }
 
     return `
       <div class="pv-toll pv-toll--${r.verdict.toLowerCase()}">
         <div class="pv-toll-head">
           <span class="pv-toll-num">${idx + 1}.</span>
-          <span class="pv-toll-name">${name}</span>
+          <span class="pv-toll-name">${escapeHtml(name)}</span>
           <span class="pv-toll-verdict pv-toll-verdict--${r.verdict.toLowerCase()}">${verdictText}</span>
           <span class="pv-toll-price">€${price.toFixed(2)}</span>
         </div>
-        ${detail ? `<div class="pv-toll-detail">${detail}</div>` : ''}
+        ${routeLine ? `<div class="pv-toll-route">${escapeHtml(routeLine)}</div>` : ''}
+        ${body     ? `<div class="pv-toll-detail">${escapeHtml(body)}</div>` : ''}
+        ${stepsHtml}
       </div>`;
   };
 
@@ -1082,8 +1145,30 @@ function printViewToText() {
       .filter(Boolean)
       .join('  ');
     push(head);
+    // Bypass route prelude: "Exit at X, re-enter at Y (+N min)"
+    const route = t.querySelector('.pv-toll-route');
+    if (route) push('     ' + route.textContent.replace(/\s+/g, ' ').trim());
+    // Verdict body line: "saves €X" / "no bypass available" / etc.
     const detail = t.querySelector('.pv-toll-detail');
     if (detail) push('     ' + detail.textContent.replace(/\s+/g, ' ').trim());
+    // Step-by-step bypass directions (AVOID-side only — gated in renderer).
+    const stepsLabel = t.querySelector('.pv-toll-steps-label');
+    const steps = t.querySelectorAll('.pv-toll-steps li');
+    if (steps.length) {
+      push('     ' + (stepsLabel ? stepsLabel.textContent.trim() : 'Directions:'));
+      steps.forEach((li, idx) => {
+        // Each <li> is "instruction text · X km" — keep the structure but
+        // re-format with index for plain text.
+        const distEl = li.querySelector('.pv-step-dist');
+        const dist = distEl ? distEl.textContent.replace(/^\s*·\s*/, '').trim() : '';
+        // Strip the dist span from the instruction text by cloning + removing
+        const clone = li.cloneNode(true);
+        const cloneDist = clone.querySelector('.pv-step-dist');
+        if (cloneDist) cloneDist.remove();
+        const instr = clone.textContent.replace(/\s+/g, ' ').trim();
+        push(`       ${idx + 1}. ${instr}${dist ? ` (${dist})` : ''}`);
+      });
+    }
     push('');
   });
 

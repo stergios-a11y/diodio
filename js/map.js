@@ -360,16 +360,28 @@ const routeCache = {};
 async function fetchRoute(exitPt, entryPt, mode, via, opts) {
   opts = opts || {};
   const wantSteps = opts.steps === true;
+  // Localized turn-by-turn instructions: el for Greek users, en for everyone
+  // else. Mapbox accepts only language codes it has translations for; for
+  // unsupported codes, the response falls back to English silently.
+  const lang = (typeof getCurrentLang === 'function' && getCurrentLang() === 'el') ? 'el' : 'en';
   const viaKey = via?.length
     ? via.map(p => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join('|')
     : '';
   const stepsKey = wantSteps ? ':S' : '';
-  const key = `${mode}${stepsKey}:${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}${viaKey ? '|' + viaKey : ''}`;
+  // Cache key includes language: a Greek user and an English user requesting
+  // the same route get separate cached responses with their respective
+  // localised step instructions.
+  const langKey = wantSteps ? `:${lang}` : '';
+  const key = `${mode}${stepsKey}${langKey}:${exitPt.lat.toFixed(5)},${exitPt.lng.toFixed(5)};${entryPt.lat.toFixed(5)},${entryPt.lng.toFixed(5)}${viaKey ? '|' + viaKey : ''}`;
 
   if (routeCache[key]) return routeCache[key];
 
+  // localStorage cache: bumped from v5 → v6 in R28 (added instructions[]
+  // field; old entries lack it and would render as "Directions unavailable"
+  // without a refetch). Old v5 entries are abandoned; localStorage will GC
+  // them as it fills.
   try {
-    const stored = localStorage.getItem(`diodio.route.v5.${key}`);
+    const stored = localStorage.getItem(`diodio.route.v6.${key}`);
     if (stored) {
       const parsed = JSON.parse(stored);
       routeCache[key] = parsed;
@@ -390,7 +402,9 @@ async function fetchRoute(exitPt, entryPt, mode, via, opts) {
     : [exitPt, entryPt];
   const coordStr = waypoints.map(p => `${p.lng},${p.lat}`).join(';');
   const exclude = mode === 'bypass' ? '&exclude=motorway' : '';
-  const stepsParam = wantSteps ? '&steps=true' : '';
+  // steps + language only attached when we want instructions; saves bytes
+  // on the toll-segment-only highway calls.
+  const stepsParam = wantSteps ? `&steps=true&language=${lang}` : '';
   url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordStr}?geometries=geojson&overview=full${exclude}${stepsParam}&access_token=${MAPBOX_TOKEN}`;
 
   try {
@@ -406,21 +420,50 @@ async function fetchRoute(exitPt, entryPt, mode, via, opts) {
       distanceKm:  r.distance / 1000,
       durationMin: r.duration / 60,
     };
-    // When steps=true, derive toll/non-toll segments from intersections[].classes.
-    // Each intersection's `geometry_index` points into the full-route polyline,
-    // and its `classes` array describes the road EXITING that intersection.
-    // We walk all intersections in order, group consecutive coords by toll
-    // status, and emit segments {coords, isToll, distanceKm}.
     if (wantSteps) {
+      // Toll-segment classification (existing behaviour).
       const segs = computeTollSegments(r);
       if (segs) {
         result.segments     = segs.segments;
         result.tollKm       = segs.tollKm;
         result.nonTollKm    = segs.nonTollKm;
       }
+      // R28: extract turn-by-turn instructions from legs[].steps[]. Each
+      // step has a maneuver.instruction string already localised by Mapbox
+      // (because we passed &language=). Distance is in metres → km.
+      // Filter out trivial "head north" type prelude steps (< 50 m) and
+      // the always-trailing "you have arrived" step which is unhelpful in
+      // a printed reference. Cap at 10 entries — printed bypass directions
+      // longer than 10 lines are rarely useful and crowd the page.
+      const allSteps = [];
+      for (const leg of (r.legs || [])) {
+        for (const step of (leg.steps || [])) {
+          const text = step.maneuver?.instruction || step.name || '';
+          const m = step.distance || 0;
+          if (!text) continue;
+          if (m < 50 && allSteps.length > 0) continue;  // skip trivial prelude
+          if (/arrived|έχετε φτάσει|έφτασες/i.test(text)) continue;
+          allSteps.push({
+            text,
+            km: m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`,
+          });
+        }
+      }
+      // Cap & dedupe consecutive identical instructions (rare but happens
+      // at waypoints).
+      const seen = new Set();
+      const dedupe = [];
+      for (const s of allSteps) {
+        const key = s.text + '|' + s.km;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        dedupe.push(s);
+        if (dedupe.length >= 10) break;
+      }
+      result.instructions = dedupe;
     }
     routeCache[key] = result;
-    try { localStorage.setItem(`diodio.route.v5.${key}`, JSON.stringify(result)); } catch (e) {}
+    try { localStorage.setItem(`diodio.route.v6.${key}`, JSON.stringify(result)); } catch (e) {}
     return result;
   } catch (e) {
     console.warn('[mydiodia] route fetch error', mode, key, e);

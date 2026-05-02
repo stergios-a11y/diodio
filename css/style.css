@@ -4435,21 +4435,41 @@ input[type="range"]::-moz-range-track {
    PRINT VIEW
    ─────────────────────────────────────────────────────────────────
    The #print-view element is built by calculator.js on every analyze
-   and held off-screen. Hidden on regular screens, swapped to the only
-   visible thing under @media print so the user gets a clean document
-   without map chrome, sidebars, or interactive controls.
+   and held off-screen. We don't use display:none on screen because
+   when @media print toggles display:block back on, some print engines
+   (Chromium-based, occasionally) skip the element entirely. Off-screen
+   absolute positioning keeps it in the render tree throughout, which
+   lets the print stylesheet reliably take over.
    ════════════════════════════════════════════════════════════════ */
 
-#print-view { display: none; }
+#print-view {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  /* Even though we're off-screen, set a sensible width for any pre-print
+     reflow the browser might do — A4 width minus margins works as a target
+     so the rendered widths roughly match the printable page. */
+}
 
 @media print {
   /* Hide everything by default, then re-show the print view. Cleaner than
      hiding each non-print element individually because new chrome added in
      future rounds doesn't break the printed page. */
   body > *:not(#print-view) { display: none !important; }
+  body { background: white !important; margin: 0 !important; padding: 0 !important; }
   #print-view {
+    /* Reset every potentially problematic property from the screen ruleset. */
     display: block !important;
     position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    visibility: visible !important;
     background: white !important;
     color: #1a1f2e !important;
     font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
@@ -4458,8 +4478,8 @@ input[type="range"]::-moz-range-track {
     padding: 0 !important;
     margin: 0 !important;
     max-width: none !important;
-    width: 100% !important;
   }
+  #print-view * { visibility: visible !important; }
 
   /* Page-level: A4 with reasonable margins. Browsers without @page support
      ignore this gracefully. */
@@ -4601,6 +4621,47 @@ input[type="range"]::-moz-range-track {
     font-size: 9pt;
     color: #3a4050;
     line-height: 1.4;
+  }
+
+  /* "Exit at X, re-enter at Y" route prelude. Prominent — this is the
+     actionable info even when the user just wants the recommendation. */
+  .pv-toll-route {
+    margin-top: 3pt;
+    margin-left: 22pt;
+    font-size: 9.5pt;
+    color: #1a1f2e;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  /* Step-by-step bypass directions (Mapbox-derived). Compact ordered list,
+     deeper indent so visually it sits below the route prelude. The label
+     above marks the section visually. */
+  .pv-toll-steps-label {
+    margin-top: 4pt;
+    margin-left: 22pt;
+    font-size: 8.5pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #5e6578;
+  }
+  .pv-toll-steps {
+    margin: 2pt 0 4pt 0;
+    padding-left: 44pt;
+    font-size: 9pt;
+    color: #3a4050;
+    line-height: 1.4;
+  }
+  .pv-toll-steps li {
+    margin: 1pt 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .pv-step-dist {
+    color: #8a8f9e;
+    font-size: 8.5pt;
+    font-variant-numeric: tabular-nums;
   }
 
   /* Footer */
