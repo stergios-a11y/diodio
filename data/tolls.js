@@ -37,6 +37,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 18,
     lat: 38.1764249336277, lng: 23.854127639684013,
     cat1: 2.70, cat2: 3.90, cat3: 9.75, cat4: 13.70,
+    prices_by_direction: {
+      northbound: { cat1: 2.70, cat2: 3.90, cat3: 9.75, cat4: 13.70 },
+      southbound: { cat1: 2.70, cat2: 3.90, cat3: 9.75, cat4: 13.70 },
+    },
     notes: "Northern Attica. First toll heading north from Athens.",
     bypass_directions: {
       northbound: {
@@ -73,6 +77,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 117,
     lat: 38.3708752, lng: 23.2868636,
     cat1: 3.20, cat2: 4.55, cat3: 11.45, cat4: 16.00,
+    prices_by_direction: {
+      northbound: { cat1: 3.20, cat2: 4.55, cat3: 11.45, cat4: 16.00 },
+      southbound: { cat1: 3.20, cat2: 4.55, cat3: 11.45, cat4: 16.00 },
+    },
     notes: "North of Thiva / Thebes.",
     bypass_directions: {
       northbound: {
@@ -109,6 +117,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 47,
     lat: 38.6174740, lng: 23.1434298,
     cat1: 3.15, cat2: 4.55, cat3: 11.40, cat4: 15.95,
+    prices_by_direction: {
+      northbound: { cat1: 3.15, cat2: 4.55, cat3: 11.40, cat4: 15.95 },
+      southbound: { cat1: 3.15, cat2: 4.55, cat3: 11.40, cat4: 15.95 },
+    },
     notes: "Between Thiva and Kamena Vourla.",
     bypass_directions: {
       northbound: {
@@ -145,6 +157,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 103,
     lat: 38.8087016, lng: 22.6025569,
     cat1: 1.45, cat2: 2.10, cat3: 5.25, cat4: 7.35,
+    prices_by_direction: {
+      northbound: { cat1: 1.45, cat2: 2.10, cat3: 5.25, cat4: 7.35 },
+      southbound: { cat1: 1.45, cat2: 2.10, cat3: 5.25, cat4: 7.35 },
+    },
     notes: "Near ferry port for Sporades islands.",
     bypass_directions: {
       northbound: {
@@ -181,6 +197,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 37,
     lat: 38.9040600, lng: 22.5276697,
     cat1: 1.55, cat2: 2.25, cat3: 5.65, cat4: 7.90,
+    prices_by_direction: {
+      northbound: { cat1: 1.55, cat2: 2.25, cat3: 5.65, cat4: 7.90 },
+      southbound: { cat1: 1.55, cat2: 2.25, cat3: 5.65, cat4: 7.90 },
+    },
     notes: "Zone boundary station near Kamena Vourla.",
     bypass_directions: {
       northbound: {
@@ -217,6 +237,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 111,
     lat: 38.9203273, lng: 22.8462812,
     cat1: 2.90, cat2: 4.10, cat3: 10.20, cat4: 14.30,
+    prices_by_direction: {
+      northbound: { cat1: 2.90, cat2: 4.10, cat3: 10.20, cat4: 14.30 },
+      southbound: { cat1: 2.90, cat2: 4.10, cat3: 10.20, cat4: 14.30 },
+    },
     notes: "Highest-priced station on Kentriki Odos section.",
     bypass_directions: {
       northbound: {
@@ -316,6 +340,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 146,
     lat: 39.5227965, lng: 22.5567985,
     cat1: 1.30, cat2: 2.60, cat3: 5.20, cat4: 7.80,
+    prices_by_direction: {
+      northbound: { cat1: 1.30, cat2: 2.60, cat3: 5.20, cat4: 7.80 },
+      southbound: { cat1: 1.30, cat2: 2.60, cat3: 5.20, cat4: 7.80 },
+    },
     notes: "Lateral exit ramp towards Volos and eastern Larissa.",
     bypass_directions: {
       northbound: {
@@ -377,6 +405,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 175,
     lat: 39.8044068, lng: 22.5028431,
     cat1: 2.10, cat2: 3.00, cat3: 7.50, cat4: 10.50,
+    prices_by_direction: {
+      northbound: { cat1: 2.10, cat2: 3.00, cat3: 7.50, cat4: 10.50 },
+      southbound: { cat1: 2.10, cat2: 3.00, cat3: 7.50, cat4: 10.50 },
+    },
     notes: "Entry to Aegean Motorway concession north of Larissa.",
     bypass_directions: {
       northbound: {
@@ -439,6 +471,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 133,
     lat: 40.0357339, lng: 22.5698233,
     cat1: 2.60, cat2: 3.80, cat3: 9.40, cat4: 13.10,
+    prices_by_direction: {
+      northbound: { cat1: 2.60, cat2: 3.80, cat3: 9.40, cat4: 13.10 },
+      southbound: { cat1: 2.60, cat2: 3.80, cat3: 9.40, cat4: 13.10 },
+    },
     notes: "Highest toll — covers Tempi Valley tunnel. Old road via Stomio coastal village.",
     bypass_directions: {
       northbound: {
@@ -475,6 +511,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 125,
     lat: 40.5196328, lng: 22.5727432,
     cat1: 0.85, cat2: 1.70, cat3: 3.40, cat4: 5.10,
+    prices_by_direction: {
+      northbound: { cat1: 0.85, cat2: 1.70, cat3: 3.40, cat4: 5.10 },
+      southbound: { cat1: 0.85, cat2: 1.70, cat3: 3.40, cat4: 5.10 },
+    },
     notes: "Lateral exit ramp towards Aeginio and Pieria coast.",
     bypass_directions: {
       northbound: {
@@ -511,6 +551,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 79,
     lat: 40.6023898, lng: 22.6982629,
     cat1: 0.80, cat2: 1.15, cat3: 2.90, cat4: 4.10,
+    prices_by_direction: {
+      northbound: { cat1: 0.80, cat2: 1.15, cat3: 2.90, cat4: 4.10 },
+      southbound: { cat1: 0.80, cat2: 1.15, cat3: 2.90, cat4: 4.10 },
+    },
     notes: "Thessaloniki ring junction. Northern terminus of PATHE.",
     bypass_directions: {
       northbound: {
@@ -547,6 +591,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 87,
     lat: 40.7068507, lng: 23.1915236,
     cat1: 2.00, cat2: 2.90, cat3: 7.25, cat4: 10.20,
+    prices_by_direction: {
+      eastbound: { cat1: 2.00, cat2: 2.90, cat3: 7.25, cat4: 10.20 },
+      westbound: { cat1: 2.00, cat2: 2.90, cat3: 7.25, cat4: 10.20 },
+    },
     notes: "North of Thessaloniki towards Kavala / Halkidiki junction.",
     bypass_directions: {
       eastbound: {
@@ -579,6 +627,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 70,
     lat: 40.8582573, lng: 24.1623607,
     cat1: 1.85, cat2: 2.65, cat3: 6.70, cat4: 9.40,
+    prices_by_direction: {
+      eastbound: { cat1: 1.85, cat2: 2.65, cat3: 6.70, cat4: 9.40 },
+      westbound: { cat1: 1.85, cat2: 2.65, cat3: 6.70, cat4: 9.40 },
+    },
     notes: "Between Kavala and Drama junctions.",
     bypass_directions: {
       eastbound: {
@@ -611,6 +663,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 69,
     lat: 40.7264289, lng: 23.6937403,
     cat1: 0.95, cat2: 1.40, cat3: 3.50, cat4: 4.90,
+    prices_by_direction: {
+      eastbound: { cat1: 0.95, cat2: 1.40, cat3: 3.50, cat4: 4.90 },
+      westbound: { cat1: 0.95, cat2: 1.40, cat3: 3.50, cat4: 4.90 },
+    },
     notes: "Popular summer exit for Asprovalta beach.",
     bypass_directions: {
       eastbound: {
@@ -643,6 +699,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 168,
     lat: 41.1086804, lng: 22.5585932,
     cat1: 2.05, cat2: 2.95, cat3: 7.40, cat4: 10.40,
+    prices_by_direction: {
+      northbound: { cat1: 2.05, cat2: 2.95, cat3: 7.40, cat4: 10.40 },
+      southbound: { cat1: 2.05, cat2: 2.95, cat3: 7.40, cat4: 10.40 },
+    },
     notes: "Greek–North Macedonian border.",
     bypass_directions: {
       northbound: {
@@ -682,6 +742,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 104,
     lat: 39.5402028, lng: 20.6743451,
     cat1: 2.35, cat2: 3.35, cat3: 8.45, cat4: 11.85,
+    prices_by_direction: {
+      eastbound: { cat1: 2.35, cat2: 3.35, cat3: 8.45, cat4: 11.85 },
+      westbound: { cat1: 2.35, cat2: 3.35, cat3: 8.45, cat4: 11.85 },
+    },
     notes: "Western terminus of Egnatia.",
     bypass_directions: {
       eastbound: {
@@ -716,6 +780,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 70,
     lat: 39.6188630, lng: 20.9475803,
     cat1: 1.35, cat2: 1.95, cat3: 4.90, cat4: 6.85,
+    prices_by_direction: {
+      eastbound: { cat1: 1.35, cat2: 1.95, cat3: 4.90, cat4: 6.85 },
+      westbound: { cat1: 1.35, cat2: 1.95, cat3: 4.90, cat4: 6.85 },
+    },
     notes: "Ioannina bypass. Named after Pamvotida lake.",
     bypass_directions: {
       eastbound: {
@@ -750,6 +818,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 45,
     lat: 39.7895825, lng: 21.2666618,
     cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35,
+    prices_by_direction: {
+      eastbound: { cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35 },
+      westbound: { cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35 },
+    },
     notes: "Mountain tunnel through Pindus range. No viable bypass — the only alternative is the old road over the Metsovo pass, a slow mountain detour through the village (40+ minutes extra, often closed in winter).",
     notes_gr: "Σήραγγα στα Πινδαρικά όρη. Δεν υπάρχει εύλογη παράκαμψη — η μόνη εναλλακτική είναι ο παλιός δρόμος από το χωριό Μέτσοβο, μια αργή ορεινή διαδρομή (40+ λεπτά παραπάνω, συχνά κλειστός το χειμώνα).",
     bypass_directions: null,
@@ -764,6 +836,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 34,
     lat: 40.2565339, lng: 21.6329808,
     cat1: 1.65, cat2: 2.40, cat3: 6.00, cat4: 8.40,
+    prices_by_direction: {
+      eastbound: { cat1: 1.65, cat2: 2.40, cat3: 6.00, cat4: 8.40 },
+      westbound: { cat1: 1.65, cat2: 2.40, cat3: 6.00, cat4: 8.40 },
+    },
     notes: "",
     bypass_directions: {
       eastbound: {
@@ -798,6 +874,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 71,
     lat: 40.3671958, lng: 22.0602089,
     cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35,
+    prices_by_direction: {
+      eastbound: { cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35 },
+      westbound: { cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.35 },
+    },
     notes: "Mountain section between Kozani and Veroia. The bypass exists but is inconvenient — narrow village roads through the Pieria range with switchbacks, adding ~30 minutes; not recommended for trucks or in winter.",
     notes_gr: "Ορεινή διαδρομή ανάμεσα σε Κοζάνη και Βέροια. Η παράκαμψη υπάρχει αλλά είναι άβολη — στενοί χωριάτικοι δρόμοι μέσω Πιερίων με στροφές, προσθέτει περίπου 30 λεπτά· δεν συνιστάται για φορτηγά ή το χειμώνα.",
     bypass_directions: {
@@ -833,6 +913,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 126,
     lat: 40.5745294, lng: 21.0614475,
     cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15,
+    prices_by_direction: {
+      northbound: { cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15 },
+      southbound: { cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15 },
+    },
     notes: "Branch spur of Egnatia towards Kastoria / Albanian border.",
     bypass_directions: {
       northbound: {
@@ -870,6 +954,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 41,
     lat: 40.6961219, lng: 22.895877,
     cat1: 0.45, cat2: 0.65, cat3: 1.70, cat4: 2.35,
+    prices_by_direction: {
+      eastbound: { cat1: 0.45, cat2: 0.65, cat3: 1.70, cat4: 2.35 },
+      westbound: { cat1: 0.45, cat2: 0.65, cat3: 1.70, cat4: 2.35 },
+    },
     notes: "Western Thessaloniki bypass.",
     bypass_directions: {
       eastbound: {
@@ -902,6 +990,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 8,
     lat: 41.0435183, lng: 23.2952374,
     cat1: 1.60, cat2: 2.35, cat3: 5.85, cat4: 8.20,
+    prices_by_direction: {
+      westbound: { cat1: 1.60, cat2: 2.35, cat3: 5.85, cat4: 8.20 },
+      eastbound: { cat1: 1.60, cat2: 2.35, cat3: 5.85, cat4: 8.20 },
+    },
     notes: "Branch spur north of Thessaloniki ring.",
     bypass_directions: {
       westbound: {
@@ -936,6 +1028,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 70,
     lat: 40.9598127, lng: 24.4724027,
     cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15,
+    prices_by_direction: {
+      eastbound: { cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15 },
+      westbound: { cat1: 1.60, cat2: 2.30, cat3: 5.85, cat4: 8.15 },
+    },
     notes: "Frontal toll on Egnatia mainline near Kavala.",
     bypass_directions: {
       eastbound: {
@@ -968,6 +1064,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 84,
     lat: 41.120383, lng: 25.0801406,
     cat1: 1.60, cat2: 2.25, cat3: 5.70, cat4: 8.00,
+    prices_by_direction: {
+      eastbound: { cat1: 1.60, cat2: 2.25, cat3: 5.70, cat4: 8.00 },
+      westbound: { cat1: 1.60, cat2: 2.25, cat3: 5.70, cat4: 8.00 },
+    },
     notes: "",
     bypass_directions: {
       eastbound: {
@@ -1000,6 +1100,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 108,
     lat: 41.0134933, lng: 25.5333695,
     cat1: 1.90, cat2: 2.75, cat3: 6.90, cat4: 9.65,
+    prices_by_direction: {
+      eastbound: { cat1: 1.90, cat2: 2.75, cat3: 6.90, cat4: 9.65 },
+      westbound: { cat1: 1.90, cat2: 2.75, cat3: 6.90, cat4: 9.65 },
+    },
     notes: "",
     bypass_directions: {
       eastbound: {
@@ -1032,6 +1136,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 98,
     lat: 40.9445389, lng: 26.2051426,
     cat1: 1.40, cat2: 2.00, cat3: 5.00, cat4: 7.00,
+    prices_by_direction: {
+      eastbound: { cat1: 1.40, cat2: 2.00, cat3: 5.00, cat4: 7.00 },
+      westbound: { cat1: 1.40, cat2: 2.00, cat3: 5.00, cat4: 7.00 },
+    },
     notes: "Eastern terminus of main Egnatia line.",
     bypass_directions: {
       eastbound: {
@@ -1064,6 +1172,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 8,
     lat: 41.3642659, lng: 23.3567653,
     cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.30,
+    prices_by_direction: {
+      northbound: { cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.30 },
+      southbound: { cat1: 1.65, cat2: 2.35, cat3: 5.95, cat4: 8.30 },
+    },
     notes: "Greek–Bulgarian border spur.",
     bypass_directions: null,
   },
@@ -1082,6 +1194,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 131,
     lat: 38.3592412, lng: 21.6565418,
     cat1: 2.50, cat2: 3.55, cat3: 8.90, cat4: 12.50,
+    prices_by_direction: {
+      northbound: { cat1: 2.50, cat2: 3.55, cat3: 8.90, cat4: 12.50 },
+      southbound: { cat1: 2.50, cat2: 3.55, cat3: 8.90, cat4: 12.50 },
+    },
     notes: "First toll northbound from Antirrio.",
     bypass_directions: {
       northbound: {
@@ -1118,6 +1234,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 158,
     lat: 38.5494744, lng: 21.2723798,
     cat1: 2.90, cat2: 4.20, cat3: 10.50, cat4: 14.70,
+    prices_by_direction: {
+      northbound: { cat1: 2.90, cat2: 4.20, cat3: 10.50, cat4: 14.70 },
+      southbound: { cat1: 2.90, cat2: 4.20, cat3: 10.50, cat4: 14.70 },
+    },
     notes: "Zone 2 (Chaliki – Amfilochia).",
     bypass_directions: {
       northbound: {
@@ -1154,6 +1274,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 71,
     lat: 38.9898946, lng: 21.1709225,
     cat1: 2.50, cat2: 3.55, cat3: 8.95, cat4: 12.50,
+    prices_by_direction: {
+      northbound: { cat1: 2.50, cat2: 3.55, cat3: 8.95, cat4: 12.50 },
+      southbound: { cat1: 2.50, cat2: 3.55, cat3: 8.95, cat4: 12.50 },
+    },
     notes: "Arta–Ioannina section.",
     bypass_directions: {
       northbound: {
@@ -1216,6 +1340,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 102,
     lat: 39.4252460, lng: 20.9053087,
     cat1: 2.55, cat2: 3.70, cat3: 9.25, cat4: 12.95,
+    prices_by_direction: {
+      northbound: { cat1: 2.55, cat2: 3.70, cat3: 9.25, cat4: 12.95 },
+      southbound: { cat1: 2.55, cat2: 3.70, cat3: 9.25, cat4: 12.95 },
+    },
     notes: "Near Arta. Northern terminus of Nea Odos A5 section.",
     bypass_directions: {
       northbound: {
@@ -1257,6 +1385,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 82,
     lat: 38.0422442, lng: 23.4958076,
     cat1: 1.70, cat2: 2.50, cat3: 6.30, cat4: 8.90,
+    prices_by_direction: {
+      westbound: { cat1: 1.70, cat2: 2.50, cat3: 6.30, cat4: 8.90 },
+      eastbound: { cat1: 1.70, cat2: 2.50, cat3: 6.30, cat4: 8.90 },
+    },
     notes: "Western Athens gateway. Junction with A6 Attiki Odos.",
     bypass_directions: {
       westbound: {
@@ -1293,6 +1425,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 62,
     lat: 37.9249719, lng: 23.0325365,
     cat1: 1.50, cat2: 2.10, cat3: 5.40, cat4: 7.60,
+    prices_by_direction: {
+      westbound: { cat1: 1.50, cat2: 2.10, cat3: 5.40, cat4: 7.60 },
+      eastbound: { cat1: 1.50, cat2: 2.10, cat3: 5.40, cat4: 7.60 },
+    },
     notes: "At the Corinth Canal. Iconic crossing point into the Peloponnese.",
     bypass_directions: {
       westbound: {
@@ -1355,6 +1491,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 69,
     lat: 37.996686833044144, lng: 22.735416380916327,
     cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.60,
+    prices_by_direction: {
+      westbound: { cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.60 },
+      eastbound: { cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.60 },
+    },
     notes: "Frontal toll on Olympia Odos near Kiato.",
     bypass_directions: {
       westbound: {
@@ -1389,6 +1529,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 111,
     lat: 38.1907754, lng: 22.1654464,
     cat1: 2.70, cat2: 3.80, cat3: 9.70, cat4: 13.60,
+    prices_by_direction: {
+      westbound: { cat1: 2.70, cat2: 3.80, cat3: 9.70, cat4: 13.60 },
+      eastbound: { cat1: 2.70, cat2: 3.80, cat3: 9.70, cat4: 13.60 },
+    },
     notes: "Halfway Athens–Patras. Old coastal road available.",
     bypass_directions: {
       westbound: {
@@ -1425,6 +1569,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 61,
     lat: 38.3164492, lng: 21.8300325,
     cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.50,
+    prices_by_direction: {
+      westbound: { cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.50 },
+      eastbound: { cat1: 1.90, cat2: 2.70, cat3: 6.80, cat4: 9.50 },
+    },
     notes: "Near Rio ferry landing and bridge approach.",
     bypass_directions: {
       westbound: {
@@ -1461,6 +1609,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 44,
     lat: 38.1449493, lng: 21.6191570,
     cat1: 2.50, cat2: 3.60, cat3: 9.00, cat4: 12.70,
+    prices_by_direction: {
+      westbound: { cat1: 2.50, cat2: 3.60, cat3: 9.00, cat4: 12.70 },
+      eastbound: { cat1: 2.50, cat2: 3.60, cat3: 9.00, cat4: 12.70 },
+    },
     notes: "Eastern approach to Patras.",
     bypass_directions: {
       westbound: {
@@ -1494,7 +1646,11 @@ const TOLL_DATA = [
     type: "frontal", direction_label: "Exit — towards Pyrgos / Ancient Olympia",
     axis: "EW", bearing: 28,
     lat: 37.7525508, lng: 21.3585639,
-    cat1: 0.95, cat2: 1.90, cat3: 3.80, cat4: 5.70,
+    cat1: 1.50, cat2: 2.10, cat3: 5.40, cat4: 7.60,
+    prices_by_direction: {
+      northbound: { cat1: 1.50, cat2: 2.10, cat3: 5.40, cat4: 7.60 },
+      southbound: { cat1: 1.50, cat2: 2.10, cat3: 5.40, cat4: 7.60 },
+    },
     notes: "Southern terminus of Olympia Odos.",
     bypass_directions: {
       northbound: {
@@ -1538,6 +1694,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 149,
     lat: 38.9148821, lng: 22.3487648,
     cat1: 1.40, cat2: 2.05, cat3: 5.15, cat4: 7.20,
+    prices_by_direction: {
+      northbound: { cat1: 1.40, cat2: 2.05, cat3: 5.15, cat4: 7.20 },
+      southbound: { cat1: 1.40, cat2: 2.05, cat3: 5.15, cat4: 7.20 },
+    },
     notes: "Southern terminus of Kentriki Odos. Near Lamia, junction with A1.",
     bypass_directions: null,
   },
@@ -1551,6 +1711,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 155,
     lat: 39.2570470, lng: 22.0831457,
     cat1: 2.60, cat2: 3.70, cat3: 9.30, cat4: 13.00,
+    prices_by_direction: {
+      northbound: { cat1: 2.60, cat2: 3.70, cat3: 9.30, cat4: 13.00 },
+      southbound: { cat1: 2.60, cat2: 3.70, cat3: 9.30, cat4: 13.00 },
+    },
     notes: "",
     bypass_directions: {
       northbound: {
@@ -1587,6 +1751,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 108,
     lat: 39.5204295, lng: 21.8322372,
     cat1: 2.25, cat2: 3.25, cat3: 8.10, cat4: 11.40,
+    prices_by_direction: {
+      northbound: { cat1: 2.25, cat2: 3.25, cat3: 8.10, cat4: 11.40 },
+      southbound: { cat1: 2.25, cat2: 3.25, cat3: 8.10, cat4: 11.40 },
+    },
     notes: "Northern terminus of Kentriki Odos.",
     bypass_directions: {
       northbound: {
@@ -1724,6 +1892,10 @@ const TOLL_DATA = [
     axis: "EW", bearing: 90,
     lat: 38.0620135, lng: 23.7495232,
     cat1: 1.28, cat2: 2.55, cat3: 4.70, cat4: 7.00,
+    prices_by_direction: {
+      eastbound: { cat1: 1.28, cat2: 2.55, cat3: 4.70, cat4: 7.00 },
+      westbound: { cat1: 1.28, cat2: 2.55, cat3: 4.70, cat4: 7.00 },
+    },
     notes: "Flat-rate toll. Urban motorway — bypass via city streets adds 35+ min.",
     bypass_directions: null,
   },
@@ -1742,6 +1914,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 51,
     lat: 37.8359076, lng: 22.8079391,
     cat1: 2.00, cat2: 2.95, cat3: 7.45, cat4: 10.45,
+    prices_by_direction: {
+      northbound: { cat1: 2.00, cat2: 2.95, cat3: 7.45, cat4: 10.45 },
+      southbound: { cat1: 2.00, cat2: 2.95, cat3: 7.45, cat4: 10.45 },
+    },
     notes: "Start of Moreas motorway south of Corinth.",
     bypass_directions: {
       northbound: {
@@ -1776,6 +1952,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 32,
     lat: 37.6007682, lng: 22.4464524,
     cat1: 1.90, cat2: 2.80, cat3: 7.10, cat4: 9.95,
+    prices_by_direction: {
+      northbound: { cat1: 1.90, cat2: 2.80, cat3: 7.10, cat4: 9.95 },
+      southbound: { cat1: 1.90, cat2: 2.80, cat3: 7.10, cat4: 9.95 },
+    },
     notes: "Near ancient Mycenae. Exit for Nafplio.",
     bypass_directions: null,
   },
@@ -1789,6 +1969,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 55,
     lat: 37.2988500, lng: 22.2102678,
     cat1: 2.40, cat2: 3.45, cat3: 8.60, cat4: 12.10,
+    prices_by_direction: {
+      northbound: { cat1: 2.40, cat2: 3.45, cat3: 8.60, cat4: 12.10 },
+      southbound: { cat1: 2.40, cat2: 3.45, cat3: 8.60, cat4: 12.10 },
+    },
     notes: "Arcadian plateau. Junction for Sparta branch.",
     bypass_directions: {
       northbound: {
@@ -1823,6 +2007,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 88,
     lat: 37.3450082, lng: 22.1103072,
     cat1: 1.05, cat2: 2.10, cat3: 4.20, cat4: 6.30,
+    prices_by_direction: {
+      northbound: { cat1: 1.05, cat2: 2.10, cat3: 4.20, cat4: 6.30 },
+      southbound: { cat1: 1.05, cat2: 2.10, cat3: 4.20, cat4: 6.30 },
+    },
     notes: "Frontal toll on the A7 Lefktro branch.",
     bypass_directions: {
       northbound: {
@@ -1857,6 +2045,10 @@ const TOLL_DATA = [
     axis: "NS", bearing: 135,
     lat: 37.1368508, lng: 22.0379627,
     cat1: 1.50, cat2: 2.25, cat3: 5.65, cat4: 7.90,
+    prices_by_direction: {
+      northbound: { cat1: 1.50, cat2: 2.25, cat3: 5.65, cat4: 7.90 },
+      southbound: { cat1: 1.50, cat2: 2.25, cat3: 5.65, cat4: 7.90 },
+    },
     notes: "Southern terminus of Moreas motorway.",
     bypass_directions: {
       northbound: {

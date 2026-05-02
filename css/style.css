@@ -2965,7 +2965,7 @@ input[type="range"]::-moz-range-track {
    Each stop uses the same tier background as its cells so the mapping
    is visually obvious. */
 .routes-legend {
-  margin: 14px 0 0 0;
+  margin: 0 0 14px 0;
   display: flex;
   align-items: center;
   gap: 12px;

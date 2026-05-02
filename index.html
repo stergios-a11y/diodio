@@ -187,7 +187,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260502-0200" />
+  <link rel="stylesheet" href="css/style.css?v=20260502-0300" />
 </head>
 <body>
 
@@ -699,11 +699,10 @@
         <div class="routes-filter-summary" id="routes-filter-summary" hidden></div>
       </div>
 
-      <div id="routes-grid" class="routes-grid"></div>
-
       <!-- Heatmap legend: 5 fixed tiers from green (free / cheap per km) to
            red (expensive per km). Same scale across all vehicle categories
-           so users can compare cat1 vs cat4 visually. -->
+           so users can compare cat1 vs cat4 visually. Positioned above the
+           matrix so the colour key is visible before users start scanning. -->
       <div class="routes-legend" aria-label="Heatmap legend">
         <span class="rl-title" data-i18n="routes.legend.title">Κόστος ανά χλμ</span>
         <div class="rl-scale">
@@ -714,6 +713,8 @@
           <span class="rl-stop tier-peak"   >&gt; €0.09</span>
         </div>
       </div>
+
+      <div id="routes-grid" class="routes-grid"></div>
       <footer class="site-footer">
         <div class="site-footer-inner">
           <span class="footer-copy" data-i18n="footer.copy">© 2026 mydiodia · Στέργιος Γούσιος</span>
@@ -820,11 +821,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260502-0200"></script>
-  <script src="data/tolls.js?v=20260502-0200"></script>
-  <script src="data/routes.js?v=20260502-0200"></script>
-  <script src="js/map.js?v=20260502-0200"></script>
-  <script src="js/calculator.js?v=20260502-0200"></script>
-  <script src="js/pages.js?v=20260502-0200"></script>
+  <script src="js/i18n.js?v=20260502-0300"></script>
+  <script src="data/tolls.js?v=20260502-0300"></script>
+  <script src="data/routes.js?v=20260502-0300"></script>
+  <script src="js/map.js?v=20260502-0300"></script>
+  <script src="js/calculator.js?v=20260502-0300"></script>
+  <script src="js/pages.js?v=20260502-0300"></script>
 </body>
 </html>

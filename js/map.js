@@ -47,6 +47,55 @@ let _currentVehicleCat = (() => {
 })();
 window.getVehicleCat = () => _currentVehicleCat;
 window.getVehicleMeta = () => VEHICLE_META[_currentVehicleCat] || VEHICLE_META.cat2;
+
+// ─── Toll price accessor ─────────────────────────────────────────
+// Centralised lookup for "what does this toll charge for this vehicle in this
+// direction?" — read by map markers, the side panel, route analysis, and the
+// routes matrix. The schema (since R26) is:
+//
+//   toll.cat1..4                      flat fallback (kept for backward compat)
+//   toll.prices_by_direction = {      optional override block, populated for
+//     northbound: { cat1..4 },        all 48 frontals as of R26 (currently
+//     southbound: { cat1..4 },        with values identical to the flat
+//     ...                             fields, so behaviour is unchanged).
+//   }                                 The structure is in place so future
+//                                     per-direction divergence is a one-line
+//                                     data edit, no code change.
+//
+// Direction param is normalised: 'northbound'|'southbound'|'eastbound'|'westbound',
+// or undefined (returns flat fallback). Side tolls and bridges always have a
+// single price set since they're already direction-specific by construction
+// (a side toll IS a direction).
+window.getTollPrice = function(toll, catKey, direction) {
+  if (!toll || !catKey) return 0;
+  if (direction && toll.prices_by_direction && toll.prices_by_direction[direction]) {
+    const p = toll.prices_by_direction[direction][catKey];
+    if (typeof p === 'number') return p;
+  }
+  return typeof toll[catKey] === 'number' ? toll[catKey] : 0;
+};
+
+// Given a toll and a from→to city pair, infer which direction the driver
+// passes through this toll. Used by route analysis and the routes matrix
+// to look up direction-specific prices via getTollPrice. Returns one of
+// 'northbound'|'southbound'|'eastbound'|'westbound', or undefined if it
+// can't be determined (in which case getTollPrice falls back to flat).
+//
+// The logic uses the toll's `axis` field (set during data entry as 'NS'
+// or 'EW') and the city coordinates. For tolls without an axis (rare),
+// we infer from the toll's own bearing.
+window.directionFromCityPair = function(toll, fromCity, toCity) {
+  if (!toll || !fromCity || !toCity) return undefined;
+  const axis = toll.axis;
+  if (axis === 'NS') {
+    return toCity.lat > fromCity.lat ? 'northbound' : 'southbound';
+  }
+  if (axis === 'EW') {
+    return toCity.lng > fromCity.lng ? 'eastbound' : 'westbound';
+  }
+  return undefined;
+};
+
 window.setVehicleCat = function(cat) {
   if (!VEHICLE_META[cat] || cat === _currentVehicleCat) return;
   _currentVehicleCat = cat;
@@ -612,7 +661,7 @@ function buildHoverTooltip(toll) {
     <div class="tt-prices">
       <div class="price-cell">
         <span class="vehicle-icon">${window.getVehicleMeta().emoji}</span>
-        <span class="price-val"><span class="eur">€</span>${toll[window.getVehicleCat()].toFixed(2)}</span>
+        <span class="price-val"><span class="eur">€</span>${window.getTollPrice(toll, window.getVehicleCat()).toFixed(2)}</span>
       </div>
     </div>
     ${notes}`;
@@ -1325,7 +1374,7 @@ function openSidePanel(toll) {
       : (typeof window.bypassSideTollCost === 'function'
           ? window.bypassSideTollCost(toll, dirKey, dir)
           : { totals: {} });
-    const highwayCost = toll[catKey] || 0;
+    const highwayCost = window.getTollPrice(toll, catKey, dirKey);
     const bypassCost = isFerry ? (dir.fare[catKey] || 0) : (sideInfo.totals[catKey] || 0);
     const fmtMoney = c => `€${c.toFixed(2)}`;
 
@@ -1591,7 +1640,7 @@ function openSidePanel(toll) {
       <div class="sp-hwy-badge" style="--hwy-color:${color}">${t('hwy.' + toll.highway)}</div>
       <div class="sp-name">${primaryName}</div>
       <div class="sp-name-gr">${secondaryName}</div>
-      <div class="sp-price-row"><span><span class="sp-emoji">${window.getVehicleMeta().emoji}</span><span class="sp-vlabel">${t(window.getVehicleMeta().labelKey)}</span></span><strong>€${toll[window.getVehicleCat()].toFixed(2)}</strong></div>
+      <div class="sp-price-row"><span><span class="sp-emoji">${window.getVehicleMeta().emoji}</span><span class="sp-vlabel">${t(window.getVehicleMeta().labelKey)}</span></span><strong>€${window.getTollPrice(toll, window.getVehicleCat()).toFixed(2)}</strong></div>
     </div>
     ${
       // Hide Direction section when it's redundant — frontal toll charges both directions

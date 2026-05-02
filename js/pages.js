@@ -106,9 +106,23 @@ function buildRoutesGrid() {
     let cost = 0;
     let validTolls = 0;
     route.tolls.forEach(id => {
-      const t = tollById[id];
-      if (t && typeof t[catKey] === 'number') {
-        cost += t[catKey];
+      const tll = tollById[id];
+      if (!tll) return;
+      // Per-direction price: derived from the toll's axis and the city
+      // coordinates (NS-axis tolls get northbound/southbound based on
+      // whether the destination latitude is greater; EW-axis tolls use
+      // eastbound/westbound based on longitude). Falls back to flat
+      // cat fields when direction can't be inferred or no per-direction
+      // value is set. Today this is identical to flat for all tolls,
+      // but it's the right primitive once data diverges.
+      const dir = (typeof window.directionFromCityPair === 'function')
+        ? window.directionFromCityPair(tll, fromCity, toCity)
+        : undefined;
+      const price = (typeof window.getTollPrice === 'function')
+        ? window.getTollPrice(tll, catKey, dir)
+        : tll[catKey];
+      if (typeof price === 'number') {
+        cost += price;
         validTolls++;
       }
     });

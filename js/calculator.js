@@ -406,7 +406,9 @@ function calcVerdict(toll, catKey, timeValue, travelDirection) {
     return { verdict: 'PAY', dir: null, reasoning: t('verdict.no.bypass') };
   }
 
-  const frontalCost = toll[catKey];
+  const frontalCost = (typeof window.getTollPrice === 'function')
+    ? window.getTollPrice(toll, catKey, dirKey)
+    : toll[catKey];
   // Ferry mode (Rio-Antirrio bridge): the alternative cost is the ferry fare,
   // not a side-toll sum. Side tolls don't apply at sea piers.
   const isFerry  = dir.mode === 'ferry' && dir.fare;
@@ -508,10 +510,14 @@ window.calcTollVerdict = function(toll, catKey, timeValue) {
 window.calcTollVerdictsByDirection = function(toll, catKey, timeValue) {
   const bd = toll.bypass_directions;
   if (!bd) return {};
-  const frontalCost = toll[catKey];
   const out         = {};
   Object.entries(bd).forEach(([key, d]) => {
     if (!d) return;
+    // Per-direction frontal cost: same as flat today, but lets future
+    // asymmetric pricing flow through automatically once the data has it.
+    const frontalCost = (typeof window.getTollPrice === 'function')
+      ? window.getTollPrice(toll, catKey, key)
+      : toll[catKey];
     const sideInfo   = bypassSideTollCost(toll, key, d);
     const sideCost   = sideInfo.totals[catKey] || 0;
     const netSavings = frontalCost - sideCost;
@@ -678,7 +684,7 @@ function renderResults(a) {
     m.bindPopup(`
       <div class="map-popup">
         <div class="map-popup-name">${popupName}</div>
-        <div class="map-popup-verdict ${r.verdict}">${popupVerdict} · €${r.toll[a.catKey].toFixed(2)}</div>
+        <div class="map-popup-verdict ${r.verdict}">${popupVerdict} · €${(window.getTollPrice ? window.getTollPrice(r.toll, a.catKey, a.travelDir) : r.toll[a.catKey]).toFixed(2)}</div>
         <div class="map-popup-reason">${r.reasoning}</div>
       </div>`, { maxWidth: 220 });
     m.addTo(map);
@@ -817,7 +823,9 @@ function renderResults(a) {
   results.forEach(r => {
     const verdictLabel = t(`verdict.${r.verdict.toLowerCase().replace('_', '.')}`);
     const tollName = stripTollPrefix(lang === 'el' ? r.toll.name_gr : r.toll.name_en);
-    const frontal  = r.toll[a.catKey];
+    const frontal  = (typeof window.getTollPrice === 'function')
+      ? window.getTollPrice(r.toll, a.catKey, a.travelDir)
+      : r.toll[a.catKey];
     let cmpHtml = '';
     if (r.dir) {
       // Compute bypass cost: ferry fare for ferry mode, else side-toll sum on bypass.
