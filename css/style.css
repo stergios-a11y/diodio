@@ -4160,17 +4160,15 @@ input[type="range"]::-moz-range-track {
    ambiguity that the popup approach (R29-R36) hit.
    ════════════════════════════════════════════════════════════════ */
 
+/* On-screen: hidden completely. We don't worry about lazy image loading
+   anymore — modern browsers (Chrome 90+, Safari 14+, Firefox 90+) all
+   load <img> tags inside display:none containers normally. The
+   diagnostic in R39 confirmed images DO load with this setup, even when
+   we previously used off-screen positioning. Switching to display:none
+   simplifies the cascade and removes any chance of off-screen content
+   leaking into the print snapshot. */
 #print-view {
-  position: absolute;
-  left: -10000px;
-  top: 0;
-  width: 800px;            /* Approximate A4 width minus margins, gives layout */
-  background: white;
-  z-index: -1;
-  /* IMPORTANT: NOT display:none — the <img> tags inside need to load
-     eagerly so the maps are cached when the user prints. Some browsers
-     defer image loads in display:none containers. Off-screen positioning
-     bypasses that. */
+  display: none;
 }
 
 @media print {
@@ -4179,13 +4177,11 @@ input[type="range"]::-moz-range-track {
   body > *:not(#print-view) { display: none !important; }
   body { background: white !important; margin: 0 !important; padding: 0 !important; }
 
-  /* Reset #print-view from off-screen to in-page rendering. */
+  /* Show the print view as a normal block document. */
   #print-view {
+    display: block !important;
     position: static !important;
-    left: auto !important;
-    top: auto !important;
     width: auto !important;
-    z-index: auto !important;
     background: white !important;
     color: #1a1f2e !important;
     font-family: 'Inter', system-ui, -apple-system, 'Helvetica Neue', sans-serif !important;

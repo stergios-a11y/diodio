@@ -1499,7 +1499,7 @@ function triggerNativePrint() {
     try {
       const lines = [];
       lines.push('=== mydiodia print diagnostic ===');
-      lines.push('R39 / cache: 20260502-1600');
+      lines.push('R40 / cache: 20260502-1700');
       lines.push('');
 
       // 1. Does the view exist? Does it have content?
@@ -1575,54 +1575,9 @@ function triggerNativePrint() {
     return;
   }
 
-  // Snapshot original inline styles of every direct body child so we can
-  // restore them after print. We use direct children only (not deep) to
-  // avoid touching anything inside the print view itself.
-  const bodyChildren = Array.from(document.body.children);
-  const snapshots = bodyChildren.map(el => ({ el, style: el.getAttribute('style') }));
-
-  // Hide everything except #print-view, and reposition #print-view in-flow.
-  bodyChildren.forEach(el => {
-    if (el === view) {
-      // Re-show the print view in normal flow with white background.
-      el.setAttribute('style',
-        'position:static !important;' +
-        'left:auto !important;' +
-        'top:auto !important;' +
-        'width:auto !important;' +
-        'z-index:auto !important;' +
-        'background:white !important;' +
-        'color:#1a1f2e !important;' +
-        'visibility:visible !important;' +
-        'padding:0 !important;' +
-        'margin:0 !important;'
-      );
-    } else {
-      // Hide everything else.
-      el.setAttribute('style', (el.getAttribute('style') || '') + ';display:none !important;');
-    }
-  });
-
-  // Restore inline styles after the user dismisses the print dialog.
-  // afterprint fires whether the user prints, cancels, or saves to PDF.
-  const restore = () => {
-    snapshots.forEach(({ el, style }) => {
-      if (style === null) el.removeAttribute('style');
-      else el.setAttribute('style', style);
-    });
-    window.removeEventListener('afterprint', restore);
-  };
-  window.addEventListener('afterprint', restore);
-  // Belt-and-braces: also restore after a long timeout in case afterprint
-  // never fires (some embedded browsers / older Safari).
-  setTimeout(() => {
-    if (bodyChildren.some(el => el !== view && (el.getAttribute('style') || '').includes('display:none !important'))) {
-      restore();
-    }
-  }, 60000);
-
-  // 50ms tick before print() so any layout/repaint after the style swap
-  // settles before the snapshot is taken.
+  // Just call print(). The @media print CSS rules in style.css handle
+  // hiding everything else and showing #print-view. The 50ms tick lets
+  // any pending layout settle before the print snapshot is taken.
   setTimeout(() => window.print(), 50);
 }
 
