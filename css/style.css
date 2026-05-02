@@ -4250,79 +4250,77 @@ input[type="range"]::-moz-range-track {
    pinch / scroll wheel. (Originally hidden only on mobile via line 3299.) */
 .leaflet-control-zoom { display: none !important; }
 
-/* Vehicle pills — segmented control. The thumb is an absolutely-positioned
-   pill that slides between options based on data-active="0..3" on the
-   parent. Each .fp-pill is a transparent button overlaying the thumb. */
+/* Vehicle pills — segmented control (R50).
+   The selected pill expands to fit emoji + label; the other three
+   shrink to show only their emoji. Total width stays at 100% of the
+   container — sum of widths is constant, what changes is how that
+   width is divided.
+   The active pill carries the brand-blue background and white text.
+   Click any pill to make it active; CSS animates the flex sizing for
+   a smooth grow/shrink transition. */
 .fp-pills {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   background: var(--paper-2);
   border-radius: 999px;
   padding: 4px;
-  isolation: isolate;
+  gap: 2px;
 }
-.fp-pills-thumb {
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
-  width: calc((100% - 8px) / 4);
-  /* R45: was var(--ink) (near-black) which felt heavy. Brand blue ties
-     into the route polylines and verdict colors elsewhere on the site. */
-  background: var(--aegean);
-  border-radius: 999px;
-  transition: transform 220ms cubic-bezier(.2, .8, .2, 1);
-  z-index: 0;
-}
-.fp-pills[data-active="0"] .fp-pills-thumb { transform: translateX(0); }
-.fp-pills[data-active="1"] .fp-pills-thumb { transform: translateX(100%); }
-.fp-pills[data-active="2"] .fp-pills-thumb { transform: translateX(200%); }
-.fp-pills[data-active="3"] .fp-pills-thumb { transform: translateX(300%); }
 
 .fp-pill {
-  position: relative;
-  z-index: 1;
+  /* Default (inactive): just enough room for the emoji, equal share
+     among the three inactive pills. flex: 1 1 0 means "grow equally
+     to fill remaining space, with 0 base size". */
+  flex: 1 1 0;
+  min-width: 0;
   background: transparent;
   border: 0;
-  padding: 8px 4px;
+  padding: 8px 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
   font-family: var(--font-body);
-  /* R49: was 0.78rem (~12px); shrunk to 0.72rem (~11px) so long labels
-     like "Αυτοκίνητο" fit without truncation in the 380px panel width. */
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 500;
   color: var(--ink);
   cursor: pointer;
   border-radius: 999px;
-  transition: color 220ms ease;
-  /* Truncate long labels on narrow screens rather than overflow the pill. */
-  min-width: 0;
-}
-.fp-pill .fp-pill-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
+  transition: flex 260ms cubic-bezier(.2, .8, .2, 1),
+              padding 260ms cubic-bezier(.2, .8, .2, 1),
+              background-color 200ms ease,
+              color 200ms ease;
 }
 .fp-pill .fp-pill-icon {
   flex-shrink: 0;
   font-size: 16px;
   line-height: 1;
-  /* Emoji on macOS Safari sometimes renders with awkward vertical alignment;
-     this baseline tweak keeps the icon centered next to the label. */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 18px;
   height: 18px;
 }
-.fp-pill.is-active {
-  color: var(--paper);
+/* Inactive pills: hide the label (still readable to screen readers via
+   aria-label on the button). The emoji centers naturally. */
+.fp-pill .fp-pill-label {
+  white-space: nowrap;
+  overflow: hidden;
+  display: none;
 }
+
+/* Active pill: grow to fit emoji + label naturally, brand blue
+   background, white text. flex: 0 1 auto = "don't grow past content,
+   shrink if needed, base size = content's intrinsic width". */
+.fp-pill.is-active {
+  flex: 0 1 auto;
+  background: var(--aegean);
+  color: var(--paper);
+  padding: 8px 14px;
+}
+.fp-pill.is-active .fp-pill-label {
+  display: inline;
+}
+
 .fp-pill:focus-visible {
   outline: 2px solid var(--aegean);
   outline-offset: 2px;
@@ -4472,7 +4470,11 @@ body.panel-open #bottom-bar { display: none !important; }
   .fp-pill {
     font-size: 0.72rem;
     gap: 3px;
-    padding: 7px 2px;
+    padding: 7px 0;
+  }
+  /* Mobile active pill: keep label-friendly padding so the name fits. */
+  .fp-pill.is-active {
+    padding: 7px 12px;
   }
   .fp-pill .fp-pill-icon {
     font-size: 14px;
