@@ -1470,32 +1470,75 @@ function downloadPrintViewAsText(filenameStem) {
 //
 // HISTORY:
 // - R27/R28: window.print() with @media print stylesheet on main page.
-//   Fragile due to display:none + cascade interactions.
-// - R29-R36: opened a popup (about:blank) and wrote a self-contained HTML
-//   document into it. Worked for text but maps consistently failed because
-//   about:blank popups don't reliably send a referrer header that Mapbox's
-//   URL-restricted token accepts.
-// - R37 (current): back to native window.print() with @media print, but
-//   this time with proper off-screen positioning that survives the print
-//   cascade. Maps load in the main window where mydiodia.gr referrer is
-//   sent correctly, and they're already cached by print time. The print
-//   stylesheet just shows them.
+// - R29-R36: popup window. Failed because Mapbox token rejects about:blank
+//   referrer; couldn't reliably get maps to load in popup context.
+// - R37: back to native window.print() with @media print stylesheet.
+//   Failed if style.css didn't get deployed alongside calculator.js —
+//   #print-view stayed off-screen and print preview was blank.
+// - R38 (current): native window.print() but driven by JS, not CSS-only.
+//   Inline styles applied at print time hide everything except #print-view
+//   and restore it to in-page positioning. Same effect as @media print
+//   but works regardless of CSS deploy state. The CSS @media print rules
+//   stay as belt-and-braces.
 //
-// The download button still walks #print-view's DOM as plain text — that
-// part hasn't changed.
+// Key invariant: maps must already be loaded in the main window when
+// print() fires. The off-screen positioning of #print-view (vs display:none)
+// ensures images load eagerly during render.
 function triggerNativePrint() {
   const view = document.getElementById('print-view');
   if (!view || !view.innerHTML.trim()) {
     // Nothing to print yet — analysis hasn't populated the view.
     return;
   }
-  // The maps are already loaded in the main window (via the <img> tags in
-  // #print-view, which load eagerly even though the parent has display:none
-  // because it's actually positioned off-screen, not display:none — see
-  // style.css). Just call print() and let @media print handle the rest.
-  //
-  // We give a tiny tick before print so any in-flight image load can
-  // finish painting before the snapshot is taken.
+
+  // Snapshot original inline styles of every direct body child so we can
+  // restore them after print. We use direct children only (not deep) to
+  // avoid touching anything inside the print view itself.
+  const bodyChildren = Array.from(document.body.children);
+  const snapshots = bodyChildren.map(el => ({ el, style: el.getAttribute('style') }));
+
+  // Hide everything except #print-view, and reposition #print-view in-flow.
+  bodyChildren.forEach(el => {
+    if (el === view) {
+      // Re-show the print view in normal flow with white background.
+      el.setAttribute('style',
+        'position:static !important;' +
+        'left:auto !important;' +
+        'top:auto !important;' +
+        'width:auto !important;' +
+        'z-index:auto !important;' +
+        'background:white !important;' +
+        'color:#1a1f2e !important;' +
+        'visibility:visible !important;' +
+        'padding:0 !important;' +
+        'margin:0 !important;'
+      );
+    } else {
+      // Hide everything else.
+      el.setAttribute('style', (el.getAttribute('style') || '') + ';display:none !important;');
+    }
+  });
+
+  // Restore inline styles after the user dismisses the print dialog.
+  // afterprint fires whether the user prints, cancels, or saves to PDF.
+  const restore = () => {
+    snapshots.forEach(({ el, style }) => {
+      if (style === null) el.removeAttribute('style');
+      else el.setAttribute('style', style);
+    });
+    window.removeEventListener('afterprint', restore);
+  };
+  window.addEventListener('afterprint', restore);
+  // Belt-and-braces: also restore after a long timeout in case afterprint
+  // never fires (some embedded browsers / older Safari).
+  setTimeout(() => {
+    if (bodyChildren.some(el => el !== view && (el.getAttribute('style') || '').includes('display:none !important'))) {
+      restore();
+    }
+  }, 60000);
+
+  // 50ms tick before print() so any layout/repaint after the style swap
+  // settles before the snapshot is taken.
   setTimeout(() => window.print(), 50);
 }
 
