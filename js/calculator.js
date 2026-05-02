@@ -1458,22 +1458,31 @@ function printDocument() {
     return;
   }
 
-  // R41 quick diagnostic — confirms the new code is what's actually deployed.
-  // Will be removed once we confirm working print. Skip via:
-  //   window._mydiodiaSkipDiag = true
-  if (!window._mydiodiaSkipDiag) {
-    const proceed = confirm(
-      'mydiodia print R41 / cache 20260502-1800\n' +
-      '\n' +
-      'About to open a popup window with the print view.\n' +
-      'Maps are temporarily disabled — text only.\n' +
-      '\n' +
-      'innerHTML.length: ' + view.innerHTML.length + '\n' +
-      'children: ' + view.children.length + '\n' +
-      '\n' +
-      '--- OK to proceed, Cancel to abort ---'
-    );
-    if (!proceed) return;
+  // R42: refresh the advice paragraph from the live panel just before
+  // printing. The print view is built early in renderResults() (and
+  // again after bypass-route refinement), but BOTH of those moments
+  // happen before the async AI summary fetch completes. So the print
+  // view's <p class="pv-advice"> ends up with the loading-state
+  // placeholder ("—"), which is what the user saw printed under
+  // "Συμβουλή".
+  //
+  // By the time the user clicks Print (typically several seconds
+  // after analyze), the panel's #rp-advice-el has the real advice
+  // text. We just copy it across into the print view's advice paragraph
+  // before opening the popup.
+  const liveAdviceEl = document.getElementById('rp-advice-el');
+  if (liveAdviceEl) {
+    const liveText = liveAdviceEl.textContent.trim();
+    const isStillLoading = !liveText || liveText.includes(t('rp.advice.loading'));
+    if (!isStillLoading) {
+      const printAdviceP = view.querySelector('.pv-advice p');
+      if (printAdviceP) {
+        // Strip the leading "💡 " emoji prefix the panel uses; the print
+        // view doesn't use the emoji because it doesn't render reliably
+        // on all printers.
+        printAdviceP.textContent = liveText.replace(/^💡\s*/, '');
+      }
+    }
   }
 
   const w = window.open('', '_blank', 'width=820,height=1000');
