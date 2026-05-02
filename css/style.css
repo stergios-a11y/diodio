@@ -2113,6 +2113,46 @@ input[type="range"]::-moz-range-track {
 }
 .rp-close:hover { background: var(--stop-bg); border-color: var(--stop); color: var(--stop); }
 
+/* Take-away action buttons (print, download). Sit in the header next to
+   the close button. Quiet outlined style — they're secondary actions, the
+   primary focus is the toll-list content below. R45: previously unstyled
+   and rendering with browser-default chunky chrome that clashed with the
+   rest of the panel. Now match the design vocabulary of .rp-close + the
+   floating panel — 1px border, subtle hover, tabular-numeric padding. */
+.rp-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.rp-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  transition: all 0.15s var(--ease);
+  white-space: nowrap;
+}
+.rp-action:hover {
+  background: var(--aegean-lt);
+  border-color: var(--aegean);
+  color: var(--aegean);
+}
+.rp-action svg { flex-shrink: 0; }
+/* When .rp-actions is followed by .rp-close, drop margin-left:auto on
+   .rp-actions so they stack inline cleanly to the right of .rp-stats. */
+.rp-head .rp-actions + .rp-close { margin-left: 0; }
+
 .rp-body {
   flex: 1;
   overflow-y: auto;
@@ -4211,7 +4251,9 @@ input[type="range"]::-moz-range-track {
   bottom: 4px;
   left: 4px;
   width: calc((100% - 8px) / 4);
-  background: var(--ink);
+  /* R45: was var(--ink) (near-black) which felt heavy. Brand blue ties
+     into the route polylines and verdict colors elsewhere on the site. */
+  background: var(--aegean);
   border-radius: 999px;
   transition: transform 220ms cubic-bezier(.2, .8, .2, 1);
   z-index: 0;
@@ -4426,4 +4468,106 @@ body.panel-open #bottom-bar { display: none !important; }
 @media (max-width: 380px) {
   .fp-pill .fp-pill-label { display: none; }
   .fp-pill { padding: 9px 0; }
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   RESULTS PANEL — desktop floating window (R45)
+   ────────────────────────────────────────────────────────────────
+   On viewports ≥ 720px the results panel is a fixed-size window in the
+   top-right corner instead of a full-width slide-up sheet. Mirrors the
+   floating control panel at top-left for visual symmetry. Mobile keeps
+   the slide-up sheet pattern (better for thumb reach + small screens).
+
+   Also harmonises the panel chrome with the floating control panel:
+   flat white surface, soft shadow, 1px borders, 16px radius — same
+   visual vocabulary across the site.
+   ════════════════════════════════════════════════════════════════ */
+@media (min-width: 720px) {
+  #results-panel {
+    /* Top-right floating window. Width chosen to fit toll-list chips
+       at one-per-row without horizontal scroll. Internal scroll handles
+       long routes. */
+    top: calc(var(--topbar-h) + 12px);
+    right: 12px;
+    bottom: auto;
+    left: auto;
+    width: 420px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - var(--topbar-h) - 24px);
+
+    /* Match the floating control panel's chrome — flat white card with
+       1px border, 16px radius, soft drop shadow. The original styles
+       had a top-only border + bottom-emerging shadow that suited the
+       slide-up sheet, but look orphaned as a free-floating window. */
+    background: var(--paper);
+    border: 1px solid var(--line-strong);
+    border-top: 1px solid var(--line-strong); /* override the slide-up specific */
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(26, 31, 46, 0.12), 0 2px 6px rgba(26, 31, 46, 0.06);
+    overflow: hidden; /* clip rounded corners cleanly when content scrolls */
+
+    /* Slide in from the right instead of up from the bottom. */
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.32s var(--ease), opacity 0.2s var(--ease);
+  }
+  #results-panel.open {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  /* Header chrome: flat instead of gradient. Border-bottom stays for
+     visual section separation. */
+  #results-panel .rp-head {
+    background: var(--paper);
+    padding: 12px 16px;
+    gap: 10px;
+  }
+  #results-panel .rp-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  /* Body / scroll area: comfortable padding, internal scroll for long
+     toll lists. .rp-chips and .rp-stats provide their own internal
+     padding by default; we zero those out here so padding doesn't
+     compound inside the narrow window. */
+  #results-panel .rp-body {
+    padding: 0;
+    overflow-y: auto;
+  }
+  #results-panel .rp-chips {
+    padding: 12px 16px 16px 16px;
+  }
+  /* In the narrow desktop window the default min-width: 260px max-width: 360px
+     forces chips into a single column. Relax to fit comfortably one-per-row
+     using full container width. */
+  #results-panel .toll-chip {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  /* Stats: stack instead of horizontal flex on the narrow window. The
+     existing .rp-cmp grid layout works fine inside this width. */
+  #results-panel .rp-stats {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  /* Floating control panel STAYS visible when the results window opens —
+     they don't overlap (top-left vs top-right) and the user may want to
+     tweak vehicle/tolerance and re-analyse without closing results.
+     Override the universal `body.panel-open #bottom-bar { display: none }`
+     rule we added in R43. */
+  body.panel-open #bottom-bar { display: flex !important; }
+
+  /* The highway-filter legend at top-right would overlap the results
+     panel which now sits in the same corner. Hide it when results is
+     open. (Already hidden on mobile via the < 720px media query elsewhere
+     in this file; this just extends that to desktop.) */
+  body.panel-open #legend { display: none; }
 }

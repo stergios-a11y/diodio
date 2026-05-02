@@ -38,13 +38,13 @@ const STRINGS = {
     'sp.bypass':               'Παράκαμψη',
     'sp.no.bypass':            '⛔ Δεν υπάρχει πρακτική παράκαμψη για αυτό το διόδιο.',
     'sp.bypass.options':       '🟢 Επιλογές παράκαμψης',
-    'sp.motorcycle':           'Μοτοσικλέτα',
+    'sp.motorcycle':           'Μοτο',
     'sp.car':                  'Αυτοκίνητο',
     'sp.van':                  'Ελαφρύ φορτηγό / Βαν',
     'sp.truck':                'Βαρύ φορτηγό',
     /* Compact full names for the topbar vehicle dropdown — these need
        to fit inside the trigger button without crowding the topbar. */
-    'veh.full.cat1':           'Μοτοσικλέτα',
+    'veh.full.cat1':           'Μοτο',
     'veh.full.cat2':           'Αυτοκίνητο',
     'veh.full.cat3':           'Βαν',
     'veh.full.cat4':           'Φορτηγό',
@@ -259,13 +259,13 @@ const STRINGS = {
     'sp.bypass':               'Bypass',
     'sp.no.bypass':            '⛔ No practical bypass available for this toll.',
     'sp.bypass.options':       '🟢 Bypass options',
-    'sp.motorcycle':           'Motorcycle',
+    'sp.motorcycle':           'Bike',
     'sp.car':                  'Car',
     'sp.van':                  'Light truck / Van',
     'sp.truck':                'Heavy truck',
     /* Compact full names for the topbar vehicle dropdown — these need
        to fit inside the trigger button without crowding the topbar. */
-    'veh.full.cat1':           'Motorcycle',
+    'veh.full.cat1':           'Bike',
     'veh.full.cat2':           'Car',
     'veh.full.cat3':           'Van',
     'veh.full.cat4':           'Truck',
