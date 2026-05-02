@@ -3434,8 +3434,10 @@ input[type="range"]::-moz-range-track {
   }
 
   #bottom-bar {
+    /* R48: removed `min-height: var(--bar-h)` (was 72px). The new
+       floating-panel design is vertical and wants to size to content;
+       the old min-height was for the original horizontal strip. */
     height: auto;
-    min-height: var(--bar-h);
     flex-wrap: wrap;
     padding: 8px 10px;
     gap: 6px;
@@ -4207,23 +4209,20 @@ input[type="range"]::-moz-range-track {
    ════════════════════════════════════════════════════════════════ */
 
 #bottom-bar {
-  /* Desktop: pinned to top-left under the topbar, narrow card.
-     Mobile: see media query below — repositions to bottom-centered for
-     thumb-reach on phones. */
+  /* R48: panel sized strictly to its content. !important on height
+     properties because earlier rules (line 1480 height: var(--bar-h))
+     and the mobile media query (min-height: var(--bar-h)) were
+     potentially leaking through cascade in some browser/state combos.
+     Belt and suspenders: explicit values + !important. */
   position: fixed;
   top: calc(var(--topbar-h, 56px) + 12px);
   left: 12px;
   z-index: 500;
   width: 380px;
   max-width: calc(100vw - 24px);
-  height: auto;
-  /* R46: explicit max-height so the panel never extends beyond ~half the
-     viewport. Without this, on a short laptop viewport the panel can feel
-     like it dominates the whole left edge. The content is short enough
-     that internal scroll should never engage in normal use, but it's a
-     defensive guard. */
-  max-height: 50vh;
-  overflow-y: auto;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
   background: var(--paper);
   border: 1px solid var(--line-strong);
   border-radius: 16px;
@@ -4231,10 +4230,12 @@ input[type="range"]::-moz-range-track {
   box-shadow: 0 8px 24px rgba(26, 31, 46, 0.12), 0 2px 6px rgba(26, 31, 46, 0.06);
   display: flex;
   flex-direction: column;
-  /* R46: tightened from 10px → 8px so the panel renders more compactly. */
   gap: 8px;
   align-items: stretch;
 }
+/* Defensive: any direct child of #bottom-bar gets flex: 0 0 auto so it
+   contributes its natural height, never grows. */
+#bottom-bar > * { flex: 0 0 auto !important; }
 
 /* The Leaflet zoom buttons live in the top-left by default — same place we
    want our floating panel. Remove them globally; users can still zoom via
@@ -4419,8 +4420,15 @@ input[type="range"]::-moz-range-track {
   transform: rotate(180deg);
 }
 .fp-analyse {
+  /* R48: full width on its own row in the floating panel. */
+  width: 100%;
   flex-shrink: 0;
   height: 40px;
+  /* Override the .analyse-btn justify-content default so the spinner+
+     text are centered. .analyse-btn uses display: flex; align-items:
+     center but defaults to justify-content: flex-start which would
+     pin content to the left now that the button spans full width. */
+  justify-content: center;
   /* All other analyse-btn styling cascades from the existing .analyse-btn
      rule earlier in this file (gradient, hover, etc.). We only override
      the height/padding for the floating-panel context. */

@@ -187,7 +187,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260502-2300" />
+  <link rel="stylesheet" href="css/style.css?v=20260502-2500" />
 </head>
 <body>
 
@@ -638,18 +638,22 @@
          current value in words (hurry / balanced / thrifty / frugal). -->
     <div class="fp-slider-tier"><span id="tv-tier"></span></div>
 
-    <!-- Row 4: origin → destination + analyse button. -->
+    <!-- Row 4: origin → destination. Inputs share the row with the swap
+         button. The Ανάλυση button moved to its own row below in R48 so
+         the inputs have full width and don't truncate the placeholder. -->
     <div class="fp-route-row">
       <input class="fp-input" id="origin" placeholder="πχ Αθήνα" autocomplete="off"
              data-i18n-aria-label="aria.origin" data-i18n-placeholder="bar.origin.placeholder" />
       <button class="fp-swap" id="swap-btn" data-i18n-title="bar.swap" title="Αντιστροφή διαδρομής" aria-label="swap">⇄</button>
       <input class="fp-input" id="dest" placeholder="πχ Λάρισα" autocomplete="off"
              data-i18n-aria-label="aria.dest" data-i18n-placeholder="bar.dest.placeholder" />
-      <button class="fp-analyse analyse-btn" id="analyse-btn" type="button" onclick="analyze()">
-        <div class="btn-spinner"></div>
-        <span id="btn-text" data-i18n="bar.analyse">Ανάλυση</span>
-      </button>
     </div>
+
+    <!-- Row 5: Ανάλυση button, full width on its own row. -->
+    <button class="fp-analyse analyse-btn" id="analyse-btn" type="button" onclick="analyze()">
+      <div class="btn-spinner"></div>
+      <span id="btn-text" data-i18n="bar.analyse">Ανάλυση</span>
+    </button>
 
     <div class="error-pill" id="error-pill"></div>
 
@@ -848,11 +852,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260502-2300"></script>
-  <script src="data/tolls.js?v=20260502-2300"></script>
-  <script src="data/routes.js?v=20260502-2300"></script>
-  <script src="js/map.js?v=20260502-2300"></script>
-  <script src="js/calculator.js?v=20260502-2300"></script>
-  <script src="js/pages.js?v=20260502-2300"></script>
+  <script src="js/i18n.js?v=20260502-2500"></script>
+  <script src="data/tolls.js?v=20260502-2500"></script>
+  <script src="data/routes.js?v=20260502-2500"></script>
+  <script src="js/map.js?v=20260502-2500"></script>
+  <script src="js/calculator.js?v=20260502-2500"></script>
+  <script src="js/pages.js?v=20260502-2500"></script>
 </body>
 </html>
