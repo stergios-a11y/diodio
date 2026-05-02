@@ -794,7 +794,10 @@ function renderResults(a) {
       let panelReplacedHwy = 0;
       // Build a tollId → instructions[] map; the print view renderer reads
       // this lazily off the analysis object.
+      // R32: also capture the bypass route's coords for use in the per-toll
+      // printed map. Stored on a separate map so the steps lookup stays clean.
       a.bypassSteps = a.bypassSteps || {};
+      a.bypassCoords = a.bypassCoords || {};
       fetchable.forEach((r, i) => {
         const route = routes[i];
         if (!route) return;
@@ -813,6 +816,9 @@ function renderResults(a) {
         // an AVOID without us refetching.
         if (Array.isArray(route.instructions)) {
           a.bypassSteps[r.toll.id] = route.instructions;
+        }
+        if (Array.isArray(route.coords)) {
+          a.bypassCoords[r.toll.id] = route.coords;
         }
         // Update this chip's km cells in place. Now that motorway is row 0 and
         // bypass is row 1, write km into distCells[1] (bypass) and distCells[2] (diff).
@@ -1056,6 +1062,66 @@ function buildStaticMapUrl(coords, from, to, tollMarkers) {
   return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${overlays}/auto/600x600@2x?access_token=${token}`;
 }
 
+// Build a Mapbox Static Images URL for a SINGLE TOLL'S BYPASS — small map
+// embedded in each toll's printed section showing the local bypass detour.
+//
+// Inputs:
+//   toll        — the toll record (uses lat/lng for the toll's own pin)
+//   dir         — the bypass_directions entry (off_ramp, on_ramp, etc.)
+//   bypassCoords — the actual local-road polyline from the Mapbox bypass route
+//                  fetch, [[lat,lng], ...]. Optional — when missing, we draw
+//                  straight lines between off_ramp / via / on_ramp anchors as
+//                  a fallback (less accurate but conveys the gist).
+// Returns a URL string, or null if essential data is missing.
+//
+// What's drawn:
+//   - Toll location: red pin labeled € (the thing being skipped)
+//   - Bypass polyline: green path (the route the driver actually takes)
+//   - Off-ramp: small green pin labeled "1" (where to leave the highway)
+//   - On-ramp: small green pin labeled "2" (where to rejoin)
+//
+// We don't draw the highway segment as a separate path — the toll pin
+// shows the user where they'd exit/skip; redundant geometry crowds the
+// thumbnail.
+function buildBypassMapUrl(toll, dir, bypassCoords) {
+  if (!toll || !dir || !dir.off_ramp || !dir.on_ramp) return null;
+  const token = (typeof MAPBOX_TOKEN !== 'undefined' && MAPBOX_TOKEN)
+    || (typeof window !== 'undefined' && window.MAPBOX_TOKEN);
+  if (!token) return null;
+
+  // Bypass polyline. Prefer the real Mapbox geometry; fall back to straight
+  // lines between anchor points if the route fetch hadn't completed by print
+  // time. The fallback is ugly but at least shows the spatial relationship.
+  let coords;
+  if (Array.isArray(bypassCoords) && bypassCoords.length >= 2) {
+    coords = decimatePolyline(bypassCoords, 50);
+  } else {
+    coords = [
+      [dir.off_ramp.lat, dir.off_ramp.lng],
+      ...((dir.via || []).map(p => [p.lat, p.lng])),
+      [dir.on_ramp.lat, dir.on_ramp.lng],
+    ];
+  }
+  const polyline = encodePolyline(coords);
+  // Path: --go (green), opacity 0.85, stroke 4. Reads as "this is the path
+  // you'll take" — green being the verdict color for AVOID.
+  const path = `path-4+2e7a4a-0.85(${encodeURIComponent(polyline)})`;
+
+  // Toll pin: red (--stop), no label needed — color signals "the thing
+  // you're skipping". pin-m for medium prominence vs the small ramp pins.
+  const tollPin = `pin-m+b8502d(${toll.lng.toFixed(5)},${toll.lat.toFixed(5)})`;
+
+  // Off-ramp ("1") and on-ramp ("2") pins, small green to match the path.
+  const offPin = `pin-s-1+2e7a4a(${dir.off_ramp.lng.toFixed(5)},${dir.off_ramp.lat.toFixed(5)})`;
+  const onPin  = `pin-s-2+2e7a4a(${dir.on_ramp.lng.toFixed(5)},${dir.on_ramp.lat.toFixed(5)})`;
+
+  const overlays = [path, tollPin, offPin, onPin].join(',');
+
+  // 450×350@2x = 900×700 actual; at 45mm × 35mm print width that's ~500 DPI.
+  // Slightly landscape because most bypasses are wider than tall.
+  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${overlays}/auto/450x350@2x?access_token=${token}`;
+}
+
 function buildPrintView(a, results, stats) {
   const view = document.getElementById('print-view');
   if (!view) return;
@@ -1212,8 +1278,22 @@ function buildPrintView(a, results, stats) {
         </ol>`;
     }
 
+    // R32: per-toll bypass map. Only shown for AVOID-side tolls — the user
+    // is going to drive the bypass, so a localized map of it is useful.
+    // PAY tolls don't get a map (they're staying on the highway, no bypass
+    // to visualize). Falls back gracefully if the toll has no bypass info
+    // or if the route fetch hasn't completed.
+    const isAvoidSide = (r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID');
+    const bypassMapUrl = isAvoidSide
+      ? buildBypassMapUrl(r.toll, r.dir, a.bypassCoords?.[r.toll.id])
+      : null;
+    const bypassMapHtml = bypassMapUrl
+      ? `<aside class="pv-toll-map"><img src="${escapeHtml(bypassMapUrl)}" alt="" data-print-asset="bypass-map" /></aside>`
+      : '';
+
     return `
       <div class="pv-toll pv-toll--${r.verdict.toLowerCase()}">
+        ${bypassMapHtml}
         <div class="pv-toll-head">
           <span class="pv-toll-num">${idx + 1}.</span>
           <span class="pv-toll-name">${escapeHtml(name)}</span>
@@ -1240,26 +1320,7 @@ function buildPrintView(a, results, stats) {
     ? adviceText.replace(/^💡\s*/, '')
     : '—';
 
-  // Build the static-map thumbnail URL. Toll pins use the result index so
-  // the printed map's numbered pins line up with the numbered toll list
-  // below — driver can match "pin 3 on the map" to "item 3 in the list".
-  // If route data is missing (rare), the helper returns null and we skip
-  // the map block entirely; document still prints fine without it.
-  const tollMarkers = results.map((r, i) => ({
-    lat: r.toll.lat,
-    lng: r.toll.lng,
-    verdict: r.verdict,
-    index: i + 1,
-  }));
-  const mapUrl = buildStaticMapUrl(a.routeCoords, a.fromCoord, a.toCoord, tollMarkers);
-  // The data-print-asset attribute marks the <img> so openPrintWindow can
-  // wait for it to load before triggering the print dialog.
-  const mapHtml = mapUrl
-    ? `<aside class="pv-map"><img src="${escapeHtml(mapUrl)}" alt="${escapeHtml(a.origin + ' → ' + a.dest)}" data-print-asset="map" /></aside>`
-    : '';
-
   view.innerHTML = `
-    ${mapHtml}
     <header class="pv-head">
       <div class="pv-brand">mydiodia.gr</div>
       <h1 class="pv-h1">${t('print.title')}</h1>
@@ -1481,25 +1542,25 @@ function openPrintWindow() {
   .pv-step-dist { color: #8a8f9e; font-size: 8.5pt; font-variant-numeric: tabular-nums; }
   .pv-foot { margin-top: 18pt; padding-top: 8pt; border-top: 1px solid #ddd5bf; font-size: 8pt; color: #8a8f9e; text-align: center; }
 
-  /* Static-map thumbnail. Float-right so the route header and meta lines
-     wrap around its left side. The summary table is full-width below it
-     because pv-summary's h2 has top margin > the map's height in normal
-     cases — and we put a clear:right on h2s downstream just in case the
-     header is short. Fixed 60mm × 60mm = 1/3 of an A4's printable width;
-     image is requested at 2x for sharpness. */
-  .pv-map {
+  /* Per-toll bypass map. Floats right within the toll section, with the
+     section's text content (route line, body, step list) wrapping around
+     its left side. Sized 45mm × 35mm — a focused thumbnail of the local
+     bypass detour, not a route overview. Each section's clear:right makes
+     sure the next section starts cleanly below, even when this section's
+     text is short. */
+  .pv-toll { clear: right; }
+  .pv-toll-map {
     float: right;
-    width: 60mm;
-    height: 60mm;
-    margin: 0 0 8pt 12pt;
+    width: 45mm;
+    height: 35mm;
+    margin: 0 0 4pt 8pt;
     border: 1px solid #ddd5bf;
     border-radius: 3pt;
     overflow: hidden;
     background: #f3eedf;
   }
-  .pv-map img { width: 100%; height: 100%; display: block; object-fit: cover; }
-  /* Once we're past the toll list, clear any remaining float so the
-     footer isn't pushed against the map. */
+  .pv-toll-map img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  /* Footer always clears any trailing floats from the last toll section. */
   .pv-foot { clear: both; }
 
   /* Force color rendering even on grayscale-default Chrome */
