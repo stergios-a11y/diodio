@@ -2094,7 +2094,6 @@ input[type="range"]::-moz-range-track {
   }
 }
 .rp-close {
-  margin-left: auto;
   background: transparent;
   border: 1px solid var(--line);
   color: var(--muted);
@@ -2107,6 +2106,49 @@ input[type="range"]::-moz-range-track {
   flex-shrink: 0;
 }
 .rp-close:hover { background: var(--stop-bg); border-color: var(--stop); color: var(--stop); }
+
+/* Take-away action buttons (Print / Download) — positioned right of stats,
+   left of the close button. Use the same compact pill aesthetic as rp-close
+   but with the aegean accent so they read as positive actions, not destructive
+   ones. The icon-plus-label format works on both desktop (where there's room)
+   and mobile (where the label hides via media query). */
+.rp-actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.rp-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  transition: all 0.15s var(--ease);
+}
+.rp-action:hover {
+  background: var(--aegean-lt);
+  border-color: var(--aegean);
+  color: var(--aegean-dark);
+}
+.rp-action svg {
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+@media (max-width: 640px) {
+  /* Mobile: icon-only to save space; the title attribute carries the label */
+  .rp-action span { display: none; }
+  .rp-action { padding: 6px 8px; }
+}
 
 .rp-body {
   flex: 1;
@@ -4387,4 +4429,194 @@ input[type="range"]::-moz-range-track {
    ══════════════════════════════════════ */
 .toll-marker-bumped {
   width: 16px; height: 16px;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PRINT VIEW
+   ─────────────────────────────────────────────────────────────────
+   The #print-view element is built by calculator.js on every analyze
+   and held off-screen. Hidden on regular screens, swapped to the only
+   visible thing under @media print so the user gets a clean document
+   without map chrome, sidebars, or interactive controls.
+   ════════════════════════════════════════════════════════════════ */
+
+#print-view { display: none; }
+
+@media print {
+  /* Hide everything by default, then re-show the print view. Cleaner than
+     hiding each non-print element individually because new chrome added in
+     future rounds doesn't break the printed page. */
+  body > *:not(#print-view) { display: none !important; }
+  #print-view {
+    display: block !important;
+    position: static !important;
+    background: white !important;
+    color: #1a1f2e !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-size: 10pt !important;
+    line-height: 1.45 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  /* Page-level: A4 with reasonable margins. Browsers without @page support
+     ignore this gracefully. */
+  @page { margin: 18mm 16mm; size: A4; }
+
+  /* Header — brand wordmark, document title, route summary */
+  .pv-head {
+    margin-bottom: 14pt;
+    padding-bottom: 10pt;
+    border-bottom: 2px solid #1a1f2e;
+  }
+  .pv-brand {
+    font-size: 9pt;
+    letter-spacing: 0.06em;
+    color: #5e6578;
+    text-transform: uppercase;
+    margin-bottom: 4pt;
+  }
+  .pv-h1 {
+    font-size: 16pt;
+    font-weight: 700;
+    margin: 0 0 2pt 0;
+    letter-spacing: -0.02em;
+  }
+  .pv-route {
+    font-size: 13pt;
+    color: #2a6b9e;
+    font-weight: 600;
+    margin-bottom: 8pt;
+  }
+  .pv-meta {
+    font-size: 9pt;
+    color: #3a4050;
+    display: block;
+  }
+  .pv-meta span {
+    margin-right: 18pt;
+  }
+  .pv-meta strong { color: #1a1f2e; font-weight: 600; }
+
+  /* Section headings */
+  #print-view h2 {
+    font-size: 11pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #5e6578;
+    margin: 14pt 0 6pt 0;
+    padding-bottom: 3pt;
+    border-bottom: 1px solid #b8ad8e;
+  }
+
+  /* Reset the rp-cmp grid that we cloned into .pv-stats — printing wants
+     a flat row layout, not the screen flex grid. Cells become inline. */
+  .pv-stats .rp-cmp { display: block; }
+  .pv-stats .rp-cmp-row {
+    display: block;
+    margin: 0;
+    padding: 4pt 0;
+    border-bottom: 1px dotted #ddd5bf;
+  }
+  .pv-stats .rp-cmp-row.diff { border-bottom: none; font-weight: 600; }
+  .pv-stats .rp-cmp-row > * {
+    display: inline-block;
+    margin-right: 14pt;
+    font-size: 9.5pt;
+  }
+  .pv-stats .rp-cmp-label {
+    font-weight: 600;
+    color: #5e6578;
+    min-width: 90pt;
+  }
+  .pv-stats .rp-cmp-money { color: #1a1f2e; font-weight: 600; }
+  .pv-stats .rp-cmp-money.savings { color: #2e7a4a; }
+  .pv-stats .rp-cmp-money.cost { color: #b8502d; }
+  .pv-stats .rp-cmp-tag { color: #5e6578; font-size: 8.5pt; }
+  .pv-stats .rp-cmp-dist-sub { display: block; font-size: 8pt; color: #8a8f9e; }
+
+  /* Advice paragraph */
+  .pv-advice p {
+    margin: 0;
+    padding: 6pt 8pt;
+    background: #faf7f0;
+    border-left: 3px solid #c49320;
+    font-size: 9.5pt;
+    color: #1a1f2e;
+  }
+
+  /* Toll list — one entry per row, with verdict badge and optional detail.
+     Use page-break-inside: avoid so a toll's head + detail don't split
+     across pages. */
+  .pv-toll {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    padding: 5pt 0;
+    border-bottom: 1px dotted #ddd5bf;
+  }
+  .pv-toll:last-child { border-bottom: none; }
+  .pv-toll-head {
+    display: block;
+    font-size: 10pt;
+    line-height: 1.3;
+  }
+  .pv-toll-num {
+    display: inline-block;
+    min-width: 22pt;
+    color: #8a8f9e;
+    font-variant-numeric: tabular-nums;
+  }
+  .pv-toll-name {
+    font-weight: 600;
+    color: #1a1f2e;
+    margin-right: 8pt;
+  }
+  .pv-toll-verdict {
+    display: inline-block;
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1pt 6pt;
+    border-radius: 999pt;
+    margin-right: 6pt;
+    border: 1pt solid;
+  }
+  .pv-toll-verdict--avoid          { color: #2e7a4a; border-color: #2e7a4a; }
+  .pv-toll-verdict--marginal_avoid { color: #c49320; border-color: #c49320; }
+  .pv-toll-verdict--pay            { color: #b8502d; border-color: #b8502d; }
+  .pv-toll-verdict--marginal_pay   { color: #c49320; border-color: #c49320; }
+  .pv-toll-price {
+    float: right;
+    font-weight: 600;
+    color: #1a1f2e;
+    font-variant-numeric: tabular-nums;
+  }
+  .pv-toll-detail {
+    margin-top: 2pt;
+    margin-left: 22pt;
+    font-size: 9pt;
+    color: #3a4050;
+    line-height: 1.4;
+  }
+
+  /* Footer */
+  .pv-foot {
+    margin-top: 18pt;
+    padding-top: 8pt;
+    border-top: 1px solid #ddd5bf;
+    font-size: 8pt;
+    color: #8a8f9e;
+    text-align: center;
+  }
+
+  /* Disable color-adjust override on print so Chrome doesn't strip our
+     verdict badge backgrounds and table colors. */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }

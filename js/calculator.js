@@ -891,6 +891,14 @@ function renderResults(a) {
   rpBody.innerHTML = html;
   resultsPanel.classList.add('open');
 
+  // Build the printable / downloadable view from the same results.
+  // Stored on the analysis object so the print/download handlers can rebuild
+  // it on click without re-running the analyze pipeline. Includes a snapshot
+  // of stats AT THE TIME OF RENDER — the user clicking Print after a refined
+  // bypass-km recalculation will see the refined numbers because we read
+  // those off the live #rp-stats DOM at print time (see buildPrintView).
+  buildPrintView(a, results, { savings, extraMin, allTollCost, recCost, avoidCount, payCount });
+
   // Re-fire AI summary in the new language. The previous fetch's then() may
   // still resolve and overwrite this one, but renderResults() resets the
   // loading text first, so worst case the user briefly sees the old summary.
@@ -902,6 +910,235 @@ function renderResults(a) {
   }[a.catKey];
   fetchAISummary(a.origin, a.dest, results, catKeyLabel, savings, extraMin);
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   Printable / downloadable take-away view.
+
+   Populated each time renderResults runs. The DOM lives in #print-view
+   (hidden by default). Two ways out:
+
+   1. PRINT button → window.print(). The print stylesheet hides everything
+      except #print-view, so the user gets a clean document. The browser's
+      native dialog gives them "Save as PDF" for free on every modern OS.
+
+   2. DOWNLOAD button → walk the same DOM as plain text, serve as a Blob
+      download. Useful for offline phone reference, sharing via messaging
+      apps, or pasting into other tools.
+
+   Both paths share one source of truth (the DOM in #print-view) so the
+   formats can never drift apart.
+   ────────────────────────────────────────────────────────────────── */
+function buildPrintView(a, results, stats) {
+  const view = document.getElementById('print-view');
+  if (!view) return;
+  const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
+  const veh = (window.getVehicleMeta && window.getVehicleMeta()) || {};
+  const catLabel = veh.fullKey ? t(veh.fullKey) : a.catKey;
+
+  // Format helpers — same conventions as the panel.
+  const fmtKm = km => km >= 100 ? `${Math.round(km)}` : km >= 10 ? `${km.toFixed(0)}` : `${km.toFixed(1)}`;
+  const fmtMin = m => {
+    m = Math.round(m);
+    if (m < 60) return `${m} ${t('bar.time.label2')}`;
+    const h = Math.floor(m / 60), mm = m % 60;
+    return mm === 0 ? `${h}h` : `${h}h ${mm.toString().padStart(2,'0')}m`;
+  };
+
+  // Generation timestamp — locale-formatted so EL users see Greek date.
+  const now = new Date();
+  const dateStr = now.toLocaleString(lang === 'el' ? 'el-GR' : 'en-GB', {
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+
+  // Per-toll instruction line. Short enough to read at a glance, includes
+  // the actionable detail: exit/entry interchange names + extra time + savings.
+  const tollLine = (r, idx) => {
+    const name = (lang === 'el' ? r.toll.name_gr : r.toll.name_en) || r.toll.id;
+    // Verdict→label/badge text. Marginal verdicts get the same words as
+    // their definite siblings; the body text carries the nuance.
+    const verdictText = t(`verdict.${r.verdict.toLowerCase().replace('_', '.')}`);
+    const price = (typeof window !== 'undefined' && window.getTollPrice)
+      ? window.getTollPrice(r.toll, a.catKey, a.travelDir)
+      : (r.toll[a.catKey] || 0);
+
+    let detail = '';
+    if (r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID') {
+      // Bypass instructions — the actionable part of the document
+      const exit = r.dir?.exit_name || '';
+      const entry = r.dir?.entry_name || '';
+      const min = r.dir?.minutes || 0;
+      const isFerry = r.dir?.mode === 'ferry' && r.dir?.fare;
+      const sideCost = isFerry
+        ? (r.dir.fare[a.catKey] || 0)
+        : ((r.sideInfo?.totals?.[a.catKey]) || 0);
+      const saved = Math.max(0, price - sideCost);
+      const parts = [];
+      if (exit && entry) parts.push(`${t('print.exit_at')} ${exit}, ${t('print.enter_at')} ${entry}`);
+      if (min > 0) parts.push(`+${min} ${t('bar.time.label2')} ${t('print.detour')}`);
+      if (saved > 0.005) parts.push(`${t('print.saves')} €${saved.toFixed(2)}`);
+      detail = parts.join(' · ');
+    } else if (r.verdict === 'PAY' && !r.dir) {
+      detail = t('print.no_bypass');
+    } else if (r.verdict === 'PAY' && r.dir) {
+      detail = t('print.bypass_more');
+    }
+
+    return `
+      <div class="pv-toll pv-toll--${r.verdict.toLowerCase()}">
+        <div class="pv-toll-head">
+          <span class="pv-toll-num">${idx + 1}.</span>
+          <span class="pv-toll-name">${name}</span>
+          <span class="pv-toll-verdict pv-toll-verdict--${r.verdict.toLowerCase()}">${verdictText}</span>
+          <span class="pv-toll-price">€${price.toFixed(2)}</span>
+        </div>
+        ${detail ? `<div class="pv-toll-detail">${detail}</div>` : ''}
+      </div>`;
+  };
+
+  // Read live stats off the panel DOM so refined-bypass-km updates flow
+  // through automatically (rp-stats is recomputed once the bypass routes
+  // resolve via Mapbox; no point duplicating that logic here).
+  const liveStats = document.getElementById('rp-stats');
+  const statsClone = liveStats ? liveStats.innerHTML : '';
+
+  // Read live AI advice text the same way; falls back to a placeholder
+  // dash if the AI summary hasn't resolved yet.
+  const adviceEl = document.getElementById('rp-advice-el');
+  const adviceText = adviceEl ? adviceEl.textContent.trim() : '';
+  const adviceForPrint = (adviceText && !adviceText.includes(t('rp.advice.loading')))
+    ? adviceText.replace(/^💡\s*/, '')
+    : '—';
+
+  view.innerHTML = `
+    <header class="pv-head">
+      <div class="pv-brand">mydiodia.gr</div>
+      <h1 class="pv-h1">${t('print.title')}</h1>
+      <div class="pv-route">${a.origin} → ${a.dest}</div>
+      <div class="pv-meta">
+        <span><strong>${t('print.generated')}:</strong> ${dateStr}</span>
+        <span><strong>${t('print.vehicle')}:</strong> ${catLabel}</span>
+        <span><strong>${t('print.tolerance')}:</strong> ${t('print.tolerance.unit', { n: a.timeValue })}</span>
+      </div>
+    </header>
+
+    <section class="pv-summary">
+      <h2>${t('print.summary')}</h2>
+      <div class="pv-stats">${statsClone}</div>
+    </section>
+
+    <section class="pv-advice">
+      <h2>${t('print.advice')}</h2>
+      <p>${adviceForPrint}</p>
+    </section>
+
+    <section class="pv-tolls">
+      <h2>${t('print.tolls')} (${results.length})</h2>
+      ${results.map(tollLine).join('')}
+    </section>
+
+    <footer class="pv-foot">${t('print.footer')}</footer>
+  `;
+}
+
+// Walk #print-view DOM and produce a plain-text version. The structure is
+// stable (sections + tolls), so a few class-based hooks let us format it
+// nicely with line breaks, indentation, and underlines for headings.
+function printViewToText() {
+  const view = document.getElementById('print-view');
+  if (!view) return '';
+  const lines = [];
+  const push = (s) => lines.push(s);
+  const rule = (ch = '─', n = 60) => push(ch.repeat(n));
+
+  // Header
+  const brand = view.querySelector('.pv-brand')?.textContent.trim() || '';
+  const h1    = view.querySelector('.pv-h1')?.textContent.trim() || '';
+  const route = view.querySelector('.pv-route')?.textContent.trim() || '';
+  push(brand); rule(); push(h1); push(route); push('');
+
+  // Meta lines
+  view.querySelectorAll('.pv-meta span').forEach(s => push('  ' + s.textContent.replace(/\s+/g, ' ').trim()));
+  push('');
+
+  // Summary table — read 3 rows × cells
+  push(view.querySelector('.pv-summary h2')?.textContent.trim() || ''); rule();
+  view.querySelectorAll('.pv-summary .rp-cmp-row').forEach(row => {
+    const cells = [...row.children].map(c => c.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean);
+    push('  ' + cells.join('  ·  '));
+  });
+  push('');
+
+  // Advice
+  push(view.querySelector('.pv-advice h2')?.textContent.trim() || ''); rule();
+  push('  ' + (view.querySelector('.pv-advice p')?.textContent.trim() || ''));
+  push('');
+
+  // Tolls
+  push(view.querySelector('.pv-tolls h2')?.textContent.trim() || ''); rule();
+  view.querySelectorAll('.pv-toll').forEach(t => {
+    const head = [...t.querySelector('.pv-toll-head').children]
+      .map(c => c.textContent.replace(/\s+/g, ' ').trim())
+      .filter(Boolean)
+      .join('  ');
+    push(head);
+    const detail = t.querySelector('.pv-toll-detail');
+    if (detail) push('     ' + detail.textContent.replace(/\s+/g, ' ').trim());
+    push('');
+  });
+
+  rule();
+  push(view.querySelector('.pv-foot')?.textContent.trim() || '');
+  return lines.join('\n');
+}
+
+function downloadPrintViewAsText(filenameStem) {
+  const text = printViewToText();
+  if (!text) return;
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  // Normalize filename: ascii-only, lowercase, hyphenated. Fallback if
+  // the route contains characters that don't transliterate cleanly.
+  const stem = (filenameStem || 'route')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // strip diacritics (Greek too via NFD)
+    .replace(/[^\w]+/g, '-').replace(/^-+|-+$/g, '');
+  const today = new Date().toISOString().slice(0, 10);
+  a.download = `mydiodia-${stem || 'route'}-${today}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  // Defer URL revoke so iOS Safari has a chance to fire the download
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+// Wire up the two action buttons. Idempotent — safe if calculator.js is
+// loaded multiple times during dev.
+(function wireResultsActions() {
+  const printBtn    = document.getElementById('rp-action-print');
+  const downloadBtn = document.getElementById('rp-action-download');
+  if (printBtn && !printBtn.dataset.wired) {
+    printBtn.dataset.wired = '1';
+    printBtn.addEventListener('click', () => {
+      // Print view is already populated from the last renderResults call.
+      // No need to rebuild — but if the user toggled vehicle/lang since,
+      // renderResults would have re-fired and rebuilt it already.
+      window.print();
+    });
+  }
+  if (downloadBtn && !downloadBtn.dataset.wired) {
+    downloadBtn.dataset.wired = '1';
+    downloadBtn.addEventListener('click', () => {
+      // Filename from origin→dest, sanitized
+      const stem = lastAnalysis
+        ? `${lastAnalysis.origin}-${lastAnalysis.dest}`
+        : 'route';
+      downloadPrintViewAsText(stem);
+    });
+  }
+})();
 
 // ── Main analyze ──────────────────────────────────────────
 async function analyze() {
