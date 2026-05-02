@@ -1282,34 +1282,13 @@ function buildPrintView(a, results, stats) {
         </ol>`;
     }
 
-    // R32: per-toll bypass map. Only shown for AVOID-side tolls — the user
-    // is going to drive the bypass, so a localized map of it is useful.
-    // PAY tolls don't get a map (they're staying on the highway, no bypass
-    // to visualize). Falls back gracefully if the toll has no bypass info
-    // or if the route fetch hasn't completed.
-    //
-    // R35: when the image fails to load (404, 401, CORS, etc), show the URL
-    // and HTTP status as diagnostic text inside the map slot, so we can see
-    // what's actually going wrong instead of looking at a blank box. The
-    // onerror handler hides the broken image and reveals the fallback div.
-    // If the image loads successfully, the fallback stays hidden — user
-    // sees the map as intended.
-    const isAvoidSide = (r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID');
-    const bypassMapUrl = isAvoidSide
-      ? buildBypassMapUrl(r.toll, r.dir, a.bypassCoords?.[r.toll.id])
-      : null;
-    const bypassMapHtml = bypassMapUrl
-      ? `<aside class="pv-toll-map">
-           <img src="${escapeHtml(bypassMapUrl)}" alt="" data-print-asset="bypass-map"
-                referrerpolicy="origin"
-                onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
-           <div class="pv-toll-map-fallback" style="display:none;">
-             <strong>Map failed to load.</strong><br>
-             URL: <a href="${escapeHtml(bypassMapUrl)}" target="_blank" rel="noopener">open in new tab</a><br>
-             <small style="word-break:break-all;font-family:monospace;font-size:6pt;">${escapeHtml(bypassMapUrl)}</small>
-           </div>
-         </aside>`
-      : '';
+    // R41: Per-toll bypass maps temporarily disabled. The previous attempts
+    // (R32-R40) to embed Mapbox static images in the printed PDF caused a
+    // cascade of issues (referrer rejection in popups, blank PDFs in main
+    // window, @media print cascade conflicts). Strip the maps from the print
+    // view entirely so we get a working text-only PDF first; maps can be
+    // added back via a different mechanism in a follow-up round.
+    const bypassMapHtml = '';
 
     return `
       <div class="pv-toll pv-toll--${r.verdict.toLowerCase()}">
@@ -1468,117 +1447,123 @@ function downloadPrintViewAsText(filenameStem) {
 
 // Print the take-away document.
 //
-// HISTORY:
-// - R27/R28: window.print() with @media print stylesheet on main page.
-// - R29-R36: popup window. Failed because Mapbox token rejects about:blank
-//   referrer; couldn't reliably get maps to load in popup context.
-// - R37: back to native window.print() with @media print stylesheet.
-//   Failed if style.css didn't get deployed alongside calculator.js —
-//   #print-view stayed off-screen and print preview was blank.
-// - R38 (current): native window.print() but driven by JS, not CSS-only.
-//   Inline styles applied at print time hide everything except #print-view
-//   and restore it to in-page positioning. Same effect as @media print
-//   but works regardless of CSS deploy state. The CSS @media print rules
-//   stay as belt-and-braces.
-//
-// Key invariant: maps must already be loaded in the main window when
-// print() fires. The off-screen positioning of #print-view (vs display:none)
-// ensures images load eagerly during render.
-function triggerNativePrint() {
+// R41: After 9 rounds of failures trying to get maps printing, this round
+// strips the maps entirely and goes back to the proven R29/R30 popup pattern
+// for text-only printing. The maps were the source of every print issue
+// (referrer rejection, @media print cascade, blank PDFs in main window).
+// Once text printing is verified working, maps can be added separately.
+function printDocument() {
   const view = document.getElementById('print-view');
-
-  // R39 DIAGNOSTIC. Before calling window.print(), gather state and show
-  // it in an alert so the user can copy/paste the result back. This is
-  // intentionally synchronous and modal — easier than asking the user to
-  // open DevTools. Once we know what's broken, the code goes away.
-  //
-  // Skipped if the user dismisses the diagnostic toggle from console
-  // (window._mydiodiaSkipDiag = true), in case they want to print without
-  // the alert in a session.
-  if (!window._mydiodiaSkipDiag) {
-    try {
-      const lines = [];
-      lines.push('=== mydiodia print diagnostic ===');
-      lines.push('R40 / cache: 20260502-1700');
-      lines.push('');
-
-      // 1. Does the view exist? Does it have content?
-      lines.push('--- print-view ---');
-      lines.push('exists: ' + !!view);
-      if (view) {
-        lines.push('innerHTML.length: ' + view.innerHTML.length);
-        lines.push('children count: ' + view.children.length);
-        const rect = view.getBoundingClientRect();
-        lines.push('rect: ' + Math.round(rect.width) + 'x' + Math.round(rect.height) + ' at (' + Math.round(rect.left) + ',' + Math.round(rect.top) + ')');
-        const cs = window.getComputedStyle(view);
-        lines.push('computed: position=' + cs.position + ' display=' + cs.display + ' visibility=' + cs.visibility);
-        lines.push('computed: left=' + cs.left + ' top=' + cs.top);
-      }
-
-      // 2. How many <img> tags inside print-view, and how many loaded?
-      if (view) {
-        const imgs = view.querySelectorAll('img');
-        let loaded = 0, broken = 0, pending = 0;
-        imgs.forEach(img => {
-          if (img.complete && img.naturalWidth > 0) loaded++;
-          else if (img.complete && img.naturalWidth === 0) broken++;
-          else pending++;
-        });
-        lines.push('');
-        lines.push('--- images in print-view ---');
-        lines.push('total: ' + imgs.length);
-        lines.push('loaded: ' + loaded);
-        lines.push('broken (404/403): ' + broken);
-        lines.push('still loading: ' + pending);
-        // Show URL of first broken img so we can verify it's a Mapbox issue
-        for (const img of imgs) {
-          if (img.complete && img.naturalWidth === 0) {
-            lines.push('first broken URL: ' + img.src.slice(0, 100));
-            break;
-          }
-        }
-      }
-
-      // 3. How many @media print rules in stylesheets? (catches CSS-not-deployed)
-      let mediaPrintRules = 0;
-      try {
-        for (const sheet of document.styleSheets) {
-          try {
-            for (const rule of sheet.cssRules || []) {
-              if (rule.media && rule.media.mediaText && rule.media.mediaText.includes('print')) mediaPrintRules++;
-            }
-          } catch (e) { /* cross-origin stylesheet, skip */ }
-        }
-      } catch (e) {}
-      lines.push('');
-      lines.push('--- stylesheets ---');
-      lines.push('@media print rules found: ' + mediaPrintRules);
-
-      // 4. Body direct children count
-      lines.push('');
-      lines.push('--- body ---');
-      lines.push('direct children: ' + document.body.children.length);
-
-      const report = lines.join('\n');
-      console.log(report);
-      const proceed = confirm(report + '\n\n--- Click OK to continue and print, or Cancel to abort ---');
-      if (!proceed) return;
-    } catch (e) {
-      console.error('[mydiodia] diagnostic failed:', e);
-      alert('Diagnostic failed: ' + e.message + '\n\nPlease share this with the developer.');
-      return;
-    }
-  }
-
   if (!view || !view.innerHTML.trim()) {
-    // Nothing to print yet — analysis hasn't populated the view.
     return;
   }
 
-  // Just call print(). The @media print CSS rules in style.css handle
-  // hiding everything else and showing #print-view. The 50ms tick lets
-  // any pending layout settle before the print snapshot is taken.
-  setTimeout(() => window.print(), 50);
+  // R41 quick diagnostic — confirms the new code is what's actually deployed.
+  // Will be removed once we confirm working print. Skip via:
+  //   window._mydiodiaSkipDiag = true
+  if (!window._mydiodiaSkipDiag) {
+    const proceed = confirm(
+      'mydiodia print R41 / cache 20260502-1800\n' +
+      '\n' +
+      'About to open a popup window with the print view.\n' +
+      'Maps are temporarily disabled — text only.\n' +
+      '\n' +
+      'innerHTML.length: ' + view.innerHTML.length + '\n' +
+      'children: ' + view.children.length + '\n' +
+      '\n' +
+      '--- OK to proceed, Cancel to abort ---'
+    );
+    if (!proceed) return;
+  }
+
+  const w = window.open('', '_blank', 'width=820,height=1000');
+  if (!w) {
+    alert('Popup blocked. Please allow popups for mydiodia.gr and try again.');
+    return;
+  }
+
+  const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
+  const docTitle = (lastAnalysis ? `${lastAnalysis.origin} → ${lastAnalysis.dest} · ` : '')
+    + t('print.title');
+
+  // Self-contained HTML with inline styles. No external CSS, no maps,
+  // no @media print cascade dependencies. Just HTML and inline CSS.
+  const html = `<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+<meta charset="utf-8">
+<title>${escapeHtml(docTitle)}</title>
+<style>
+@page { margin: 18mm 16mm; size: A4; }
+* { box-sizing: border-box; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 10pt; line-height: 1.45; color: #1a1f2e;
+  background: white; margin: 0; padding: 18px;
+}
+.pv-head { margin-bottom: 14pt; padding-bottom: 10pt; border-bottom: 2px solid #1a1f2e; }
+.pv-brand { font-size: 9pt; letter-spacing: 0.06em; color: #5e6578; text-transform: uppercase; margin-bottom: 4pt; }
+.pv-h1 { font-size: 16pt; font-weight: 700; margin: 0 0 2pt 0; letter-spacing: -0.02em; }
+.pv-route { font-size: 13pt; color: #2a6b9e; font-weight: 600; margin-bottom: 8pt; }
+.pv-meta { font-size: 9pt; color: #3a4050; }
+.pv-meta span { margin-right: 18pt; }
+.pv-meta strong { color: #1a1f2e; font-weight: 600; }
+h2 { font-size: 11pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+     color: #5e6578; margin: 14pt 0 6pt 0; padding-bottom: 3pt; border-bottom: 1px solid #b8ad8e; }
+.pv-stats .rp-cmp { display: block; }
+.pv-stats .rp-cmp-row { display: block; margin: 0; padding: 4pt 0; border-bottom: 1px dotted #ddd5bf; }
+.pv-stats .rp-cmp-row.diff { border-bottom: none; font-weight: 600; }
+.pv-stats .rp-cmp-row > * { display: inline-block; margin-right: 14pt; font-size: 9.5pt; }
+.pv-stats .rp-cmp-label { font-weight: 600; color: #5e6578; min-width: 90pt; }
+.pv-stats .rp-cmp-money { color: #1a1f2e; font-weight: 600; }
+.pv-stats .rp-cmp-money.savings { color: #2e7a4a; }
+.pv-stats .rp-cmp-money.cost { color: #b8502d; }
+.pv-stats .rp-cmp-tag { color: #5e6578; font-size: 8.5pt; }
+.pv-stats .rp-cmp-dist-sub { display: block; font-size: 8pt; color: #8a8f9e; }
+.pv-advice p { margin: 0; padding: 6pt 8pt; background: #faf7f0; border-left: 3px solid #c49320; font-size: 9.5pt; }
+.pv-toll { padding: 5pt 0; border-bottom: 1px dotted #ddd5bf; page-break-inside: avoid; break-inside: avoid; }
+.pv-toll:last-child { border-bottom: none; }
+.pv-toll-head { font-size: 10pt; line-height: 1.3; }
+.pv-toll-num { display: inline-block; min-width: 22pt; color: #8a8f9e; font-variant-numeric: tabular-nums; }
+.pv-toll-name { font-weight: 600; color: #1a1f2e; margin-right: 8pt; }
+.pv-toll-verdict { display: inline-block; font-size: 8pt; font-weight: 700; text-transform: uppercase;
+                   letter-spacing: 0.04em; padding: 1pt 6pt; border-radius: 999pt; margin-right: 6pt; border: 1pt solid; }
+.pv-toll-verdict--avoid { color: #2e7a4a; border-color: #2e7a4a; }
+.pv-toll-verdict--marginal_avoid { color: #c49320; border-color: #c49320; }
+.pv-toll-verdict--pay { color: #b8502d; border-color: #b8502d; }
+.pv-toll-verdict--marginal_pay { color: #c49320; border-color: #c49320; }
+.pv-toll-price { float: right; font-weight: 600; color: #1a1f2e; font-variant-numeric: tabular-nums; }
+.pv-toll-route { margin-top: 3pt; margin-left: 22pt; font-size: 9.5pt; color: #1a1f2e; font-weight: 500; }
+.pv-toll-detail { margin-top: 2pt; margin-left: 22pt; font-size: 9pt; color: #3a4050; }
+.pv-toll-steps-label { margin-top: 4pt; margin-left: 22pt; font-size: 8.5pt; font-weight: 600;
+                       text-transform: uppercase; letter-spacing: 0.04em; color: #5e6578; }
+.pv-toll-steps { margin: 2pt 0 4pt 0; padding-left: 44pt; font-size: 9pt; color: #3a4050; }
+.pv-toll-steps li { margin: 1pt 0; page-break-inside: avoid; }
+.pv-step-dist { color: #8a8f9e; font-size: 8.5pt; font-variant-numeric: tabular-nums; }
+.pv-foot { margin-top: 18pt; padding-top: 8pt; border-top: 1px solid #ddd5bf;
+           font-size: 8pt; color: #8a8f9e; text-align: center; }
+* { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+</style>
+</head>
+<body>
+${view.innerHTML}
+</body>
+</html>`;
+
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+
+  // Wait for the new document to be ready, then print.
+  const fire = () => {
+    try { w.focus(); w.print(); } catch (e) { console.error('[mydiodia] print failed:', e); }
+  };
+  if (w.document.readyState === 'complete') {
+    setTimeout(fire, 100);
+  } else {
+    w.addEventListener('load', () => setTimeout(fire, 100));
+    setTimeout(fire, 1000); // fallback
+  }
 }
 
 // Wire up the two action buttons. Idempotent — safe if calculator.js is
@@ -1588,7 +1573,7 @@ function triggerNativePrint() {
   const downloadBtn = document.getElementById('rp-action-download');
   if (printBtn && !printBtn.dataset.wired) {
     printBtn.dataset.wired = '1';
-    printBtn.addEventListener('click', triggerNativePrint);
+    printBtn.addEventListener('click', printDocument);
   }
   if (downloadBtn && !downloadBtn.dataset.wired) {
     downloadBtn.dataset.wired = '1';
