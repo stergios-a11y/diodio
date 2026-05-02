@@ -26,7 +26,11 @@ function applyPage(page) {
   document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(el => {
     el.classList.toggle('active', el.dataset.page === page);
   });
-  if (page === 'routes') buildRoutesGrid();
+  if (page === 'routes') {
+    populateRoutesFilter();
+    initRoutesFilterControls();
+    buildRoutesGrid();
+  }
   if (page === 'tolls')  buildTollsTable();
 
   // The map needs to know it's been resized when re-entering map view
@@ -47,14 +51,39 @@ window.addEventListener('DOMContentLoaded', () => {
   });
   // Re-render on lang change so labels update
   window.addEventListener('langchange', () => {
-    if (getCurrentPage() === 'routes') buildRoutesGrid();
+    if (getCurrentPage() === 'routes') {
+      populateRoutesFilter();
+      buildRoutesGrid();
+    }
     if (getCurrentPage() === 'tolls')  buildTollsTable();
   });
 });
 
 /* ════════════════════════════════════════════════════════════════
-   ROUTES PAGE — 15 cities × 15 cities matrix
+   ROUTES PAGE — 16 cities × 16 cities matrix
+   Cells are heatmap-colored by toll cost per kilometer, on a fixed
+   5-tier scale. The fixed scale (rather than data-relative) keeps
+   the legend stable as prices change year-over-year and lets users
+   build intuition: "Olympia Odos is always orange".
+   Tier breakpoints (€/km, cat2 reference):
+     tier-free   = 0           (no tolls on this route)
+     tier-low    = (0, 0.03]   (~PATHE long-haul averages)
+     tier-mid    = (0.03, 0.06]
+     tier-high   = (0.06, 0.09]
+     tier-peak   = > 0.09      (Olympia Odos, Rio bridge stretches)
+   These thresholds fit 96% of the 238 valid pairs across all 4
+   vehicle categories. cat3/cat4 routes shift toward higher tiers,
+   which is the desired behaviour — heavy-vehicle pricing IS more
+   punitive per km, and the heatmap should show it.
    ════════════════════════════════════════════════════════════════ */
+function tierForPerKm(perKm) {
+  if (perKm <= 0)    return 'tier-free';
+  if (perKm <= 0.03) return 'tier-low';
+  if (perKm <= 0.06) return 'tier-mid';
+  if (perKm <= 0.09) return 'tier-high';
+  return 'tier-peak';
+}
+
 function buildRoutesGrid() {
   const grid = document.getElementById('routes-grid');
   if (!grid) return;
@@ -109,14 +138,15 @@ function buildRoutesGrid() {
       } else if (cell.type === 'na') {
         html += `<td class="routes-cell-empty"></td>`;
       } else if (cell.tollCount === 0) {
-        html += `<td class="routes-cell" data-from="${fromCity.id}" data-to="${toCity.id}">
+        html += `<td class="routes-cell tier-free" data-from="${fromCity.id}" data-to="${toCity.id}" data-perkm="0">
           <div class="rc-price">€0</div>
           <div class="rc-meta">${cell.km}${t('routes.km')}</div>
           <div class="rc-perkm">€0/${t('routes.km')}</div>
         </td>`;
       } else {
         const perKm = cell.km > 0 ? (cell.cost / cell.km) : 0;
-        html += `<td class="routes-cell" data-from="${fromCity.id}" data-to="${toCity.id}">
+        const tier = tierForPerKm(perKm);
+        html += `<td class="routes-cell ${tier}" data-from="${fromCity.id}" data-to="${toCity.id}" data-perkm="${perKm.toFixed(4)}">
           <div class="rc-price">€${cell.cost.toFixed(2)}</div>
           <div class="rc-meta">${cell.tollCount} ${cell.tollCount === 1 ? t('routes.toll') : t('routes.tolls')} · ${cell.km}${t('routes.km')}</div>
           <div class="rc-perkm">€${perKm.toFixed(3)}/${t('routes.km')}</div>
@@ -142,6 +172,191 @@ function buildRoutesGrid() {
       navigateTo('map');
     });
   });
+
+  // Re-apply the active filter (if any) after a re-render. The filter state
+  // lives on the page wrapper, not in the table, so it survives renders.
+  applyRoutesFilter();
+}
+
+/* ── Routes filter ────────────────────────────────────────────────
+   Two <select> dropdowns + a clear button at the top of the routes
+   page. When both are picked, the matching cell gets a "is-focus"
+   class and a summary card is shown above the matrix. Other cells
+   fade so the eye lands on the answer quickly.
+   Native <select> is the right call here: 16 cities, no need to
+   debug autocomplete, accessible by default, and works on mobile
+   without any extra mobile keyboard logic.
+   ─────────────────────────────────────────────────────────────── */
+function populateRoutesFilter() {
+  const fromSel = document.getElementById('routes-filter-from');
+  const toSel   = document.getElementById('routes-filter-to');
+  if (!fromSel || !toSel) return;
+  const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
+  const cityName = c => lang === 'el' ? c.name_gr : c.name_en;
+
+  // Preserve current selections across re-population (language switch etc.)
+  const prevFrom = fromSel.value;
+  const prevTo   = toSel.value;
+
+  const placeholder = lang === 'el' ? '— επίλεξε —' : '— select —';
+  const optsHtml = `<option value="">${placeholder}</option>` +
+    CITIES.map(c => `<option value="${c.id}">${cityName(c)}</option>`).join('');
+
+  fromSel.innerHTML = optsHtml;
+  toSel.innerHTML   = optsHtml;
+  if (prevFrom) fromSel.value = prevFrom;
+  if (prevTo)   toSel.value   = prevTo;
+}
+
+function applyRoutesFilter() {
+  const grid = document.getElementById('routes-grid');
+  const summary = document.getElementById('routes-filter-summary');
+  const fromSel = document.getElementById('routes-filter-from');
+  const toSel   = document.getElementById('routes-filter-to');
+  if (!grid || !fromSel || !toSel) return;
+
+  const fromId = fromSel.value;
+  const toId   = toSel.value;
+  const hasBoth = !!fromId && !!toId;
+
+  grid.classList.toggle('is-filtered', hasBoth);
+
+  // Clear previous focus highlight
+  grid.querySelectorAll('.routes-cell.is-focus').forEach(el => el.classList.remove('is-focus'));
+
+  if (!hasBoth) {
+    if (summary) summary.hidden = true;
+    return;
+  }
+
+  // Find the matching cell and decorate it
+  const cell = grid.querySelector(`.routes-cell[data-from="${fromId}"][data-to="${toId}"]`);
+  if (cell) {
+    cell.classList.add('is-focus');
+    // Scroll the cell into view horizontally — the row header is sticky on
+    // the left, so we only need to nudge horizontally.
+    if (cell.scrollIntoView) {
+      cell.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+
+  // Render the summary card
+  if (summary) {
+    const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
+    const cityName = c => lang === 'el' ? c.name_gr : c.name_en;
+    const fromCity = CITIES.find(c => c.id === fromId);
+    const toCity   = CITIES.find(c => c.id === toId);
+    if (fromCity && toCity && fromCity.id !== toCity.id) {
+      const route = getRoute(fromCity.id, toCity.id);
+      const catKey = (typeof window !== 'undefined' && window.getVehicleCat)
+        ? window.getVehicleCat()
+        : 'cat2';
+      const tollById = {};
+      TOLL_DATA.forEach(x => tollById[x.id] = x);
+
+      let cost = 0, n = 0;
+      if (route) {
+        route.tolls.forEach(id => {
+          const x = tollById[id];
+          if (x && typeof x[catKey] === 'number') { cost += x[catKey]; n++; }
+        });
+      }
+
+      const km   = route ? route.km : 0;
+      const min  = route ? route.min : 0;
+      const perKm = (km > 0 && n > 0) ? cost / km : 0;
+      const tier = route ? tierForPerKm(perKm) : 'tier-free';
+      const arrow = '→';
+      const noTolls = route && n === 0;
+      const noRoute = !route;
+
+      let priceLine;
+      if (noRoute) {
+        priceLine = `<span class="rfs-price-na">${lang === 'el' ? 'Δεν υπάρχει διαδρομή' : 'No route available'}</span>`;
+      } else if (noTolls) {
+        priceLine = `<span class="rfs-price">€0</span>
+                     <span class="rfs-price-sub">${lang === 'el' ? '· χωρίς διόδια' : '· no tolls'}</span>`;
+      } else {
+        priceLine = `<span class="rfs-price">€${cost.toFixed(2)}</span>
+                     <span class="rfs-price-sub">· €${perKm.toFixed(3)}/${t('routes.km')}</span>`;
+      }
+
+      const metaParts = [];
+      if (n > 0) metaParts.push(`${n} ${n === 1 ? t('routes.toll') : t('routes.tolls')}`);
+      if (km > 0) metaParts.push(`${km}${t('routes.km')}`);
+      if (min > 0) {
+        const h = Math.floor(min / 60), m = min % 60;
+        metaParts.push(h > 0 ? `${h}h ${m}m` : `${m}m`);
+      }
+
+      const ctaLabel = lang === 'el' ? 'Άνοιγμα στον χάρτη' : 'Open on map';
+
+      summary.innerHTML = `
+        <div class="rfs-row">
+          <div class="rfs-pair">
+            <span class="rfs-from">${cityName(fromCity)}</span>
+            <span class="rfs-arrow">${arrow}</span>
+            <span class="rfs-to">${cityName(toCity)}</span>
+          </div>
+          <div class="rfs-tier ${tier}" aria-hidden="true"></div>
+          <div class="rfs-price-block">${priceLine}</div>
+          <div class="rfs-meta">${metaParts.join(' · ')}</div>
+          <button class="rfs-cta" type="button" id="routes-filter-cta">${ctaLabel} →</button>
+        </div>
+      `;
+      summary.hidden = false;
+
+      // Wire CTA button to the same nav-with-prefill path as cell clicks
+      const cta = document.getElementById('routes-filter-cta');
+      if (cta) {
+        cta.addEventListener('click', () => {
+          const fromInput = document.getElementById('origin');
+          const toInput   = document.getElementById('dest');
+          if (fromInput) fromInput.value = cityName(fromCity);
+          if (toInput)   toInput.value   = cityName(toCity);
+          navigateTo('map');
+        });
+      }
+    } else {
+      summary.hidden = true;
+    }
+  }
+}
+
+function initRoutesFilterControls() {
+  const fromSel = document.getElementById('routes-filter-from');
+  const toSel   = document.getElementById('routes-filter-to');
+  const swapBtn = document.getElementById('routes-filter-swap');
+  const clearBtn = document.getElementById('routes-filter-clear');
+  if (!fromSel || !toSel) return;
+
+  // Idempotent: only attach handlers once per element. The page-active
+  // handler can call this multiple times (re-entry into the routes page).
+  if (!fromSel.dataset.wired) {
+    fromSel.dataset.wired = '1';
+    fromSel.addEventListener('change', applyRoutesFilter);
+  }
+  if (!toSel.dataset.wired) {
+    toSel.dataset.wired = '1';
+    toSel.addEventListener('change', applyRoutesFilter);
+  }
+  if (swapBtn && !swapBtn.dataset.wired) {
+    swapBtn.dataset.wired = '1';
+    swapBtn.addEventListener('click', () => {
+      const a = fromSel.value, b = toSel.value;
+      fromSel.value = b;
+      toSel.value = a;
+      applyRoutesFilter();
+    });
+  }
+  if (clearBtn && !clearBtn.dataset.wired) {
+    clearBtn.dataset.wired = '1';
+    clearBtn.addEventListener('click', () => {
+      fromSel.value = '';
+      toSel.value = '';
+      applyRoutesFilter();
+    });
+  }
 }
 
 // Re-render the routes grid when the global vehicle changes (from any

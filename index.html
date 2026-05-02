@@ -187,7 +187,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="css/style.css?v=20260502-0100" />
+  <link rel="stylesheet" href="css/style.css?v=20260502-0200" />
 </head>
 <body>
 
@@ -681,7 +681,39 @@
           </div>
         </div>
       </div>
+      <!-- Quick filter: pick from + to to highlight a single cell and see
+           a focused summary card. The matrix stays visible (just dimmed)
+           so context isn't lost. Native <select>s — 16 cities, no need for
+           an autocomplete here. -->
+      <div class="routes-filter">
+        <div class="rfilter-row">
+          <label class="rfilter-label" for="routes-filter-from" data-i18n="bar.from">Από</label>
+          <select id="routes-filter-from" class="rfilter-select"></select>
+          <button type="button" class="rfilter-swap" id="routes-filter-swap"
+                  data-i18n-title="bar.swap" title="Αντιστροφή διαδρομής" aria-label="Swap">⇄</button>
+          <label class="rfilter-label" for="routes-filter-to" data-i18n="bar.to">Προς</label>
+          <select id="routes-filter-to" class="rfilter-select"></select>
+          <button type="button" class="rfilter-clear" id="routes-filter-clear"
+                  data-i18n="routes.filter.clear">Καθαρισμός</button>
+        </div>
+        <div class="routes-filter-summary" id="routes-filter-summary" hidden></div>
+      </div>
+
       <div id="routes-grid" class="routes-grid"></div>
+
+      <!-- Heatmap legend: 5 fixed tiers from green (free / cheap per km) to
+           red (expensive per km). Same scale across all vehicle categories
+           so users can compare cat1 vs cat4 visually. -->
+      <div class="routes-legend" aria-label="Heatmap legend">
+        <span class="rl-title" data-i18n="routes.legend.title">Κόστος ανά χλμ</span>
+        <div class="rl-scale">
+          <span class="rl-stop tier-free"   data-i18n="routes.legend.free">€0</span>
+          <span class="rl-stop tier-low"    >≤ €0.03</span>
+          <span class="rl-stop tier-mid"    >≤ €0.06</span>
+          <span class="rl-stop tier-high"   >≤ €0.09</span>
+          <span class="rl-stop tier-peak"   >&gt; €0.09</span>
+        </div>
+      </div>
       <footer class="site-footer">
         <div class="site-footer-inner">
           <span class="footer-copy" data-i18n="footer.copy">© 2026 mydiodia · Στέργιος Γούσιος</span>
@@ -788,11 +820,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- DEPLOY: bump the ?v= date on the next 6 lines AND on css/style.css above
        whenever you ship changes. Otherwise browsers serve stale assets. -->
-  <script src="js/i18n.js?v=20260502-0100"></script>
-  <script src="data/tolls.js?v=20260502-0100"></script>
-  <script src="data/routes.js?v=20260502-0100"></script>
-  <script src="js/map.js?v=20260502-0100"></script>
-  <script src="js/calculator.js?v=20260502-0100"></script>
-  <script src="js/pages.js?v=20260502-0100"></script>
+  <script src="js/i18n.js?v=20260502-0200"></script>
+  <script src="data/tolls.js?v=20260502-0200"></script>
+  <script src="data/routes.js?v=20260502-0200"></script>
+  <script src="js/map.js?v=20260502-0200"></script>
+  <script src="js/calculator.js?v=20260502-0200"></script>
+  <script src="js/pages.js?v=20260502-0200"></script>
 </body>
 </html>

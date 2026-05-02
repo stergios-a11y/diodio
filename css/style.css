@@ -2661,6 +2661,157 @@ input[type="range"]::-moz-range-track {
 .page-toolbar .bar-select { min-width: 180px; }
 
 /* ── Routes matrix ── */
+
+/* Filter bar above the matrix: native selects + swap + clear. Sits in
+   the warm paper aesthetic, mirrors the bottom-bar control rhythm. */
+.routes-filter {
+  margin: 0 0 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rfilter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rfilter-label {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.rfilter-select {
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 6px 28px 6px 10px;
+  min-width: 140px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='none' stroke='%23555' stroke-width='1.5' d='M1 1l4 4 4-4'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.rfilter-select:focus {
+  outline: none;
+  border-color: var(--aegean);
+  box-shadow: 0 0 0 3px var(--aegean-lt);
+}
+.rfilter-swap {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--ink-2);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.rfilter-swap:hover { background: var(--paper-2); border-color: var(--aegean); }
+.rfilter-clear {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: color 0.12s, background 0.12s;
+}
+.rfilter-clear:hover { color: var(--ink); background: var(--paper-2); }
+
+/* Summary card shown when both From and To are selected. Compact, single
+   row on desktop, stacks on mobile. The colored dot mirrors the cell tier
+   so the connection between the filter answer and the grid is obvious. */
+.routes-filter-summary {
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.routes-filter-summary .rfs-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.routes-filter-summary .rfs-pair {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.routes-filter-summary .rfs-arrow {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+.routes-filter-summary .rfs-tier {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.routes-filter-summary .rfs-price {
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.routes-filter-summary .rfs-price-sub {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--aegean);
+  margin-left: 4px;
+}
+.routes-filter-summary .rfs-price-na {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--muted);
+}
+.routes-filter-summary .rfs-meta {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--ink-3);
+}
+.routes-filter-summary .rfs-cta {
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--paper);
+  background: var(--aegean);
+  border: 1px solid var(--aegean-dark);
+  border-radius: var(--radius);
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+.routes-filter-summary .rfs-cta:hover { background: var(--aegean-dark); }
+
 .routes-grid {
   background: var(--paper);
   border: 1px solid var(--line);
@@ -2762,6 +2913,101 @@ input[type="range"]::-moz-range-track {
   font-size: 0.7rem;
   color: var(--muted);
 }
+
+/* Heatmap by cost-per-km. The hue ramp goes through the existing palette:
+   the green --go is already on the page (verdict pills), and --stop is the
+   warm terracotta-orange used for "ΑΠΟΦΥΓΕ". Mid stops are tinted between
+   them. All tints use translucent overlays on the warm paper bg so cells
+   stay readable and the row/column headers remain dominant.
+   Per-km tiers (cat2 reference, see pages.js for thresholds):
+     tier-free   €0/km           — cool slate, distinct from heatmap
+     tier-low    ≤ €0.03/km      — soft go-green
+     tier-mid    ≤ €0.06/km      — yellow-green
+     tier-high   ≤ €0.09/km      — amber/peach
+     tier-peak   > €0.09/km      — terracotta-red
+   Hover override: the existing .routes-cell:hover rule used --aegean-lt;
+   to keep tiers visible on hover, we make hover slightly darken the tier
+   instead of replacing it. Implemented via per-tier hover colors below. */
+.routes-cell.tier-free  { background: #eef0f2; }
+.routes-cell.tier-low   { background: #e3eedc; }
+.routes-cell.tier-mid   { background: #f1ecc6; }
+.routes-cell.tier-high  { background: #f5dcc1; }
+.routes-cell.tier-peak  { background: #efc6b1; }
+
+.routes-cell.tier-free:hover  { background: #e2e6ea; }
+.routes-cell.tier-low:hover   { background: #d3e2c7; }
+.routes-cell.tier-mid:hover   { background: #e8e0a8; }
+.routes-cell.tier-high:hover  { background: #efcaa6; }
+.routes-cell.tier-peak:hover  { background: #e7b094; }
+
+/* Per-km value pill stays mono and readable across all tiers — the original
+   --aegean color is fine on the lighter tiers but disappears against the
+   peak band, so we shift to a darker ink for tier-high and tier-peak. */
+.routes-cell.tier-high .rc-perkm,
+.routes-cell.tier-peak .rc-perkm {
+  color: var(--ink-2);
+}
+
+/* Filter focus state: when both From and To are picked, the matching cell
+   gets a strong outline and lift; the rest of the matrix dims so the
+   answer is unmissable. */
+.routes-grid.is-filtered .routes-cell { opacity: 0.35; }
+.routes-grid.is-filtered .routes-cell.is-focus {
+  opacity: 1;
+  outline: 2px solid var(--aegean);
+  outline-offset: -2px;
+  box-shadow: 0 2px 8px rgba(42, 107, 158, 0.25);
+  z-index: 2;
+  position: relative;
+}
+
+/* Heatmap legend — sits below the matrix, mobile-friendly inline row.
+   Each stop uses the same tier background as its cells so the mapping
+   is visually obvious. */
+.routes-legend {
+  margin: 14px 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--ink-3);
+}
+.routes-legend .rl-title {
+  font-weight: 600;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.routes-legend .rl-scale {
+  display: inline-flex;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.routes-legend .rl-stop {
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink);
+  white-space: nowrap;
+  border-right: 1px solid rgba(0,0,0,0.05);
+}
+.routes-legend .rl-stop:last-child { border-right: none; }
+.routes-legend .rl-stop.tier-free  { background: #eef0f2; color: var(--ink-2); }
+.routes-legend .rl-stop.tier-low   { background: #e3eedc; }
+.routes-legend .rl-stop.tier-mid   { background: #f1ecc6; }
+.routes-legend .rl-stop.tier-high  { background: #f5dcc1; color: var(--ink-2); }
+.routes-legend .rl-stop.tier-peak  { background: #efc6b1; color: var(--ink-2); }
+
+/* Summary-card colored dot mirrors the cell tier exactly. Reuses the
+   same tints so users see "the dot in my answer card matches the cell
+   color in the grid". */
+.routes-filter-summary .rfs-tier.tier-free { background: #d8dee2; }
+.routes-filter-summary .rfs-tier.tier-low  { background: #97c459; }
+.routes-filter-summary .rfs-tier.tier-mid  { background: #d4c84b; }
+.routes-filter-summary .rfs-tier.tier-high { background: #d89657; }
+.routes-filter-summary .rfs-tier.tier-peak { background: #c4613d; }
 
 /* ── Tolls table ── */
 .tolls-table-wrap {

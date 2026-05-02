@@ -1060,7 +1060,10 @@ async function analyze() {
   let activeInput = null;
   let activeIndex = -1;
   let currentMatches = [];
-  let suppressNextOpen = false;  // set right after a selection so the synthesized 'input' doesn't re-open
+  // Set to the input we just selected from, so its synthesized re-focus doesn't
+  // re-open the dropdown. Scoped per-input — a different input focusing always
+  // opens. Cleared on focus or after one suppressed focus.
+  let suppressOpenFor = null;
 
   function positionDropdown() {
     if (!activeInput || dropdown.hidden) return;
@@ -1110,10 +1113,14 @@ async function analyze() {
     const m = currentMatches[index];
     if (!m || !activeInput) return;
     const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'el';
-    activeInput.value = lang === 'el' ? m.city.name_gr : m.city.name_en;
-    suppressNextOpen = true;
+    const input = activeInput;  // capture before close() nulls it
+    input.value = lang === 'el' ? m.city.name_gr : m.city.name_en;
+    suppressOpenFor = input;
     close();
-    activeInput && activeInput.focus();
+    // Re-focus the captured input (close() set activeInput to null, so we
+    // can't read it from there). The focus handler will see suppressOpenFor
+    // matches and bail without re-opening — but only for *this* input.
+    input.focus();
   }
 
   function moveActive(delta) {
@@ -1128,7 +1135,11 @@ async function analyze() {
     if (!input) return;
 
     input.addEventListener('focus', () => {
-      if (suppressNextOpen) { suppressNextOpen = false; return; }
+      // Only suppress reopen for the input that was just selected from.
+      // Any other input focus opens normally — that fixes the bug where
+      // selecting from #origin was killing the next #dest dropdown.
+      if (suppressOpenFor === input) { suppressOpenFor = null; return; }
+      suppressOpenFor = null;
       open(input);
     });
 
