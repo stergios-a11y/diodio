@@ -1287,12 +1287,27 @@ function buildPrintView(a, results, stats) {
     // PAY tolls don't get a map (they're staying on the highway, no bypass
     // to visualize). Falls back gracefully if the toll has no bypass info
     // or if the route fetch hasn't completed.
+    //
+    // R35: when the image fails to load (404, 401, CORS, etc), show the URL
+    // and HTTP status as diagnostic text inside the map slot, so we can see
+    // what's actually going wrong instead of looking at a blank box. The
+    // onerror handler hides the broken image and reveals the fallback div.
+    // If the image loads successfully, the fallback stays hidden — user
+    // sees the map as intended.
     const isAvoidSide = (r.verdict === 'AVOID' || r.verdict === 'MARGINAL_AVOID');
     const bypassMapUrl = isAvoidSide
       ? buildBypassMapUrl(r.toll, r.dir, a.bypassCoords?.[r.toll.id])
       : null;
     const bypassMapHtml = bypassMapUrl
-      ? `<aside class="pv-toll-map"><img src="${escapeHtml(bypassMapUrl)}" alt="" data-print-asset="bypass-map" /></aside>`
+      ? `<aside class="pv-toll-map">
+           <img src="${escapeHtml(bypassMapUrl)}" alt="" data-print-asset="bypass-map"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
+           <div class="pv-toll-map-fallback" style="display:none;">
+             <strong>Map failed to load.</strong><br>
+             URL: <a href="${escapeHtml(bypassMapUrl)}" target="_blank" rel="noopener">open in new tab</a><br>
+             <small style="word-break:break-all;font-family:monospace;font-size:6pt;">${escapeHtml(bypassMapUrl)}</small>
+           </div>
+         </aside>`
       : '';
 
     return `
@@ -1502,10 +1517,16 @@ function openPrintWindow() {
 function inlineMapImagesAsDataUrls(view) {
   const imgs = [...view.querySelectorAll('img[data-print-asset]')];
   if (!imgs.length) return Promise.resolve();
-  return Promise.all(imgs.map(img => {
+  console.log(`[mydiodia] preloading ${imgs.length} map image(s) for print...`);
+  let succeeded = 0, failed = 0;
+  return Promise.all(imgs.map((img, idx) => {
     // If this image was already converted on a previous print, skip it
     // (data URLs start with "data:"; URLs start with "https:").
-    if (img.src.startsWith('data:')) return Promise.resolve();
+    if (img.src.startsWith('data:')) {
+      succeeded++;
+      return Promise.resolve();
+    }
+    const originalUrl = img.src;
     // We need a CORS-clean fetch to convert via canvas. The original <img>
     // in the DOM doesn't have crossOrigin set. Create a fresh Image() with
     // crossOrigin="anonymous" pointing to the same URL — Mapbox responds
@@ -1514,35 +1535,48 @@ function inlineMapImagesAsDataUrls(view) {
       const probe = new Image();
       probe.crossOrigin = 'anonymous';
       probe.referrerPolicy = 'strict-origin-when-cross-origin';
-      const done = () => resolve();
+      let resolved = false;
+      const done = (outcome) => {
+        if (resolved) return;
+        resolved = true;
+        if (outcome === 'success') succeeded++;
+        else failed++;
+        resolve();
+      };
       probe.onload = () => {
         try {
           const canvas = document.createElement('canvas');
-          // Match the natural image dimensions for a 1:1 conversion.
           canvas.width  = probe.naturalWidth  || 600;
           canvas.height = probe.naturalHeight || 400;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(probe, 0, 0);
-          // PNG keeps map labels crisp; JPEG would soften them.
           const dataUrl = canvas.toDataURL('image/png');
           img.src = dataUrl;
+          console.log(`[mydiodia] map ${idx + 1}: converted to data URL (${(dataUrl.length / 1024).toFixed(0)} KB)`);
+          done('success');
         } catch (e) {
           // CORS taint — leave the original URL. Popup will try to load it
-          // and may or may not succeed.
-          console.warn('[mydiodia] map image canvas conversion failed:', e);
+          // and may or may not succeed. If Mapbox doesn't send CORS headers,
+          // this is the failure mode you'll see.
+          console.warn(`[mydiodia] map ${idx + 1}: canvas conversion failed (CORS taint)`, e.name, e.message, '— URL:', originalUrl);
+          done('fail');
         }
-        done();
       };
-      probe.onerror = () => {
-        console.warn('[mydiodia] map image preload failed:', probe.src);
-        done();
+      probe.onerror = (ev) => {
+        console.warn(`[mydiodia] map ${idx + 1}: image fetch failed (network/auth) — URL:`, originalUrl);
+        done('fail');
       };
       // Hard cap — if the image is genuinely unreachable, don't strand the
       // print flow forever. 5 seconds is enough for normal Mapbox latency.
-      setTimeout(done, 5000);
-      probe.src = img.src;
+      setTimeout(() => {
+        if (!resolved) console.warn(`[mydiodia] map ${idx + 1}: timed out after 5s — URL:`, originalUrl);
+        done('fail');
+      }, 5000);
+      probe.src = originalUrl;
     });
-  }));
+  })).then(() => {
+    console.log(`[mydiodia] preload done: ${succeeded} succeeded, ${failed} failed`);
+  });
 }
 
 // After images are inlined (or failed), open the popup and write the
@@ -1631,6 +1665,8 @@ function openPrintWindowWithLoadedImages(view) {
     background: #f3eedf;
   }
   .pv-toll-map img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .pv-toll-map-fallback { padding: 4pt; font-size: 7pt; line-height: 1.3; color: #1a1f2e; word-wrap: break-word; height: 100%; overflow: hidden; }
+  .pv-toll-map-fallback a { color: #2a6b9e; }
   /* Footer always clears any trailing floats from the last toll section. */
   .pv-foot { clear: both; }
 
